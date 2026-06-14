@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Quiz App — Trắc nghiệm</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ===== HOME SCREEN ===== -->
+  <section id="screen-home">
+    <div class="top-bar">
+      <h1>📚 Bộ đề của tôi</h1>
+      <button class="btn-icon" onclick="showImportModal()" title="Nhập đề từ JSON">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </button>
+      <button class="btn-icon" onclick="exportAllSets()" title="Xuất tất cả bộ đề">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+    </div>
+    <div class="scroll-content">
+      <div class="home-header">
+        <h2>Bộ đề của tôi</h2>
+        <p>Quản lý và làm bài trắc nghiệm</p>
+      </div>
+      <div class="home-actions">
+        <button class="btn btn-primary" onclick="openEditor(null)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Tạo bộ đề mới
+        </button>
+        <button class="btn btn-outline" onclick="showImportModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Nhập đề (JSON)
+        </button>
+      </div>
+      <div id="set-list" class="set-list"></div>
+    </div>
+  </section>
+
+  <!-- ===== EDITOR SCREEN ===== -->
+  <section id="screen-editor">
+    <div class="top-bar">
+      <button class="btn-icon" onclick="cancelEditor()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <h1 id="editor-title">Tạo bộ đề mới</h1>
+    </div>
+    <div class="scroll-content">
+      <div class="editor-form">
+        <div class="section-label">Thông tin bộ đề</div>
+        <div class="form-group">
+          <label>Tên bộ đề <span>*</span></label>
+          <input type="text" id="set-name" class="form-control" placeholder="Ví dụ: Toán học lớp 10, Lịch sử VN...">
+        </div>
+        <div class="form-group">
+          <label>Mô tả <span>(tuỳ chọn)</span></label>
+          <textarea id="set-desc" class="form-control" rows="2" placeholder="Mô tả ngắn về bộ đề..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Thời gian giới hạn <span>(tuỳ chọn, đơn vị: phút)</span></label>
+          <input type="number" id="set-timelimit" class="form-control" placeholder="Để trống nếu không giới hạn" min="1" max="999">
+          <div class="form-hint">Để trống nếu không giới hạn thời gian</div>
+        </div>
+      </div>
+
+      <div style="padding: 0 16px 12px; display: flex; align-items: center; justify-content: space-between;">
+        <div class="section-label" style="margin-bottom:0">Câu hỏi (<span id="q-count-label">0</span>)</div>
+      </div>
+
+      <div id="question-list" class="question-list"></div>
+
+      <button class="add-question-btn" onclick="addQuestionAndRefreshCount()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Thêm câu hỏi
+      </button>
+    </div>
+    <div class="editor-save-bar">
+      <button class="btn btn-primary btn-full" onclick="saveEditor()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Lưu bộ đề
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== QUIZ SCREEN ===== -->
+  <section id="screen-quiz">
+    <div class="top-bar">
+      <button class="btn-icon" onclick="exitQuiz()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <h1 id="quiz-top-title">Làm bài</h1>
+      <button class="btn-icon" onclick="toggleQuizMode()" title="Chuyển chế độ hiển thị">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      </button>
+    </div>
+    <div class="quiz-progress-bar">
+      <div id="quiz-progress-fill" class="quiz-progress-fill" style="width:0%"></div>
+    </div>
+    <div class="quiz-header">
+      <span id="quiz-counter" class="quiz-counter">0/0 đã trả lời</span>
+      <div id="quiz-timer" class="quiz-timer" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span id="quiz-timer-text">00:00</span>
+      </div>
+    </div>
+    <div class="scroll-content" style="padding:0 0 80px">
+      <div id="quiz-questions-content" style="padding:0 16px"></div>
+    </div>
+    <div id="quiz-nav" class="quiz-nav"></div>
+  </section>
+
+  <!-- ===== RESULT SCREEN ===== -->
+  <section id="screen-result">
+    <div class="top-bar">
+      <h1>Kết quả bài thi</h1>
+    </div>
+    <div class="scroll-content" style="padding:0">
+      <div class="result-hero">
+        <div id="result-emoji" class="result-emoji">🎉</div>
+        <div id="result-title" class="result-title">Làm tốt lắm!</div>
+        <div id="result-subtitle" class="result-subtitle"></div>
+      </div>
+      <div class="result-score-card">
+        <div>
+          <div class="result-stat-label">Đúng</div>
+          <div id="result-score-correct" class="result-stat-value green">0</div>
+        </div>
+        <div>
+          <div class="result-stat-label">Sai</div>
+          <div id="result-score-wrong" class="result-stat-value red">0</div>
+        </div>
+        <div>
+          <div class="result-stat-label">Điểm</div>
+          <div id="result-score-pct" class="result-stat-value purple">0%</div>
+        </div>
+      </div>
+      <div class="result-actions">
+        <button id="result-retry-btn" class="btn btn-primary btn-full">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+          Làm lại
+        </button>
+        <button id="result-home-btn" class="btn btn-secondary btn-full">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Về trang chủ
+        </button>
+      </div>
+      <div style="padding: 0 16px 8px;">
+        <div class="section-label">Xem lại câu trả lời</div>
+      </div>
+      <div id="review-list" class="review-list"></div>
+    </div>
+  </section>
+
+  <!-- ===== HISTORY SCREEN ===== -->
+  <section id="screen-history">
+    <div class="top-bar">
+      <h1>📋 Lịch sử làm bài</h1>
+      <button class="btn-icon" onclick="confirmClearHistory()" title="Xoá lịch sử">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      </button>
+    </div>
+    <div class="scroll-content">
+      <div id="history-content" class="history-content"></div>
+    </div>
+  </section>
+
+  <!-- ===== BOTTOM NAV ===== -->
+  <nav id="bottom-nav" class="bottom-nav">
+    <button class="nav-item active" data-nav="home" onclick="navTo('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Trang chủ
+    </button>
+    <button class="nav-item" data-nav="history" onclick="navTo('history')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><polyline points="12 6 12 12 16 14"/></svg>
+      Lịch sử
+    </button>
+  </nav>
+
+  <!-- ===== MODALS ===== -->
+
+  <!-- Confirm dialog -->
+  <div id="confirm-overlay" class="modal-overlay modal-confirm">
+    <div class="modal-sheet">
+      <div class="modal-title" id="confirm-title">Xác nhận</div>
+      <p id="confirm-msg" style="font-size:14px;color:var(--text-muted);line-height:1.5"></p>
+      <div class="modal-confirm-actions">
+        <button id="confirm-cancel" class="btn btn-secondary">Huỷ</button>
+        <button id="confirm-ok" class="btn btn-danger">Đồng ý</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import modal -->
+  <div id="import-overlay" class="modal-overlay" onclick="if(event.target===this)hideImportModal()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Nhập đề từ JSON</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.5">
+        Chọn file JSON đã xuất từ ứng dụng hoặc kéo thả vào đây. Hỗ trợ cả mảng nhiều bộ đề lẫn 1 bộ đề đơn.
+      </p>
+      <div class="import-drop-zone" id="import-drop-zone" onclick="document.getElementById('import-file-input').click()">
+        <div style="font-size:36px">📂</div>
+        <p><strong>Nhấn để chọn file</strong> hoặc kéo thả vào đây</p>
+        <p style="font-size:12px;margin-top:4px">Chỉ hỗ trợ file .json</p>
+        <input type="file" id="import-file-input" accept=".json">
+      </div>
+      <div style="margin-top:16px;display:flex;gap:10px">
+        <button class="btn btn-secondary btn-full" onclick="hideImportModal()">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toast-container" class="toast-container"></div>
+
+</div>
+<script src="app.js"></script>
+<script>
+// Extra helpers that reference both DOM and app.js
+
+function navTo(name) {
+  if (name === 'home') {
+    showScreen('screen-home');
+    renderHome();
+  } else if (name === 'history') {
+    showScreen('screen-history');
+    renderHistory();
+  }
+}
+
+function addQuestionAndRefreshCount() {
+  addQuestion();
+  document.getElementById('q-count-label').textContent = _editingQuestions.length;
+}
+
+// Override removeQuestion to also update count label
+const _origRemoveQuestion = removeQuestion;
+window.removeQuestion = function(qid) {
+  confirm('Xóa câu hỏi', 'Bạn có chắc muốn xóa câu hỏi này?', () => {
+    _origRemoveQuestion(qid);
+    document.getElementById('q-count-label').textContent = _editingQuestions.length;
+  });
+};
+
+// Update count when openEditor called
+const _origOpenEditor = openEditor;
+window.openEditor = function(setId) {
+  _origOpenEditor(setId);
+  document.getElementById('q-count-label').textContent = _editingQuestions.length;
+};
+
+function confirmClearHistory() {
+  confirm('Xóa lịch sử', 'Toàn bộ lịch sử làm bài sẽ bị xóa. Bạn có chắc?', () => {
+    localStorage.removeItem('quiz_history');
+    renderHistory();
+    toast('Đã xóa lịch sử', 'success');
+  });
+}
+</script>
+</body>
+</html>
