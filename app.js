@@ -34,6 +34,31 @@ function resultEmoji(pct) {
   return '💪';
 }
 
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// Trộn mảng (Fisher-Yates), trả về mảng mới
+function shuffleArray(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Đảo đáp án của 1 câu hỏi, cập nhật lại chỉ số correct
+function shuffleOptions(q) {
+  const order = shuffleArray([0, 1, 2, 3]);
+  return {
+    ...q,
+    options: order.map(i => q.options[i]),
+    correct: order.indexOf(q.correct)
+  };
+}
+
 /* ===== STORAGE ===== */
 function getSets() {
   try { return JSON.parse(localStorage.getItem('quiz_sets') || '[]'); } catch { return []; }
@@ -47,31 +72,25 @@ function getHistory() {
 function saveHistory(history) {
   localStorage.setItem('quiz_history', JSON.stringify(history));
 }
-
 function getSet(id) {
   return getSets().find(s => s.id === id) || null;
 }
-
 function saveSet(set) {
   const sets = getSets();
   const idx = sets.findIndex(s => s.id === set.id);
   if (idx >= 0) sets[idx] = set; else sets.push(set);
   saveSets(sets);
 }
-
 function deleteSet(id) {
   saveSets(getSets().filter(s => s.id !== id));
   saveHistory(getHistory().filter(h => h.setId !== id));
 }
-
 function addHistoryEntry(entry) {
   const history = getHistory();
   history.unshift(entry);
-  // keep max 500
   if (history.length > 500) history.splice(500);
   saveHistory(history);
 }
-
 function getBestScore(setId) {
   const entries = getHistory().filter(h => h.setId === setId);
   if (!entries.length) return null;
@@ -82,44 +101,28 @@ function getBestScore(setId) {
 }
 
 /* ===== NAVIGATION ===== */
-const screens = ['screen-home', 'screen-editor', 'screen-quiz', 'screen-result', 'screen-history'];
+const screens = ['screen-home', 'screen-editor', 'screen-ai', 'screen-quiz', 'screen-result', 'screen-history'];
 let _quizInProgress = false;
 
 function showScreen(id) {
   screens.forEach(s => {
     const el = document.getElementById(s);
-    if (el) {
-      el.classList.remove('active');
-      el.classList.remove('no-nav');
-    }
+    if (el) el.classList.remove('active');
   });
   const el = document.getElementById(id);
   if (!el) return;
   el.classList.add('active');
-  el.classList.add('fade-enter');
-  setTimeout(() => el.classList.remove('fade-enter'), 300);
 
-  // Bottom nav visibility
-  const bottomNav = document.getElementById('bottom-nav');
-  const noNavScreens = ['screen-quiz', 'screen-editor', 'screen-result'];
-  if (noNavScreens.includes(id)) {
-    bottomNav.style.display = 'none';
-    el.classList.add('no-nav');
-  } else {
-    bottomNav.style.display = 'flex';
-  }
-
-  // Active nav item
-  document.querySelectorAll('.nav-item').forEach(ni => ni.classList.remove('active'));
-  if (id === 'screen-home') document.querySelector('[data-nav="home"]').classList.add('active');
-  if (id === 'screen-history') document.querySelector('[data-nav="history"]').classList.add('active');
+  const noNav = ['screen-quiz', 'screen-editor', 'screen-result'];
+  const nav = document.getElementById('bottom-nav');
+  nav.style.display = noNav.includes(id) ? 'none' : 'flex';
 }
 
 /* ===== TOAST ===== */
-function toast(msg, type = '') {
+function toast(msg, type) {
   const container = document.getElementById('toast-container');
   const t = document.createElement('div');
-  t.className = 'toast' + (type ? ' toast-' + type : '');
+  t.className = 'toast' + (type === 'success' ? ' toast-success' : type === 'error' ? ' toast-error' : '');
   t.textContent = msg;
   container.appendChild(t);
   setTimeout(() => {
@@ -146,30 +149,26 @@ function confirm(title, msg, onOk) {
 function renderHome() {
   const sets = getSets();
   const container = document.getElementById('set-list');
-
   if (!sets.length) {
     container.innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">📚</div>
         <h3>Chưa có bộ đề nào</h3>
-        <p>Tạo bộ đề mới hoặc nhập từ file JSON để bắt đầu</p>
-        <button class="btn btn-primary" style="margin-top:8px" onclick="openEditor(null)">
+        <p>Tạo bộ đề mới hoặc dùng AI để tạo tự động</p>
+        <button class="btn btn-primary" onclick="openEditor(null)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Tạo bộ đề mới
         </button>
       </div>`;
     return;
   }
-
   container.innerHTML = sets.map(set => {
     const qCount = set.questions ? set.questions.length : 0;
     const best = getBestScore(set.id);
     const bestBadge = best !== null
       ? `<span class="badge badge-green">🏆 ${best}%</span>`
       : `<span class="badge badge-gray">Chưa làm</span>`;
-    const timeBadge = set.timeLimit
-      ? `<span class="badge badge-orange">⏱ ${set.timeLimit} phút</span>`
-      : '';
+    const timeBadge = set.timeLimit ? `<span class="badge badge-orange">⏱ ${set.timeLimit} phút</span>` : '';
     return `
       <div class="set-card">
         <div class="set-card-top">
@@ -180,24 +179,18 @@ function renderHome() {
           </div>
         </div>
         <div class="set-card-meta">
-          <span class="badge badge-purple">${qCount} câu hỏi</span>
+          <span class="badge badge-purple">${qCount} câu</span>
           ${bestBadge}
           ${timeBadge}
         </div>
         <div class="set-card-actions">
-          <button class="btn btn-primary btn-sm" onclick="startQuiz('${set.id}')" ${qCount === 0 ? 'disabled' : ''}>
-            Làm bài
-          </button>
-          <button class="btn btn-secondary btn-sm" onclick="openEditor('${set.id}')">Sửa</button>
-          <button class="btn btn-danger btn-sm" onclick="confirmDeleteSet('${set.id}', '${esc(set.name)}')">Xóa</button>
+          <button class="btn btn-primary btn-sm" onclick="showQuizSettings('${set.id}')" ${qCount === 0 ? 'disabled' : ''}>▶ Làm bài</button>
+          <button class="btn btn-secondary btn-sm" onclick="openEditor('${set.id}')">✏️ Sửa</button>
+          <button class="btn btn-danger btn-sm" onclick="confirmDeleteSet('${set.id}', '${esc(set.name)}')">🗑</button>
+          <button class="btn btn-outline btn-sm" onclick="exportSet('${set.id}')">↓ Xuất</button>
         </div>
       </div>`;
   }).join('');
-}
-
-function esc(s) {
-  if (!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 function confirmDeleteSet(id, name) {
@@ -216,12 +209,10 @@ function openEditor(setId) {
   _editingSetId = setId;
   const set = setId ? getSet(setId) : null;
   _editingQuestions = set ? JSON.parse(JSON.stringify(set.questions || [])) : [];
-
   document.getElementById('editor-title').textContent = setId ? 'Sửa bộ đề' : 'Tạo bộ đề mới';
   document.getElementById('set-name').value = set ? set.name : '';
   document.getElementById('set-desc').value = set ? (set.description || '') : '';
   document.getElementById('set-timelimit').value = set ? (set.timeLimit || '') : '';
-
   renderEditorQuestions();
   showScreen('screen-editor');
 }
@@ -231,7 +222,7 @@ function renderEditorQuestions() {
   if (!_editingQuestions.length) {
     container.innerHTML = `<div class="empty-state" style="padding:32px 16px">
       <div class="empty-icon" style="font-size:40px">❓</div>
-      <p>Chưa có câu hỏi nào. Thêm câu hỏi bên dưới.</p>
+      <p>Chưa có câu hỏi nào. Nhấn "Thêm câu hỏi" bên dưới.</p>
     </div>`;
     return;
   }
@@ -254,47 +245,41 @@ function buildQuestionCard(q, i) {
       <div class="question-card-body">
         <div class="form-group">
           <label>Câu hỏi</label>
-          <textarea class="form-control" rows="2" placeholder="Nhập nội dung câu hỏi..." 
-            onchange="updateQuestion('${q.id}', 'text', this.value)"
+          <textarea class="form-control" rows="2" placeholder="Nhập nội dung câu hỏi..."
             oninput="updateQuestion('${q.id}', 'text', this.value)">${esc(q.text || '')}</textarea>
         </div>
-        <div class="section-label">Các đáp án <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:12px;color:var(--text-muted)">(chọn radio đánh dấu đáp án đúng)</span></div>
+        <div class="section-label" style="padding:0;margin-bottom:8px">Đáp án <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:12px">(☑ chọn đáp án đúng)</span></div>
         ${letters.map((letter, li) => `
           <div class="option-row">
             <div class="option-letter">${letter}</div>
             <input type="text" class="form-control" placeholder="Đáp án ${letter}..."
               value="${esc(options[li] || '')}"
-              onchange="updateOption('${q.id}', ${li}, this.value)"
               oninput="updateOption('${q.id}', ${li}, this.value)">
             <input type="radio" class="radio-correct" name="correct-${q.id}" value="${li}"
               ${correct === li ? 'checked' : ''}
               onchange="updateQuestion('${q.id}', 'correct', ${li})"
               title="Đáp án đúng">
           </div>`).join('')}
+        <div class="form-group" style="margin-top:12px;margin-bottom:0">
+          <label>Giải thích đáp án <span>(tuỳ chọn)</span></label>
+          <textarea class="form-control" rows="2" placeholder="Giải thích tại sao đáp án đúng, ghi chú thêm..."
+            oninput="updateQuestion('${q.id}', 'explanation', this.value)">${esc(q.explanation || '')}</textarea>
+        </div>
       </div>
     </div>`;
 }
 
 function addQuestion() {
-  const q = {
-    id: uid(),
-    text: '',
-    options: ['', '', '', ''],
-    correct: 0
-  };
-  _editingQuestions.push(q);
+  _editingQuestions.push({ id: uid(), text: '', options: ['', '', '', ''], correct: 0, explanation: '' });
   renderEditorQuestions();
-  // scroll to new question
   setTimeout(() => {
-    const el = document.getElementById('qcard-' + q.id);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const cards = document.querySelectorAll('.question-card');
+    if (cards.length) cards[cards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 100);
 }
 
 function removeQuestion(qid) {
-  const idx = _editingQuestions.findIndex(q => q.id === qid);
-  if (idx < 0) return;
-  _editingQuestions.splice(idx, 1);
+  _editingQuestions = _editingQuestions.filter(q => q.id !== qid);
   renderEditorQuestions();
 }
 
@@ -303,10 +288,9 @@ function updateQuestion(qid, field, value) {
   if (!q) return;
   if (field === 'correct') q.correct = parseInt(value);
   else q[field] = value;
-  // update header text live
-  const header = document.querySelector(`#qcard-${qid} .question-card-header .q-text`);
-  if (header && field === 'text') {
-    header.innerHTML = esc(value) || '<em style="color:var(--text-light)">Câu hỏi chưa nhập</em>';
+  if (field === 'text') {
+    const el = document.querySelector(`#qcard-${qid} .question-card-header .q-text`);
+    if (el) el.innerHTML = esc(value) || '<em style="color:var(--text-light)">Câu hỏi chưa nhập</em>';
   }
 }
 
@@ -320,8 +304,6 @@ function updateOption(qid, idx, value) {
 function saveEditor() {
   const name = document.getElementById('set-name').value.trim();
   if (!name) { toast('Vui lòng nhập tên bộ đề', 'error'); return; }
-
-  // validate questions
   for (let i = 0; i < _editingQuestions.length; i++) {
     const q = _editingQuestions[i];
     if (!q.text.trim()) { toast(`Câu ${i + 1}: Chưa nhập nội dung câu hỏi`, 'error'); return; }
@@ -331,61 +313,106 @@ function saveEditor() {
       }
     }
   }
-
   const timeLimitRaw = document.getElementById('set-timelimit').value.trim();
   const timeLimit = timeLimitRaw ? parseInt(timeLimitRaw) : null;
   if (timeLimitRaw && (isNaN(timeLimit) || timeLimit < 1)) {
     toast('Thời gian giới hạn không hợp lệ', 'error'); return;
   }
-
   const set = {
     id: _editingSetId || uid(),
     name,
     description: document.getElementById('set-desc').value.trim(),
     timeLimit: timeLimit || null,
-    createdAt: _editingSetId ? (getSet(_editingSetId) || {}).createdAt || Date.now() : Date.now(),
+    createdAt: _editingSetId ? ((getSet(_editingSetId) || {}).createdAt || Date.now()) : Date.now(),
     questions: _editingQuestions.map(q => ({
       id: q.id,
       text: q.text.trim(),
       options: q.options.map(o => o.trim()),
-      correct: q.correct
+      correct: q.correct,
+      explanation: (q.explanation || '').trim()
     }))
   };
-
   saveSet(set);
   toast('Đã lưu bộ đề', 'success');
   showScreen('screen-home');
   renderHome();
+  document.querySelector('[data-nav="home"]').click();
 }
 
 function cancelEditor() {
-  if (_editingQuestions.length > 0 || document.getElementById('set-name').value.trim()) {
+  const dirty = _editingQuestions.length > 0 || document.getElementById('set-name').value.trim();
+  if (dirty) {
     confirm('Thoát bộ đề', 'Các thay đổi chưa lưu sẽ bị mất. Tiếp tục?', () => {
-      showScreen('screen-home');
-      renderHome();
+      showScreen('screen-home'); renderHome();
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.querySelector('[data-nav="home"]').classList.add('active');
     });
   } else {
-    showScreen('screen-home');
-    renderHome();
+    showScreen('screen-home'); renderHome();
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    document.querySelector('[data-nav="home"]').classList.add('active');
   }
 }
 
-/* ===== QUIZ ===== */
-let _quiz = null; // current quiz state
+/* ===== QUIZ SETTINGS ===== */
+let _pendingSetId = null;
 
-function startQuiz(setId) {
+function showQuizSettings(setId) {
+  const set = getSet(setId);
+  if (!set) return;
+  _pendingSetId = setId;
+  const total = set.questions ? set.questions.length : 0;
+  document.getElementById('qs-total-label').textContent = `/ ${total} câu`;
+  document.getElementById('qs-num-q').value = '';
+  document.getElementById('qs-num-q').max = total;
+  document.getElementById('modal-quiz-settings').classList.add('active');
+}
+
+function closeQuizSettings() {
+  document.getElementById('modal-quiz-settings').classList.remove('active');
+}
+
+function beginQuiz() {
+  closeQuizSettings();
+  const shuffleQ = document.getElementById('qs-shuffle-q').checked;
+  const shuffleOpts = document.getElementById('qs-shuffle-opts').checked;
+  const numQRaw = document.getElementById('qs-num-q').value.trim();
+  const numQ = numQRaw ? parseInt(numQRaw) : null;
+  startQuiz(_pendingSetId, { shuffleQ, shuffleOpts, numQ });
+}
+
+/* ===== QUIZ ===== */
+let _quiz = null;
+
+function startQuiz(setId, settings) {
   const set = getSet(setId);
   if (!set || !set.questions || !set.questions.length) {
     toast('Bộ đề không có câu hỏi', 'error'); return;
   }
+  settings = settings || { shuffleQ: false, shuffleOpts: false, numQ: null };
+
+  let questions = JSON.parse(JSON.stringify(set.questions));
+
+  // Trộn câu hỏi
+  if (settings.shuffleQ) questions = shuffleArray(questions);
+
+  // Lấy N câu ngẫu nhiên
+  if (settings.numQ && settings.numQ > 0 && settings.numQ < questions.length) {
+    questions = questions.slice(0, settings.numQ);
+  }
+
+  // Đảo đáp án
+  if (settings.shuffleOpts) questions = questions.map(q => shuffleOptions(q));
+
   _quiz = {
-    set: JSON.parse(JSON.stringify(set)),
-    answers: new Array(set.questions.length).fill(null),
+    set: { ...set, questions },
+    originalSetId: setId,
+    answers: new Array(questions.length).fill(null),
     startTime: Date.now(),
     currentIdx: 0,
     timerInterval: null,
     timeLeft: set.timeLimit ? set.timeLimit * 60 : null,
-    mode: 'one-by-one' // or 'all'
+    mode: 'one-by-one'
   };
   _quizInProgress = true;
   renderQuiz();
@@ -395,17 +422,12 @@ function startQuiz(setId) {
 function renderQuiz() {
   const q = _quiz;
   const total = q.set.questions.length;
-
-  // top bar title
   document.getElementById('quiz-top-title').textContent = q.set.name;
 
-  // progress
   const answered = q.answers.filter(a => a !== null).length;
-  const pct = answered / total * 100;
-  document.getElementById('quiz-progress-fill').style.width = pct + '%';
+  document.getElementById('quiz-progress-fill').style.width = (answered / total * 100) + '%';
   document.getElementById('quiz-counter').textContent = `${answered}/${total} đã trả lời`;
 
-  // timer
   const timerEl = document.getElementById('quiz-timer');
   if (q.timeLeft !== null) {
     timerEl.style.display = 'flex';
@@ -426,16 +448,11 @@ function renderQuiz() {
     timerEl.style.display = 'none';
   }
 
-  // render questions
   const content = document.getElementById('quiz-questions-content');
   content.innerHTML = q.set.questions.map((question, i) => buildQuizQuestion(question, i)).join(
     q.mode === 'all' ? '<div class="quiz-separator"></div>' : ''
   );
-
-  // show only current question in one-by-one mode
   updateQuizVisibility();
-
-  // nav buttons
   renderQuizNav();
 }
 
@@ -458,22 +475,16 @@ function buildQuizQuestion(question, i) {
 }
 
 function updateQuizVisibility() {
-  const blocks = document.querySelectorAll('.quiz-question-block');
-  blocks.forEach((block, i) => {
-    if (_quiz.mode === 'all') {
-      block.style.display = 'block';
-    } else {
-      block.style.display = i === _quiz.currentIdx ? 'block' : 'none';
-    }
+  document.querySelectorAll('.quiz-question-block').forEach((block, i) => {
+    block.style.display = (_quiz.mode === 'all' || i === _quiz.currentIdx) ? 'block' : 'none';
   });
 }
 
 function renderTimer() {
   const t = _quiz.timeLeft;
-  const el = document.getElementById('quiz-timer-text');
-  el.textContent = fmtTime(Math.max(0, t));
-  const timerEl = document.getElementById('quiz-timer');
-  if (t <= 60) timerEl.classList.add('warning'); else timerEl.classList.remove('warning');
+  document.getElementById('quiz-timer-text').textContent = fmtTime(Math.max(0, t));
+  const el = document.getElementById('quiz-timer');
+  if (t <= 60) el.classList.add('warning'); else el.classList.remove('warning');
 }
 
 function renderQuizNav() {
@@ -481,10 +492,7 @@ function renderQuizNav() {
   const total = q.set.questions.length;
   const nav = document.getElementById('quiz-nav');
   if (q.mode === 'all') {
-    nav.innerHTML = `
-      <button class="btn btn-primary btn-full" onclick="submitQuizConfirm()">
-        Nộp bài
-      </button>`;
+    nav.innerHTML = `<button class="btn btn-primary btn-full" onclick="submitQuizConfirm()">Nộp bài</button>`;
     return;
   }
   const isFirst = q.currentIdx === 0;
@@ -492,15 +500,12 @@ function renderQuizNav() {
   nav.innerHTML = `
     <button class="btn btn-secondary" onclick="quizPrev()" ${isFirst ? 'disabled' : ''}>← Trước</button>
     ${isLast
-      ? `<button class="btn btn-primary" onclick="submitQuizConfirm()">Nộp bài</button>`
-      : `<button class="btn btn-primary" onclick="quizNext()">Tiếp →</button>`
-    }`;
+      ? `<button class="btn btn-primary" onclick="submitQuizConfirm()">Nộp bài ✓</button>`
+      : `<button class="btn btn-primary" onclick="quizNext()">Tiếp →</button>`}`;
 }
 
 function selectAnswer(qIdx, optIdx) {
   _quiz.answers[qIdx] = optIdx;
-
-  // update UI
   const block = document.getElementById('quiz-q-' + qIdx);
   if (!block) return;
   block.querySelectorAll('.option-btn').forEach((btn, i) => {
@@ -516,22 +521,12 @@ function selectAnswer(qIdx, optIdx) {
       letter.style.color = '';
     }
   });
-
-  // update progress
   const answered = _quiz.answers.filter(a => a !== null).length;
   const total = _quiz.set.questions.length;
   document.getElementById('quiz-progress-fill').style.width = (answered / total * 100) + '%';
   document.getElementById('quiz-counter').textContent = `${answered}/${total} đã trả lời`;
-
-  // in one-by-one, auto advance after brief delay
   if (_quiz.mode === 'one-by-one' && _quiz.currentIdx < total - 1) {
-    setTimeout(() => {
-      _quiz.currentIdx++;
-      updateQuizVisibility();
-      renderQuizNav();
-      // scroll top
-      document.getElementById('quiz-questions-content').scrollTop = 0;
-    }, 400);
+    setTimeout(() => { _quiz.currentIdx++; updateQuizVisibility(); renderQuizNav(); }, 400);
   }
 }
 
@@ -542,7 +537,6 @@ function quizNext() {
     renderQuizNav();
   }
 }
-
 function quizPrev() {
   if (_quiz.currentIdx > 0) {
     _quiz.currentIdx--;
@@ -554,11 +548,7 @@ function quizPrev() {
 function submitQuizConfirm() {
   const unanswered = _quiz.answers.filter(a => a === null).length;
   if (unanswered > 0) {
-    confirm(
-      'Nộp bài',
-      `Còn ${unanswered} câu chưa trả lời. Bạn có muốn nộp bài không? Câu chưa trả lời sẽ được tính là sai.`,
-      () => submitQuiz(false)
-    );
+    confirm('Nộp bài', `Còn ${unanswered} câu chưa trả lời. Câu chưa trả lời tính là sai. Nộp bài?`, () => submitQuiz(false));
   } else {
     submitQuiz(false);
   }
@@ -569,17 +559,15 @@ function submitQuiz(autoSubmit) {
   clearInterval(_quiz.timerInterval);
   _quiz.timerInterval = null;
   _quizInProgress = false;
-
   const timeTaken = Math.round((Date.now() - _quiz.startTime) / 1000);
   const q = _quiz;
   let score = 0;
   q.set.questions.forEach((question, i) => {
     if (q.answers[i] === question.correct) score++;
   });
-
   const entry = {
     id: uid(),
-    setId: q.set.id,
+    setId: q.originalSetId,
     setName: q.set.name,
     score,
     total: q.set.questions.length,
@@ -587,7 +575,6 @@ function submitQuiz(autoSubmit) {
     date: Date.now(),
     answers: q.answers.slice()
   };
-
   addHistoryEntry(entry);
   renderResult(entry, q.set);
   showScreen('screen-result');
@@ -603,16 +590,20 @@ function toggleQuizMode() {
 
 function exitQuiz() {
   if (_quizInProgress) {
-    confirm('Thoát bài thi', 'Bài thi chưa hoàn thành sẽ không được lưu. Bạn có muốn thoát?', () => {
+    confirm('Thoát bài thi', 'Bài thi chưa hoàn thành sẽ không được lưu. Thoát?', () => {
       clearInterval(_quiz && _quiz.timerInterval);
       _quizInProgress = false;
       _quiz = null;
       showScreen('screen-home');
       renderHome();
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.querySelector('[data-nav="home"]').classList.add('active');
     });
   } else {
     showScreen('screen-home');
     renderHome();
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    document.querySelector('[data-nav="home"]').classList.add('active');
   }
 }
 
@@ -625,23 +616,21 @@ function renderResult(entry, set) {
     pct >= 80 ? 'Làm tốt lắm!' :
     pct >= 60 ? 'Khá tốt!' :
     pct >= 40 ? 'Cần cố gắng thêm' : 'Hãy thử lại nhé!';
-  document.getElementById('result-subtitle').textContent =
-    `${entry.setName} · ${fmtDate(entry.date)}`;
-
+  document.getElementById('result-subtitle').textContent = `${entry.setName} · ${fmtDate(entry.date)}`;
   document.getElementById('result-score-correct').textContent = entry.score;
   document.getElementById('result-score-wrong').textContent = entry.total - entry.score;
   document.getElementById('result-score-pct').textContent = pct + '%';
 
-  // review
-  const reviewContainer = document.getElementById('review-list');
   const letters = ['A', 'B', 'C', 'D'];
-  reviewContainer.innerHTML = set.questions.map((q, i) => {
+  document.getElementById('review-list').innerHTML = set.questions.map((q, i) => {
     const userAns = entry.answers[i];
     const isCorrect = userAns === q.correct;
     const isSkipped = userAns === null;
-    const statusClass = isSkipped ? 'skipped' : isCorrect ? 'correct' : 'wrong';
+    const statusClass = isSkipped ? '' : isCorrect ? 'correct' : 'wrong';
     const statusIcon = isSkipped ? '⚪' : isCorrect ? '✅' : '❌';
-
+    const explanationHTML = q.explanation
+      ? `<div class="review-explanation">💡 ${esc(q.explanation)}</div>`
+      : '';
     return `
       <div class="review-card ${statusClass}">
         <div class="review-card-header">
@@ -656,25 +645,28 @@ function renderResult(entry, set) {
             else if (oi === userAns && !isCorrect) cls = 'wrong-ans';
             return `<div class="review-option ${cls}">
               <span class="opt-letter">${letters[oi]}</span>
-              <span>${esc(opt)}</span>
-              ${oi === q.correct ? ' <span style="margin-left:auto;font-size:12px">✓ Đúng</span>' : ''}
-              ${oi === userAns && !isCorrect ? ' <span style="margin-left:auto;font-size:12px">✗ Bạn chọn</span>' : ''}
+              <span style="flex:1">${esc(opt)}</span>
+              ${oi === q.correct ? '<span class="review-tag correct-tag">✓ Đúng</span>' : ''}
+              ${oi === userAns && !isCorrect ? '<span class="review-tag wrong-tag">✗ Bạn chọn</span>' : ''}
             </div>`;
           }).join('')}
+          ${explanationHTML}
         </div>
       </div>`;
   }).join('');
 
-  // store for replay
-  document.getElementById('result-retry-btn').onclick = () => startQuiz(entry.setId);
-  document.getElementById('result-home-btn').onclick = () => { showScreen('screen-home'); renderHome(); };
+  document.getElementById('result-retry-btn').onclick = () => showQuizSettings(entry.setId);
+  document.getElementById('result-home-btn').onclick = () => {
+    showScreen('screen-home'); renderHome();
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    document.querySelector('[data-nav="home"]').classList.add('active');
+  };
 }
 
 /* ===== HISTORY ===== */
 function renderHistory() {
   const history = getHistory();
   const container = document.getElementById('history-content');
-
   if (!history.length) {
     container.innerHTML = `<div class="empty-state">
       <div class="empty-icon">📋</div>
@@ -683,14 +675,11 @@ function renderHistory() {
     </div>`;
     return;
   }
-
-  // group by setName
   const groups = {};
   history.forEach(h => {
     if (!groups[h.setId]) groups[h.setId] = { name: h.setName, entries: [] };
     groups[h.setId].entries.push(h);
   });
-
   container.innerHTML = Object.values(groups).map(g => {
     const items = g.entries.map(h => {
       const pct = scorePct(h.score, h.total);
@@ -719,8 +708,7 @@ function renderHistory() {
 function exportSet(setId) {
   const set = getSet(setId);
   if (!set) return;
-  const json = JSON.stringify([set], null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify([set], null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -733,8 +721,7 @@ function exportSet(setId) {
 function exportAllSets() {
   const sets = getSets();
   if (!sets.length) { toast('Không có bộ đề để xuất', 'error'); return; }
-  const json = JSON.stringify(sets, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(sets, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -756,16 +743,11 @@ function validateSetStructure(obj) {
   return true;
 }
 
-function importSetsFromJSON(jsonStr) {
-  let data;
-  try { data = JSON.parse(jsonStr); } catch {
-    toast('File JSON không hợp lệ', 'error'); return;
-  }
-  const arr = Array.isArray(data) ? data : [data];
+function importSetsFromData(arr) {
   let imported = 0, skipped = 0;
   arr.forEach(obj => {
     if (!validateSetStructure(obj)) { skipped++; return; }
-    const set = {
+    saveSet({
       id: uid(),
       name: obj.name.trim(),
       description: obj.description || '',
@@ -775,21 +757,27 @@ function importSetsFromJSON(jsonStr) {
         id: uid(),
         text: q.text.trim(),
         options: q.options.map(o => String(o).trim()),
-        correct: q.correct
+        correct: q.correct,
+        explanation: (q.explanation || '').trim()
       }))
-    };
-    saveSet(set);
+    });
     imported++;
   });
   renderHome();
   if (imported > 0) toast(`Đã nhập ${imported} bộ đề`, 'success');
   if (skipped > 0) toast(`Bỏ qua ${skipped} bộ đề không hợp lệ`, 'error');
+  return imported;
+}
+
+function importSetsFromJSON(jsonStr) {
+  let data;
+  try { data = JSON.parse(jsonStr); } catch { toast('File JSON không hợp lệ', 'error'); return; }
+  const arr = Array.isArray(data) ? data : [data];
+  importSetsFromData(arr);
   hideImportModal();
 }
 
-function showImportModal() {
-  document.getElementById('import-overlay').classList.add('active');
-}
+function showImportModal() { document.getElementById('import-overlay').classList.add('active'); }
 function hideImportModal() {
   document.getElementById('import-overlay').classList.remove('active');
   document.getElementById('import-file-input').value = '';
@@ -804,15 +792,131 @@ function handleImportFile(e) {
   reader.readAsText(file);
 }
 
+/* ===== AI CREATE ===== */
+function generateAIPrompt() {
+  const topic = document.getElementById('ai-topic').value.trim();
+  if (!topic) { toast('Vui lòng nhập chủ đề', 'error'); return; }
+  const count = parseInt(document.getElementById('ai-count').value) || 10;
+  const difficulty = document.getElementById('ai-difficulty').value;
+  const lang = document.getElementById('ai-lang').value;
+
+  const prompt = `Bạn là chuyên gia về chủ đề "${topic}".
+
+Hãy tạo ${count} câu hỏi trắc nghiệm về "${topic}" với độ khó: ${difficulty}.
+
+Trả về JSON hợp lệ theo đúng format này (KHÔNG thêm bất kỳ text nào khác ngoài JSON):
+
+[
+  {
+    "text": "Nội dung câu hỏi?",
+    "options": ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
+    "correct": 0,
+    "explanation": "Giải thích ngắn gọn tại sao đáp án này đúng và các đáp án kia sai"
+  }
+]
+
+Yêu cầu bắt buộc:
+- Mỗi câu có ĐÚNG 4 đáp án trong mảng "options"
+- "correct" là chỉ số (0, 1, 2 hoặc 3) của đáp án đúng
+- Các đáp án sai phải hợp lý và có tính đánh lừa cao
+- "explanation" giải thích rõ ràng tại sao đáp án đúng và tại sao các đáp án kia sai
+- Ngôn ngữ: ${lang}
+- Tạo đủ ${count} câu hỏi
+- Câu hỏi không được trùng lặp`;
+
+  document.getElementById('ai-prompt-text').value = prompt;
+  document.getElementById('ai-setname').value = `${topic} — Trắc nghiệm`;
+  document.getElementById('ai-prompt-section').classList.remove('hidden');
+  document.getElementById('ai-prompt-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function copyAIPrompt() {
+  const text = document.getElementById('ai-prompt-text').value;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    toast('Đã copy prompt! Paste vào ChatGPT hoặc Claude.', 'success');
+  }).catch(() => {
+    document.getElementById('ai-prompt-text').select();
+    document.execCommand('copy');
+    toast('Đã copy prompt!', 'success');
+  });
+}
+
+function importAIText() {
+  const raw = document.getElementById('ai-result-text').value.trim();
+  if (!raw) { toast('Vui lòng paste kết quả JSON từ AI', 'error'); return; }
+
+  let data;
+  try {
+    // Thử parse thẳng; nếu lỗi thì tìm JSON trong text
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      const match = raw.match(/\[[\s\S]*\]/);
+      if (!match) throw new Error('no json');
+      data = JSON.parse(match[0]);
+    }
+  } catch {
+    toast('Không tìm thấy JSON hợp lệ. Hãy copy đúng phần JSON từ AI.', 'error');
+    return;
+  }
+
+  const arr = Array.isArray(data) ? data : [data];
+
+  // Lấy tên bộ đề từ input hoặc topic
+  const setName = document.getElementById('ai-setname').value.trim()
+    || document.getElementById('ai-topic').value.trim()
+    || 'Bộ đề AI';
+
+  // Ghép tất cả câu hỏi vào 1 bộ đề
+  const questions = [];
+  arr.forEach(item => {
+    if (item.text && Array.isArray(item.options) && item.options.length === 4 && typeof item.correct === 'number') {
+      questions.push({
+        id: uid(),
+        text: String(item.text).trim(),
+        options: item.options.map(o => String(o).trim()),
+        correct: item.correct,
+        explanation: (item.explanation || '').trim()
+      });
+    }
+  });
+
+  if (!questions.length) {
+    toast('Không tìm thấy câu hỏi hợp lệ trong JSON', 'error');
+    return;
+  }
+
+  const newSet = {
+    id: uid(),
+    name: setName,
+    description: `Tạo bởi AI · ${questions.length} câu hỏi`,
+    timeLimit: null,
+    createdAt: Date.now(),
+    questions
+  };
+  saveSet(newSet);
+  toast(`✅ Đã nhập ${questions.length} câu hỏi vào bộ đề "${setName}"`, 'success');
+
+  // Reset form
+  document.getElementById('ai-result-text').value = '';
+  document.getElementById('ai-prompt-text').value = '';
+  document.getElementById('ai-topic').value = '';
+  document.getElementById('ai-prompt-section').classList.add('hidden');
+
+  // Chuyển về home
+  setTimeout(() => {
+    document.querySelector('[data-nav="home"]').click();
+  }, 500);
+}
+
 /* ===== INIT ===== */
 document.addEventListener('DOMContentLoaded', () => {
   showScreen('screen-home');
   renderHome();
 
-  // import file input
   document.getElementById('import-file-input').addEventListener('change', handleImportFile);
 
-  // drag & drop import
   const dropZone = document.getElementById('import-drop-zone');
   dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
   dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
@@ -826,11 +930,10 @@ document.addEventListener('DOMContentLoaded', () => {
     reader.readAsText(file);
   });
 
-  // warn before close if quiz in progress
   window.addEventListener('beforeunload', e => {
     if (_quizInProgress) {
       e.preventDefault();
-      e.returnValue = 'Bài thi đang diễn ra. Bạn có chắc muốn rời trang?';
+      e.returnValue = '';
     }
   });
 });
