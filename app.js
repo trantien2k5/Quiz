@@ -815,36 +815,35 @@ Quy tắc bắt buộc:
 - Tạo đủ ${count} câu, không trùng lặp`;
 }
 
-function generateAndCopy(btn) {
+function generateAndCopy() {
   const topic = document.getElementById('ai-topic').value.trim();
   if (!topic) { toast('Vui lòng nhập chủ đề', 'error'); return; }
   const count = parseInt(document.getElementById('ai-count').value) || 10;
   const text = buildPromptText(topic, count);
 
-  // Ghi vào textarea ẩn
   const ta = document.getElementById('ai-prompt-text');
   ta.value = text;
 
-  // Tự điền tên bộ đề
   const nameEl = document.getElementById('ai-setname');
   if (!nameEl.value.trim()) nameEl.value = `${topic} — Trắc nghiệm`;
 
-  const doFlash = () => flashSuccess(btn, 'Đã copy! Paste vào AI →', 2000);
+  const ok = () => toast('✅ Đã copy! Paste vào ChatGPT / Claude', 'success');
+  const fail = () => toast('❌ Không copy được — thử lại', 'error');
 
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(doFlash).catch(() => fallbackCopy(ta, doFlash));
+    navigator.clipboard.writeText(text).then(ok).catch(() => fallbackCopy(ta, ok, fail));
   } else {
-    fallbackCopy(ta, doFlash);
+    fallbackCopy(ta, ok, fail);
   }
 }
 
-function fallbackCopy(ta, cb) {
+function fallbackCopy(ta, ok, fail) {
   ta.removeAttribute('readonly');
   ta.select();
   ta.setSelectionRange(0, 99999);
-  try { document.execCommand('copy'); cb(); }
-  catch { toast('Không copy được — hãy copy thủ công', 'error'); }
+  const success = document.execCommand('copy');
   ta.setAttribute('readonly', '');
+  if (success) ok(); else if (fail) fail();
 }
 
 function importAIText() {
@@ -901,9 +900,7 @@ function importAIText() {
     questions
   };
   saveSet(newSet);
-  toast(`✅ Đã nhập ${questions.length} câu hỏi vào bộ đề "${setName}"`, 'success');
-  const btn = document.querySelector('[onclick="importAIText()"]');
-  if (btn) flashSuccess(btn, `Đã nhập ${questions.length} câu!`, 1500);
+  toast(`✅ Đã nhập ${questions.length} câu hỏi vào "${setName}"`, 'success');
 
   // Reset form
   document.getElementById('ai-result-text').value = '';
