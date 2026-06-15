@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=18">
+  <link rel="stylesheet" href="style.css?v=19">
 </head>
 <body>
 <div id="update-banner">
@@ -364,6 +364,24 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         Bắt đầu làm bài
       </button>
+    </div>
+  </div>
+
+  <!-- Quiz map modal -->
+  <div id="modal-quiz-map" class="modal-overlay" onclick="if(event.target===this)hideQuizMap()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="modal-title" style="margin:0">Bảng câu hỏi</div>
+        <span id="qmap-stats" style="font-size:13px;color:var(--text-muted)"></span>
+      </div>
+      <div id="qmap-grid" class="qmap-grid"></div>
+      <div class="qmap-legend">
+        <span><span class="qmap-dot answered"></span> Đã làm</span>
+        <span><span class="qmap-dot flagged"></span> Đánh dấu</span>
+        <span><span class="qmap-dot unanswered"></span> Chưa làm</span>
+      </div>
+      <button class="btn btn-primary btn-full" style="margin-top:4px" onclick="hideQuizMap();submitQuizConfirm()">Nộp bài ✓</button>
     </div>
   </div>
 
