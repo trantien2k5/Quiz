@@ -855,24 +855,48 @@ function normalizeJSON(raw) {
     .trim();
 }
 
+// Escape dấu " bên trong chuỗi JSON (ChatGPT hay trả về "word" không escaped)
+function fixInnerQuotes(str) {
+  let out = '', inStr = false, i = 0;
+  while (i < str.length) {
+    const ch = str[i];
+    if (inStr && ch === '\\') { out += ch + (str[i + 1] || ''); i += 2; continue; }
+    if (ch === '"') {
+      if (!inStr) { inStr = true; out += ch; i++; continue; }
+      let j = i + 1;
+      while (j < str.length && ' \t\r\n'.includes(str[j])) j++;
+      const next = str[j];
+      if (next === ':' || next === ',' || next === '}' || next === ']' || j >= str.length) {
+        inStr = false; out += ch;
+      } else {
+        out += '\\"';
+      }
+      i++; continue;
+    }
+    out += ch; i++;
+  }
+  return out;
+}
+
+function tryParseJSON(raw) {
+  try { return JSON.parse(raw); } catch {}
+  try { return JSON.parse(fixInnerQuotes(raw)); } catch {}
+  const matchArr = raw.match(/\[[\s\S]*\]/);
+  const matchObj = raw.match(/\{[\s\S]*\}/);
+  const extracted = matchArr || matchObj;
+  if (extracted) {
+    try { return JSON.parse(extracted[0]); } catch {}
+    try { return JSON.parse(fixInnerQuotes(extracted[0])); } catch {}
+  }
+  return null;
+}
+
 function importAIText() {
   const raw = document.getElementById('ai-result-text').value.trim();
   if (!raw) { toast('Vui lòng paste kết quả JSON từ AI', 'error'); return; }
 
-  const cleaned = normalizeJSON(raw);
-  let data;
-  try {
-    try {
-      data = JSON.parse(cleaned);
-    } catch {
-      // Tìm mảng [...] hoặc object {...} trong text
-      const matchArr = cleaned.match(/\[[\s\S]*\]/);
-      const matchObj = cleaned.match(/\{[\s\S]*\}/);
-      const match = matchArr || matchObj;
-      if (!match) throw new Error('no json');
-      data = JSON.parse(match[0]);
-    }
-  } catch {
+  const data = tryParseJSON(normalizeJSON(raw));
+  if (!data) {
     toast('Không parse được JSON — thử copy lại từ AI', 'error');
     return;
   }
