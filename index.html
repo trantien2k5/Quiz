@@ -109,33 +109,13 @@
       </div>
 
       <div class="ai-form-card">
-        <div class="section-label">Thông tin đề</div>
         <div class="form-group">
           <label>Chủ đề <span>*</span></label>
           <input type="text" id="ai-topic" class="form-control" placeholder="Ví dụ: Lịch sử Việt Nam, Sinh học lớp 10, TOEIC...">
         </div>
-        <div class="form-row">
-          <div class="form-group" style="flex:1">
-            <label>Số câu hỏi</label>
-            <input type="number" id="ai-count" class="form-control" value="10" min="1" max="50">
-          </div>
-          <div class="form-group" style="flex:1">
-            <label>Độ khó</label>
-            <select id="ai-difficulty" class="form-control">
-              <option value="dễ">Dễ</option>
-              <option value="trung bình" selected>Trung bình</option>
-              <option value="khó">Khó</option>
-              <option value="hỗn hợp">Hỗn hợp</option>
-            </select>
-          </div>
-        </div>
         <div class="form-group">
-          <label>Ngôn ngữ</label>
-          <select id="ai-lang" class="form-control">
-            <option value="Tiếng Việt" selected>Tiếng Việt</option>
-            <option value="Tiếng Anh">Tiếng Anh</option>
-            <option value="Song ngữ Anh-Việt">Song ngữ Anh-Việt</option>
-          </select>
+          <label>Số câu hỏi</label>
+          <input type="number" id="ai-count" class="form-control" value="10" min="1" max="50">
         </div>
         <button class="btn btn-primary btn-full" onclick="generateAIPrompt()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>

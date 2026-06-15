@@ -797,32 +797,26 @@ function generateAIPrompt() {
   const topic = document.getElementById('ai-topic').value.trim();
   if (!topic) { toast('Vui lòng nhập chủ đề', 'error'); return; }
   const count = parseInt(document.getElementById('ai-count').value) || 10;
-  const difficulty = document.getElementById('ai-difficulty').value;
-  const lang = document.getElementById('ai-lang').value;
 
-  const prompt = `Bạn là chuyên gia về chủ đề "${topic}".
+  const prompt = `Tạo ${count} câu hỏi trắc nghiệm về chủ đề: "${topic}".
 
-Hãy tạo ${count} câu hỏi trắc nghiệm về "${topic}" với độ khó: ${difficulty}.
-
-Trả về JSON hợp lệ theo đúng format này (KHÔNG thêm bất kỳ text nào khác ngoài JSON):
+Trả về JSON hợp lệ theo đúng format này, KHÔNG thêm bất kỳ text nào khác ngoài JSON:
 
 [
   {
     "text": "Nội dung câu hỏi?",
     "options": ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
     "correct": 0,
-    "explanation": "Giải thích ngắn gọn tại sao đáp án này đúng và các đáp án kia sai"
+    "explanation": "Giải thích tại sao đáp án đúng và các đáp án kia sai"
   }
 ]
 
-Yêu cầu bắt buộc:
-- Mỗi câu có ĐÚNG 4 đáp án trong mảng "options"
-- "correct" là chỉ số (0, 1, 2 hoặc 3) của đáp án đúng
-- Các đáp án sai phải hợp lý và có tính đánh lừa cao
-- "explanation" giải thích rõ ràng tại sao đáp án đúng và tại sao các đáp án kia sai
-- Ngôn ngữ: ${lang}
-- Tạo đủ ${count} câu hỏi
-- Câu hỏi không được trùng lặp`;
+Quy tắc bắt buộc:
+- Mỗi câu có ĐÚNG 4 phần tử trong "options"
+- "correct" là số nguyên 0, 1, 2 hoặc 3 (chỉ số của đáp án đúng)
+- Các đáp án sai phải hợp lý, có tính đánh lừa
+- "explanation" giải thích ngắn gọn, rõ ràng
+- Tạo đủ ${count} câu, không trùng lặp`;
 
   document.getElementById('ai-prompt-text').value = prompt;
   document.getElementById('ai-setname').value = `${topic} — Trắc nghiệm`;
