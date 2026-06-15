@@ -248,6 +248,7 @@ function openEditor(setId) {
   document.getElementById('set-desc').value = set ? (set.description || '') : '';
   document.getElementById('set-timelimit').value = set ? (set.timeLimit || '') : '';
   renderEditorQuestions();
+  document.getElementById('q-count-label').textContent = _editingQuestions.length;
   showScreen('screen-editor');
 }
 
@@ -306,6 +307,7 @@ function buildQuestionCard(q, i) {
 function addQuestion() {
   _editingQuestions.push({ id: uid(), text: '', options: ['', '', '', ''], correct: 0, explanation: '' });
   renderEditorQuestions();
+  document.getElementById('q-count-label').textContent = _editingQuestions.length;
   setTimeout(() => {
     const cards = document.querySelectorAll('.question-card');
     if (cards.length) cards[cards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -313,8 +315,11 @@ function addQuestion() {
 }
 
 function removeQuestion(qid) {
-  _editingQuestions = _editingQuestions.filter(q => q.id !== qid);
-  renderEditorQuestions();
+  confirm('Xóa câu hỏi', 'Bạn có chắc muốn xóa câu hỏi này?', () => {
+    _editingQuestions = _editingQuestions.filter(q => q.id !== qid);
+    renderEditorQuestions();
+    document.getElementById('q-count-label').textContent = _editingQuestions.length;
+  });
 }
 
 function updateQuestion(qid, field, value) {
@@ -793,6 +798,7 @@ function importSetsFromData(arr) {
     imported++;
   });
   renderLibrary();
+  renderHome();
   if (imported > 0) toast(`Đã nhập ${imported} bộ đề`, 'success');
   if (skipped > 0) toast(`Bỏ qua ${skipped} bộ đề không hợp lệ`, 'error');
   return imported;
@@ -966,6 +972,24 @@ function importAIText() {
   document.getElementById('ai-prompt-text').value = '';
   document.getElementById('ai-topic').value = '';
   setTimeout(() => navTo('library'), 500);
+}
+
+/* ===== NAVIGATION ===== */
+function navTo(name) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const btn = document.querySelector(`[data-nav="${name}"]`);
+  if (btn) btn.classList.add('active');
+  if (name === 'home') { showScreen('screen-home'); renderHome(); }
+  else if (name === 'library') { showScreen('screen-library'); renderLibrary(); }
+  else if (name === 'history') { showScreen('screen-history'); renderHistory(); }
+}
+
+function confirmClearHistory() {
+  confirm('Xóa lịch sử', 'Toàn bộ lịch sử làm bài sẽ bị xóa. Bạn có chắc?', () => {
+    localStorage.removeItem('quiz_history');
+    renderHistory();
+    toast('Đã xóa lịch sử', 'success');
+  });
 }
 
 /* ===== BUTTON ANIMATIONS ===== */
