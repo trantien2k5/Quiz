@@ -480,13 +480,12 @@ textarea.form-control { resize: vertical; min-height: 72px; }
 .question-block {
   margin-bottom: 8px;
 }
-.q-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 8px;
+.q-num-tag {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--purple);
+  margin-right: 4px;
+  white-space: nowrap;
 }
 .question-block .q-text {
   font-size: 17px;

@@ -412,7 +412,7 @@ function startQuiz(setId, settings) {
     currentIdx: 0,
     timerInterval: null,
     timeLeft: set.timeLimit ? set.timeLimit * 60 : null,
-    mode: 'one-by-one'
+    mode: 'all'
   };
   _quizInProgress = true;
   renderQuiz();
@@ -461,8 +461,7 @@ function buildQuizQuestion(question, i) {
   const selected = _quiz.answers[i];
   return `
     <div class="question-block quiz-question-block" data-idx="${i}" id="quiz-q-${i}">
-      <div class="q-label">Câu ${i + 1} / ${_quiz.set.questions.length}</div>
-      <div class="q-text">${esc(question.text)}</div>
+      <div class="q-text"><span class="q-num-tag">Câu ${i + 1}.</span> ${esc(question.text)}</div>
       <div class="options-list">
         ${question.options.map((opt, oi) => `
           <button class="option-btn ${selected === oi ? 'selected' : ''}"
@@ -525,9 +524,6 @@ function selectAnswer(qIdx, optIdx) {
   const total = _quiz.set.questions.length;
   document.getElementById('quiz-progress-fill').style.width = (answered / total * 100) + '%';
   document.getElementById('quiz-counter').textContent = `${answered}/${total} đã trả lời`;
-  if (_quiz.mode === 'one-by-one' && _quiz.currentIdx < total - 1) {
-    setTimeout(() => { _quiz.currentIdx++; updateQuizVisibility(); renderQuizNav(); }, 400);
-  }
 }
 
 function quizNext() {
