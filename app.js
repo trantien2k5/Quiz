@@ -1,4 +1,4 @@
-const APP_V = 15;
+const APP_V = 16;
 
 /* ===== AUTO UPDATE CHECK ===== */
 function startUpdateCheck() {
@@ -852,7 +852,7 @@ function trendHtml(diff, unit = '%') {
 
 /* --- Level 1 --- */
 function renderHistory() {
-  showHistoryHome();
+  showHistoryHome(); // đóng sub-section nếu đang mở
   const history = getHistory();
   const streak = calcStreak();
   const totalTime = history.reduce((s, h) => s + (h.timeTaken || 0), 0);
@@ -891,13 +891,11 @@ function renderHistory() {
 }
 
 function showHistoryHome() {
-  document.getElementById('hst-home').style.display = '';
   ['overview', 'progress', 'mistakes', 'log'].forEach(n =>
     document.getElementById('hst-' + n).classList.remove('active'));
 }
 
 function showHistorySection(name) {
-  document.getElementById('hst-home').style.display = 'none';
   ['overview', 'progress', 'mistakes', 'log'].forEach(n =>
     document.getElementById('hst-' + n).classList.remove('active'));
   document.getElementById('hst-' + name).classList.add('active');
