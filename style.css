@@ -862,6 +862,20 @@ textarea.form-control { resize: vertical; min-height: 72px; }
 .import-drop-zone p { margin: 0; }
 .import-drop-zone p + p { margin-top: 4px; }
 
+/* ===== UPDATE BANNER ===== */
+#update-banner {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  background: var(--purple); color: #fff;
+  padding: 10px 16px; display: flex; align-items: center; justify-content: space-between;
+  font-size: 14px; font-weight: 500;
+  transform: translateY(-100%); transition: transform 0.3s ease;
+}
+#update-banner.show { transform: translateY(0); }
+#update-banner button {
+  background: rgba(255,255,255,0.25); border: none; color: #fff;
+  padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+
 /* ===== TOAST ===== */
 .toast-container,
 #toast-container {

@@ -1,3 +1,21 @@
+const APP_V = 14;
+
+/* ===== AUTO UPDATE CHECK ===== */
+function startUpdateCheck() {
+  setInterval(async () => {
+    try {
+      const res = await fetch('version.json?t=' + Date.now());
+      const { v } = await res.json();
+      if (v > APP_V) showUpdateBanner();
+    } catch (_) {}
+  }, 60000);
+}
+
+function showUpdateBanner() {
+  const el = document.getElementById('update-banner');
+  if (el) el.classList.add('show');
+}
+
 /* ===== UTILS ===== */
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2);
@@ -1071,6 +1089,7 @@ document.addEventListener('DOMContentLoaded', () => {
   showScreen('screen-home');
   renderHome();
   renderLibrary();
+  startUpdateCheck();
 
   document.getElementById('import-file-input').addEventListener('change', handleImportFile);
 
