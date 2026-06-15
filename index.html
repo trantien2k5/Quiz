@@ -103,36 +103,36 @@
     <div class="top-bar">
       <h1>✨ AI Tạo đề</h1>
     </div>
-    <div class="ai-screen">
-      <!-- Bước 1: Tạo & Copy -->
-      <div class="ai-half ai-top">
+    <div class="scroll-content">
+
+      <!-- BƯỚC 1 -->
+      <div class="ai-card">
+        <div class="ai-card-label">① Tạo prompt</div>
         <div class="ai-row">
-          <input type="text" id="ai-topic" class="form-control" placeholder="Nhập chủ đề...">
+          <input type="text" id="ai-topic" class="form-control" placeholder="Chủ đề...">
           <input type="number" id="ai-count" class="form-control ai-count-input" value="10" min="1" max="50">
         </div>
-        <button class="btn btn-primary btn-full ai-copy-btn" onclick="generateAndCopy(this)">
+        <button class="btn btn-primary btn-full" onclick="generateAndCopy(this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
           Tạo & Copy Prompt
         </button>
-        <p class="ai-hint">Paste vào ChatGPT / Claude → nhận JSON → dán xuống dưới</p>
+        <p class="ai-hint">Paste vào ChatGPT / Claude → lấy kết quả JSON</p>
       </div>
 
-      <div class="ai-divider">
-        <span>Dán kết quả từ AI vào đây</span>
-      </div>
-
-      <!-- Bước 2: Paste & Import -->
-      <div class="ai-half ai-bottom">
+      <!-- BƯỚC 2 -->
+      <div class="ai-card">
+        <div class="ai-card-label">② Dán kết quả JSON</div>
         <input type="text" id="ai-setname" class="form-control" placeholder="Tên bộ đề (tuỳ chọn)" style="margin-bottom:8px">
-        <textarea id="ai-result-text" class="form-control ai-result-textarea"
-          placeholder='[{"text":"...","options":["A","B","C","D"],"correct":0,"explanation":"..."}]'></textarea>
-        <button class="btn btn-primary btn-full" onclick="importAIText()" style="margin-top:8px">
+        <textarea id="ai-result-text" class="form-control" rows="6"
+          placeholder='Paste JSON từ AI vào đây...'
+          style="resize:vertical;font-size:13px;line-height:1.5"></textarea>
+        <button class="btn btn-primary btn-full" onclick="importAIText()" style="margin-top:10px">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Nhập vào bộ đề
         </button>
       </div>
+
     </div>
-    <!-- prompt ẩn để copy -->
     <textarea id="ai-prompt-text" style="position:absolute;left:-9999px;top:-9999px" readonly></textarea>
   </section>
 
