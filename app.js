@@ -812,6 +812,9 @@ function importSetsFromJSON(jsonStr) {
   hideImportModal();
 }
 
+function showAICreate() { document.getElementById('modal-ai-create').classList.add('active'); }
+function hideAICreate() { document.getElementById('modal-ai-create').classList.remove('active'); }
+
 function showImportModal() { document.getElementById('import-overlay').classList.add('active'); }
 function hideImportModal() {
   document.getElementById('import-overlay').classList.remove('active');
@@ -970,7 +973,8 @@ function importAIText() {
   document.getElementById('ai-result-text').value = '';
   document.getElementById('ai-prompt-text').value = '';
   document.getElementById('ai-topic').value = '';
-  setTimeout(() => navTo('library'), 500);
+  hideAICreate();
+  renderLibrary();
 }
 
 /* ===== NAVIGATION ===== */

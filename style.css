@@ -274,8 +274,29 @@ textarea.form-control { resize: vertical; min-height: 72px; }
 .badge-orange { background: var(--orange-light); color: var(--orange); }
 .badge-gray { background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); }
 
+/* ===== FAB ===== */
+.fab {
+  position: absolute;
+  bottom: calc(var(--nav-h) + 16px);
+  right: 16px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--purple);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(99,102,241,0.4);
+  z-index: 20;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.fab:active { transform: scale(0.93); box-shadow: 0 2px 8px rgba(99,102,241,0.3); }
+.fab svg { width: 24px; height: 24px; }
+
 /* ===== HOME SCREEN ===== */
-.home-create-btn { margin-bottom: 20px; }
 
 .section-row {
   display: flex;

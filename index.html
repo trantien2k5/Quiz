@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=8">
+  <link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
 <nav id="bottom-nav">
@@ -94,8 +94,19 @@
       </button>
     </div>
     <div class="scroll-content">
+      <div id="library-set-list" class="set-list"></div>
+    </div>
+    <button class="fab" onclick="showAICreate()" title="Tạo đề AI">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <textarea id="ai-prompt-text" style="position:absolute;left:-9999px;top:-9999px" readonly></textarea>
+  </section>
 
-      <div class="section-label">✨ Tạo đề AI</div>
+  <!-- ===== MODAL AI CREATE ===== -->
+  <div id="modal-ai-create" class="modal-overlay" onclick="if(event.target===this)hideAICreate()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">✨ Tạo đề AI</div>
       <div class="ai-card">
         <div class="ai-card-label">① Tạo prompt</div>
         <input type="text" id="ai-topic" class="form-control" placeholder="Nhập chủ đề và số câu, ví dụ: TOEIC 20 câu...">
@@ -105,7 +116,7 @@
         </button>
         <p class="ai-hint">Paste vào ChatGPT / Claude → lấy kết quả JSON</p>
       </div>
-      <div class="ai-card">
+      <div class="ai-card" style="margin-bottom:0">
         <div class="ai-card-label">② Dán kết quả JSON</div>
         <textarea id="ai-result-text" class="form-control" rows="5"
           placeholder='Paste JSON từ AI vào đây...'
@@ -115,15 +126,8 @@
           Nhập vào bộ đề
         </button>
       </div>
-
-      <div class="section-row" style="margin-top:8px">
-        <div class="section-label" style="margin-bottom:0">📚 Kho đề đã tạo</div>
-      </div>
-      <div id="library-set-list" class="set-list"></div>
-
     </div>
-    <textarea id="ai-prompt-text" style="position:absolute;left:-9999px;top:-9999px" readonly></textarea>
-  </section>
+  </div>
 
   <!-- ===== QUIZ SCREEN ===== -->
   <section id="screen-quiz">
@@ -294,6 +298,6 @@
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="app.js?v=8"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>
