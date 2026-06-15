@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=11">
+  <link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
 <nav id="bottom-nav">
@@ -161,44 +161,74 @@
 
   <!-- ===== RESULT SCREEN ===== -->
   <section id="screen-result">
-    <div class="top-bar">
-      <h1>Kết quả bài thi</h1>
+
+    <!-- VIEW 1: Tóm tắt điểm -->
+    <div id="result-summary-view">
+      <div class="top-bar">
+        <h1>Kết quả</h1>
+      </div>
+      <div class="scroll-content">
+        <div class="result-hero">
+          <div id="result-emoji" class="result-emoji">🎉</div>
+          <div id="result-title" class="result-title">Làm tốt lắm!</div>
+          <div id="result-subtitle" class="result-subtitle"></div>
+        </div>
+        <div class="result-score-card">
+          <div>
+            <div class="result-stat-label">Đúng</div>
+            <div id="result-score-correct" class="result-stat-value green">0</div>
+          </div>
+          <div>
+            <div class="result-stat-label">Sai</div>
+            <div id="result-score-wrong" class="result-stat-value red">0</div>
+          </div>
+          <div>
+            <div class="result-stat-label">Điểm</div>
+            <div id="result-score-pct" class="result-stat-value purple">0%</div>
+          </div>
+        </div>
+        <div class="result-actions">
+          <button class="btn btn-primary btn-full" onclick="showResultDetail()">
+            📋 Xem đáp án chi tiết
+          </button>
+          <button id="result-retry-btn" class="btn btn-secondary btn-full">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+            Làm lại đề
+          </button>
+          <button id="result-home-btn" class="btn btn-outline btn-full">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Về trang chủ
+          </button>
+        </div>
+      </div>
     </div>
-    <div class="scroll-content" style="padding:0;padding-bottom:16px">
-      <div class="result-hero">
-        <div id="result-emoji" class="result-emoji">🎉</div>
-        <div id="result-title" class="result-title">Làm tốt lắm!</div>
-        <div id="result-subtitle" class="result-subtitle"></div>
-      </div>
-      <div class="result-score-card">
-        <div>
-          <div class="result-stat-label">Đúng</div>
-          <div id="result-score-correct" class="result-stat-value green">0</div>
-        </div>
-        <div>
-          <div class="result-stat-label">Sai</div>
-          <div id="result-score-wrong" class="result-stat-value red">0</div>
-        </div>
-        <div>
-          <div class="result-stat-label">Điểm</div>
-          <div id="result-score-pct" class="result-stat-value purple">0%</div>
-        </div>
-      </div>
-      <div class="result-actions">
-        <button id="result-retry-btn" class="btn btn-primary btn-full">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
-          Làm lại
+
+    <!-- VIEW 2: Review chi tiết -->
+    <div id="result-detail-view" style="display:none;flex-direction:column;position:absolute;inset:0;background:var(--bg)">
+      <div class="top-bar">
+        <button class="btn-icon" onclick="showResultSummary()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
-        <button id="result-home-btn" class="btn btn-secondary btn-full">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          Về trang chủ
+        <h1>Xem lại đáp án</h1>
+      </div>
+      <div class="review-filter-bar">
+        <button class="filter-btn active" data-filter="all" onclick="filterReview('all')">Tất cả</button>
+        <button class="filter-btn" data-filter="correct" onclick="filterReview('correct')">✅ Đúng</button>
+        <button class="filter-btn" data-filter="wrong" onclick="filterReview('wrong')">❌ Sai</button>
+      </div>
+      <div class="scroll-content" style="padding-bottom:80px">
+        <div id="review-list" class="review-list"></div>
+      </div>
+      <div class="result-detail-footer">
+        <button class="btn btn-danger" id="result-retry-wrong-btn" onclick="retryWrongQuestions()">
+          Làm lại câu sai
+        </button>
+        <button class="btn btn-secondary" id="result-retry-btn2">
+          Làm lại đề
         </button>
       </div>
-      <div style="padding:0 16px 8px">
-        <div class="section-label">Xem lại câu trả lời</div>
-      </div>
-      <div id="review-list" class="review-list"></div>
     </div>
+
   </section>
 
   <!-- ===== HISTORY SCREEN ===== -->
@@ -301,6 +331,6 @@
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="app.js?v=11"></script>
+<script src="app.js?v=12"></script>
 </body>
 </html>
