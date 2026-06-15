@@ -793,12 +793,8 @@ function handleImportFile(e) {
 }
 
 /* ===== AI CREATE ===== */
-function generateAIPrompt() {
-  const topic = document.getElementById('ai-topic').value.trim();
-  if (!topic) { toast('Vui lòng nhập chủ đề', 'error'); return; }
-  const count = parseInt(document.getElementById('ai-count').value) || 10;
-
-  const prompt = `Tạo ${count} câu hỏi trắc nghiệm về chủ đề: "${topic}".
+function buildPromptText(topic, count) {
+  return `Tạo ${count} câu hỏi trắc nghiệm về chủ đề: "${topic}".
 
 Trả về JSON hợp lệ theo đúng format này, KHÔNG thêm bất kỳ text nào khác ngoài JSON:
 
@@ -817,24 +813,26 @@ Quy tắc bắt buộc:
 - Các đáp án sai phải hợp lý, có tính đánh lừa
 - "explanation" giải thích ngắn gọn, rõ ràng
 - Tạo đủ ${count} câu, không trùng lặp`;
-
-  document.getElementById('ai-prompt-text').value = prompt;
-  document.getElementById('ai-setname').value = `${topic} — Trắc nghiệm`;
-  document.getElementById('ai-prompt-section').classList.remove('hidden');
-  document.getElementById('ai-prompt-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  const btn = document.querySelector('[onclick="generateAIPrompt()"]');
-  if (btn) flashSuccess(btn, 'Đã tạo prompt!', 1500);
 }
 
-function copyAIPrompt() {
-  const ta = document.getElementById('ai-prompt-text');
-  if (!ta || !ta.value) return;
-  const btn = document.querySelector('[onclick="copyAIPrompt()"]');
-  const doFlash = () => { if (btn) flashSuccess(btn, 'Đã copy!'); else toast('Đã copy prompt!', 'success'); };
+function generateAndCopy(btn) {
+  const topic = document.getElementById('ai-topic').value.trim();
+  if (!topic) { toast('Vui lòng nhập chủ đề', 'error'); return; }
+  const count = parseInt(document.getElementById('ai-count').value) || 10;
+  const text = buildPromptText(topic, count);
 
-  // Thử clipboard API trước, fallback execCommand
+  // Ghi vào textarea ẩn
+  const ta = document.getElementById('ai-prompt-text');
+  ta.value = text;
+
+  // Tự điền tên bộ đề
+  const nameEl = document.getElementById('ai-setname');
+  if (!nameEl.value.trim()) nameEl.value = `${topic} — Trắc nghiệm`;
+
+  const doFlash = () => flashSuccess(btn, 'Đã copy! Paste vào AI →', 2000);
+
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(ta.value).then(doFlash).catch(() => fallbackCopy(ta, doFlash));
+    navigator.clipboard.writeText(text).then(doFlash).catch(() => fallbackCopy(ta, doFlash));
   } else {
     fallbackCopy(ta, doFlash);
   }
@@ -844,12 +842,8 @@ function fallbackCopy(ta, cb) {
   ta.removeAttribute('readonly');
   ta.select();
   ta.setSelectionRange(0, 99999);
-  try {
-    document.execCommand('copy');
-    cb();
-  } catch {
-    toast('Không copy được, hãy bôi đen và copy thủ công', 'error');
-  }
+  try { document.execCommand('copy'); cb(); }
+  catch { toast('Không copy được — hãy copy thủ công', 'error'); }
   ta.setAttribute('readonly', '');
 }
 

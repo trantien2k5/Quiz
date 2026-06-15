@@ -103,64 +103,37 @@
     <div class="top-bar">
       <h1>✨ AI Tạo đề</h1>
     </div>
-    <div class="scroll-content">
-      <div class="ai-intro">
-        <p>Nhập chủ đề → AI tạo prompt → copy sang ChatGPT/Claude → paste kết quả về đây.</p>
-      </div>
-
-      <div class="ai-form-card">
-        <div class="form-group">
-          <label>Chủ đề <span>*</span></label>
-          <input type="text" id="ai-topic" class="form-control" placeholder="Ví dụ: Lịch sử Việt Nam, Sinh học lớp 10, TOEIC...">
+    <div class="ai-screen">
+      <!-- Bước 1: Tạo & Copy -->
+      <div class="ai-half ai-top">
+        <div class="ai-row">
+          <input type="text" id="ai-topic" class="form-control" placeholder="Nhập chủ đề...">
+          <input type="number" id="ai-count" class="form-control ai-count-input" value="10" min="1" max="50">
         </div>
-        <div class="form-group">
-          <label>Số câu hỏi</label>
-          <input type="number" id="ai-count" class="form-control" value="10" min="1" max="50">
-        </div>
-        <button class="btn btn-primary btn-full" onclick="generateAIPrompt()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-          Tạo Prompt
+        <button class="btn btn-primary btn-full ai-copy-btn" onclick="generateAndCopy(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Tạo & Copy Prompt
         </button>
+        <p class="ai-hint">Paste vào ChatGPT / Claude → nhận JSON → dán xuống dưới</p>
       </div>
 
-      <div id="ai-prompt-section" class="ai-prompt-section hidden">
-        <div class="ai-step-label">
-          <span class="step-badge">1</span> Copy prompt bên dưới → paste vào ChatGPT hoặc Claude
-        </div>
-        <div class="ai-prompt-box">
-          <textarea id="ai-prompt-text" class="ai-prompt-textarea" readonly rows="8"></textarea>
-          <button class="btn btn-primary btn-full" onclick="copyAIPrompt()" style="margin-top:10px">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-            Copy Prompt
-          </button>
-        </div>
+      <div class="ai-divider">
+        <span>Dán kết quả từ AI vào đây</span>
+      </div>
 
-        <div class="ai-step-label" style="margin-top:20px">
-          <span class="step-badge">2</span> Paste kết quả JSON từ AI vào đây
-        </div>
-        <div class="form-group">
-          <input type="text" id="ai-setname" class="form-control" placeholder="Tên bộ đề (tuỳ chọn)">
-        </div>
-        <textarea id="ai-result-text" class="ai-result-textarea form-control" rows="8"
-          placeholder='Paste JSON từ AI vào đây...&#10;&#10;Ví dụ:&#10;[{"text":"Câu hỏi?","options":["A","B","C","D"],"correct":0,"explanation":"Giải thích..."}]'></textarea>
-        <button class="btn btn-primary btn-full" onclick="importAIText()" style="margin-top:10px">
+      <!-- Bước 2: Paste & Import -->
+      <div class="ai-half ai-bottom">
+        <input type="text" id="ai-setname" class="form-control" placeholder="Tên bộ đề (tuỳ chọn)" style="margin-bottom:8px">
+        <textarea id="ai-result-text" class="form-control ai-result-textarea"
+          placeholder='[{"text":"...","options":["A","B","C","D"],"correct":0,"explanation":"..."}]'></textarea>
+        <button class="btn btn-primary btn-full" onclick="importAIText()" style="margin-top:8px">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Nhập vào bộ đề
         </button>
       </div>
-
-      <div class="ai-format-hint">
-        <div class="section-label">Format JSON mà AI cần trả về</div>
-        <pre class="ai-json-sample">[
-  {
-    "text": "Nội dung câu hỏi?",
-    "options": ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
-    "correct": 0,
-    "explanation": "Giải thích tại sao đáp án đúng..."
-  }
-]</pre>
-      </div>
     </div>
+    <!-- prompt ẩn để copy -->
+    <textarea id="ai-prompt-text" style="position:absolute;left:-9999px;top:-9999px" readonly></textarea>
   </section>
 
   <!-- ===== QUIZ SCREEN ===== -->
