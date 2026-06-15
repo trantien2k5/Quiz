@@ -492,6 +492,7 @@ function buildQuizQuestion(question, i) {
   const selected = _quiz.answers[i];
   return `
     <div class="question-block quiz-question-block" data-idx="${i}" id="quiz-q-${i}">
+      <div class="q-num-label">Câu ${i + 1}</div>
       <div class="q-text">${esc(question.text)}</div>
       <div class="options-list">
         ${question.options.map((opt, oi) => `

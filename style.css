@@ -559,6 +559,14 @@ textarea.form-control { resize: vertical; min-height: 72px; }
 .question-block {
   margin-bottom: 8px;
 }
+.q-num-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--purple);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
 .q-num-tag {
   font-size: 13px;
   font-weight: 700;
