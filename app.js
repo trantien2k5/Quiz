@@ -831,8 +831,8 @@ function handleImportFile(e) {
 }
 
 /* ===== AI CREATE ===== */
-function buildPromptText(topic) {
-  return `Tạo câu hỏi trắc nghiệm về chủ đề: "${topic}".
+function buildPromptText(topic, count) {
+  return `Tạo ${count} câu hỏi trắc nghiệm về chủ đề: "${topic}".
 
 Trả về JSON hợp lệ theo đúng format này, KHÔNG thêm bất kỳ text nào khác ngoài JSON:
 
@@ -850,13 +850,14 @@ Quy tắc bắt buộc:
 - "correct" là số nguyên 0, 1, 2 hoặc 3 (chỉ số của đáp án đúng)
 - Các đáp án sai phải hợp lý, có tính đánh lừa
 - "explanation" giải thích ngắn gọn, rõ ràng
-- Không trùng lặp câu hỏi`;
+- Tạo đủ ${count} câu, không trùng lặp`;
 }
 
 function generateAndCopy() {
   const topic = document.getElementById('ai-topic').value.trim();
   if (!topic) { toast('Vui lòng nhập chủ đề', 'error'); return; }
-  const text = buildPromptText(topic);
+  const count = parseInt(document.getElementById('ai-count').value) || 10;
+  const text = buildPromptText(topic, count);
 
   const ta = document.getElementById('ai-prompt-text');
   ta.value = text;

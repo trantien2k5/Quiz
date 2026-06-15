@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=9">
+  <link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
 <nav id="bottom-nav">
@@ -109,7 +109,10 @@
       <div class="modal-title">✨ Tạo đề AI</div>
       <div class="ai-card">
         <div class="ai-card-label">① Tạo prompt</div>
-        <input type="text" id="ai-topic" class="form-control" placeholder="Nhập chủ đề và số câu, ví dụ: TOEIC 20 câu...">
+        <div class="ai-row">
+          <input type="text" id="ai-topic" class="form-control" placeholder="Chủ đề...">
+          <input type="number" id="ai-count" class="form-control ai-count-input" value="10" min="1" max="50">
+        </div>
         <button class="btn btn-primary btn-full" onclick="generateAndCopy()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
           Tạo & Copy Prompt
@@ -298,6 +301,6 @@
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="app.js?v=9"></script>
+<script src="app.js?v=10"></script>
 </body>
 </html>
