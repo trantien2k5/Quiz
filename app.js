@@ -822,17 +822,19 @@ Quy tắc bắt buộc:
   document.getElementById('ai-setname').value = `${topic} — Trắc nghiệm`;
   document.getElementById('ai-prompt-section').classList.remove('hidden');
   document.getElementById('ai-prompt-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const btn = document.querySelector('[onclick="generateAIPrompt()"]');
+  if (btn) flashSuccess(btn, 'Đã tạo prompt!', 1500);
 }
 
 function copyAIPrompt() {
   const text = document.getElementById('ai-prompt-text').value;
   if (!text) return;
-  navigator.clipboard.writeText(text).then(() => {
-    toast('Đã copy prompt! Paste vào ChatGPT hoặc Claude.', 'success');
-  }).catch(() => {
+  const btn = document.querySelector('[onclick="copyAIPrompt()"]');
+  const doFlash = () => { if (btn) flashSuccess(btn, 'Đã copy!'); };
+  navigator.clipboard.writeText(text).then(doFlash).catch(() => {
     document.getElementById('ai-prompt-text').select();
     document.execCommand('copy');
-    toast('Đã copy prompt!', 'success');
+    doFlash();
   });
 }
 
@@ -891,6 +893,8 @@ function importAIText() {
   };
   saveSet(newSet);
   toast(`✅ Đã nhập ${questions.length} câu hỏi vào bộ đề "${setName}"`, 'success');
+  const btn = document.querySelector('[onclick="importAIText()"]');
+  if (btn) flashSuccess(btn, `Đã nhập ${questions.length} câu!`, 1500);
 
   // Reset form
   document.getElementById('ai-result-text').value = '';
@@ -902,6 +906,31 @@ function importAIText() {
   setTimeout(() => {
     document.querySelector('[data-nav="home"]').click();
   }, 500);
+}
+
+/* ===== BUTTON ANIMATIONS ===== */
+function addRipple(btn, e) {
+  const rect = btn.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height) * 2;
+  const x = (e.clientX - rect.left) - size / 2;
+  const y = (e.clientY - rect.top) - size / 2;
+  const ripple = document.createElement('span');
+  ripple.className = 'ripple';
+  ripple.style.cssText = `width:${size}px;height:${size}px;left:${x}px;top:${y}px`;
+  btn.appendChild(ripple);
+  ripple.addEventListener('animationend', () => ripple.remove());
+}
+
+function flashSuccess(btn, successText, duration = 1800) {
+  const orig = btn.innerHTML;
+  btn.classList.add('btn-success-flash');
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px"><polyline points="20 6 9 17 4 12"/></svg> ${successText}`;
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.classList.remove('btn-success-flash');
+    btn.innerHTML = orig;
+    btn.disabled = false;
+  }, duration);
 }
 
 /* ===== INIT ===== */
@@ -922,6 +951,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const reader = new FileReader();
     reader.onload = ev => importSetsFromJSON(ev.target.result);
     reader.readAsText(file);
+  });
+
+  // Ripple effect cho tất cả .btn (kể cả các nút được render động)
+  document.addEventListener('pointerdown', e => {
+    const btn = e.target.closest('.btn');
+    if (btn && !btn.disabled) addRipple(btn, e);
   });
 
   window.addEventListener('beforeunload', e => {

@@ -141,23 +141,53 @@ section.active {
   border-radius: var(--radius-sm);
   font-size: 14px;
   font-weight: 600;
-  transition: all 0.15s;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s;
   min-height: 44px;
   white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
+.btn:active:not(:disabled) { transform: scale(0.95); }
+
 .btn-primary { background: var(--purple); color: #fff; }
-.btn-primary:hover { background: var(--purple-d); }
-.btn-primary:active { transform: scale(0.97); }
+.btn-primary:hover:not(:disabled) { background: var(--purple-d); box-shadow: 0 4px 12px rgba(99,102,241,0.35); }
+.btn-primary:active:not(:disabled) { background: var(--purple-d); box-shadow: none; }
+
 .btn-secondary { background: var(--purple-light); color: var(--purple); }
-.btn-secondary:hover { background: #E0E7FF; }
+.btn-secondary:hover:not(:disabled) { background: #E0E7FF; }
+
 .btn-outline {
   background: transparent;
   color: var(--text);
   border: 1.5px solid var(--border);
 }
-.btn-outline:hover { border-color: var(--purple); color: var(--purple); }
+.btn-outline:hover:not(:disabled) { border-color: var(--purple); color: var(--purple); background: var(--purple-light); }
+
 .btn-danger { background: var(--red-light); color: var(--red); }
-.btn-danger:hover { background: #FECACA; }
+.btn-danger:hover:not(:disabled) { background: #FECACA; }
+
+/* Trạng thái thành công (flash xanh) */
+.btn.btn-success-flash {
+  background: var(--green) !important;
+  color: #fff !important;
+  transform: scale(1.02);
+}
+
+/* Ripple */
+.btn .ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.35);
+  transform: scale(0);
+  animation: ripple-expand 0.5s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes ripple-expand {
+  to { transform: scale(4); opacity: 0; }
+}
+
 .btn-icon {
   padding: 8px;
   border-radius: var(--radius-xs);
@@ -167,9 +197,29 @@ section.active {
   align-items: center;
   justify-content: center;
   color: var(--text-muted);
+  position: relative;
+  overflow: hidden;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
 }
 .btn-icon:hover { background: var(--bg); color: var(--text); }
+.btn-icon:active { transform: scale(0.88); background: var(--border); }
 .btn-icon svg { width: 20px; height: 20px; }
+
+/* Nav item tap feedback */
+.nav-item { transition: color 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+.nav-item:active { transform: scale(0.88); }
+
+/* Option button trong quiz */
+.option-btn { transition: border-color 0.15s, background 0.15s, transform 0.12s; }
+.option-btn:active:not(.selected) { transform: scale(0.97); }
+.option-btn.selected { animation: option-pop 0.2s ease; }
+@keyframes option-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
 .btn-full { width: 100%; }
 .btn-sm { padding: 7px 14px; font-size: 13px; min-height: 36px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
