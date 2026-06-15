@@ -148,6 +148,7 @@ section.active {
   overflow: hidden;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 .btn:active:not(:disabled) { transform: scale(0.95); }
 

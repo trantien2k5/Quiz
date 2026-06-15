@@ -827,15 +827,30 @@ Quy tắc bắt buộc:
 }
 
 function copyAIPrompt() {
-  const text = document.getElementById('ai-prompt-text').value;
-  if (!text) return;
+  const ta = document.getElementById('ai-prompt-text');
+  if (!ta || !ta.value) return;
   const btn = document.querySelector('[onclick="copyAIPrompt()"]');
-  const doFlash = () => { if (btn) flashSuccess(btn, 'Đã copy!'); };
-  navigator.clipboard.writeText(text).then(doFlash).catch(() => {
-    document.getElementById('ai-prompt-text').select();
+  const doFlash = () => { if (btn) flashSuccess(btn, 'Đã copy!'); else toast('Đã copy prompt!', 'success'); };
+
+  // Thử clipboard API trước, fallback execCommand
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(ta.value).then(doFlash).catch(() => fallbackCopy(ta, doFlash));
+  } else {
+    fallbackCopy(ta, doFlash);
+  }
+}
+
+function fallbackCopy(ta, cb) {
+  ta.removeAttribute('readonly');
+  ta.select();
+  ta.setSelectionRange(0, 99999);
+  try {
     document.execCommand('copy');
-    doFlash();
-  });
+    cb();
+  } catch {
+    toast('Không copy được, hãy bôi đen và copy thủ công', 'error');
+  }
+  ta.setAttribute('readonly', '');
 }
 
 function importAIText() {
@@ -953,11 +968,11 @@ document.addEventListener('DOMContentLoaded', () => {
     reader.readAsText(file);
   });
 
-  // Ripple effect cho tất cả .btn (kể cả các nút được render động)
-  document.addEventListener('pointerdown', e => {
+  // Ripple effect — dùng click để không chặn gesture trên mobile
+  document.addEventListener('click', e => {
     const btn = e.target.closest('.btn');
     if (btn && !btn.disabled) addRipple(btn, e);
-  });
+  }, true);
 
   window.addEventListener('beforeunload', e => {
     if (_quizInProgress) {
