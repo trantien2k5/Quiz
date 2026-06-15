@@ -846,22 +846,34 @@ function fallbackCopy(ta, ok, fail) {
   if (success) ok(); else if (fail) fail();
 }
 
+function normalizeJSON(raw) {
+  return raw
+    .replace(/[“”„‟″‶]/g, '"') // smart double quotes → "
+    .replace(/[‘’‚‛′‵]/g, "'") // smart single quotes → '
+    .replace(/[–—]/g, '-')   // em/en dash
+    .replace(/[ ]/g, ' ')          // non-breaking space
+    .trim();
+}
+
 function importAIText() {
   const raw = document.getElementById('ai-result-text').value.trim();
   if (!raw) { toast('Vui lòng paste kết quả JSON từ AI', 'error'); return; }
 
+  const cleaned = normalizeJSON(raw);
   let data;
   try {
-    // Thử parse thẳng; nếu lỗi thì tìm JSON trong text
     try {
-      data = JSON.parse(raw);
+      data = JSON.parse(cleaned);
     } catch {
-      const match = raw.match(/\[[\s\S]*\]/);
+      // Tìm mảng [...] hoặc object {...} trong text
+      const matchArr = cleaned.match(/\[[\s\S]*\]/);
+      const matchObj = cleaned.match(/\{[\s\S]*\}/);
+      const match = matchArr || matchObj;
       if (!match) throw new Error('no json');
       data = JSON.parse(match[0]);
     }
   } catch {
-    toast('Không tìm thấy JSON hợp lệ. Hãy copy đúng phần JSON từ AI.', 'error');
+    toast('Không parse được JSON — thử copy lại từ AI', 'error');
     return;
   }
 
