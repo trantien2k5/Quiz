@@ -1,4 +1,4 @@
-const APP_V = 16;
+const APP_V = 17;
 
 /* ===== AUTO UPDATE CHECK ===== */
 function startUpdateCheck() {
@@ -1206,25 +1206,43 @@ function handleImportFile(e) {
 
 /* ===== AI CREATE ===== */
 function buildPromptText(topic, count) {
-  return `Tạo ${count} câu hỏi trắc nghiệm về chủ đề: "${topic}".
+  return `Tạo ${count} câu hỏi trắc nghiệm chất lượng cao về: "${topic}".
 
-Trả về JSON hợp lệ theo đúng format này, KHÔNG thêm bất kỳ text nào khác ngoài JSON:
+CHỈ trả về JSON thuần, không markdown, không giải thích thêm:
 
 [
   {
-    "text": "Nội dung câu hỏi?",
+    "text": "Câu hỏi rõ ràng, hỏi đúng 1 khái niệm?",
     "options": ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
     "correct": 0,
-    "explanation": "Giải thích tại sao đáp án đúng và các đáp án kia sai"
+    "explanation": "Đáp án A đúng vì [lý do cụ thể]. B sai vì [lý do]. C sai vì [lý do]. D sai vì [lý do]."
   }
 ]
 
-Quy tắc bắt buộc:
-- Mỗi câu có ĐÚNG 4 phần tử trong "options"
-- "correct" là số nguyên 0, 1, 2 hoặc 3 (chỉ số của đáp án đúng)
-- Các đáp án sai phải hợp lý, có tính đánh lừa
-- "explanation" giải thích ngắn gọn, rõ ràng
-- Tạo đủ ${count} câu, không trùng lặp`;
+== YÊU CẦU CHẤT LƯỢNG ==
+
+CÂU HỎI:
+- Hỏi đúng 1 khái niệm cụ thể, không mơ hồ, không có 2 cách hiểu
+- Đa dạng loại: định nghĩa, ứng dụng thực tế, so sánh, phân tích, tìm lỗi sai
+- Phân bố độ khó: ~30% dễ, ~50% trung bình, ~20% khó
+- Không trùng nội dung giữa các câu
+
+ĐÁP ÁN:
+- Luôn đúng 4 phần tử trong "options", "correct" là index 0/1/2/3
+- Đáp án đúng phải hoàn toàn chính xác, không có ngoại lệ
+- Đáp án sai phải hợp lý — người chưa học dễ nhầm, nhưng người học kỹ sẽ phân biệt được
+- Tránh đáp án sai quá hiển nhiên hoặc vô nghĩa
+- Phân bố vị trí đáp án đúng đều ở A/B/C/D, không dồn vào 1 vị trí
+
+GIẢI THÍCH (explanation) — quan trọng nhất:
+- Giải thích TẠI SAO đáp án đúng là đúng: nêu nguyên lý/quy tắc/lý do cốt lõi
+- Chỉ ra lỗi sai của từng đáp án sai: người học hay nhầm điều gì
+- Thêm ví dụ cụ thể hoặc công thức nếu giúp dễ nhớ hơn
+- Dùng ngôn ngữ đơn giản, dễ hiểu, như thầy cô giải thích cho học sinh
+- Dài 2-5 câu — đủ để người học hiểu sâu và nhớ lâu
+- QUAN TRỌNG: Trong explanation chỉ dùng dấu nháy đơn (') không dùng dấu nháy kép (") để tránh lỗi JSON
+
+Tạo đúng ${count} câu, không thiếu, không thừa.`;
 }
 
 function generateAndCopy() {
