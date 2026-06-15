@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=14">
+  <link rel="stylesheet" href="style.css?v=15">
 </head>
 <body>
 <div id="update-banner">
@@ -114,7 +114,14 @@
       <label class="form-label">Chủ đề &amp; số câu</label>
       <div class="ai-row" style="margin-bottom:10px">
         <input type="text" id="ai-topic" class="form-control" placeholder="Ví dụ: TOEIC grammar, Lịch sử VN...">
-        <input type="number" id="ai-count" class="form-control ai-count-input" value="10" min="1" max="50">
+        <select id="ai-count" class="form-control ai-count-select">
+          <option value="5">5 câu</option>
+          <option value="10" selected>10 câu</option>
+          <option value="15">15 câu</option>
+          <option value="20">20 câu</option>
+          <option value="30">30 câu</option>
+          <option value="50">50 câu</option>
+        </select>
       </div>
       <button class="btn btn-primary btn-full" onclick="generateAndCopy()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
@@ -233,17 +240,65 @@
 
   <!-- ===== HISTORY SCREEN ===== -->
   <section id="screen-history">
-    <div class="top-bar">
-      <h1>📊 Kết quả</h1>
-      <button class="btn-icon" onclick="confirmClearHistory()" title="Xoá lịch sử">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-      </button>
+
+    <!-- CẤP 1: Trang chủ kết quả -->
+    <div id="hst-home">
+      <div class="top-bar">
+        <h1>📊 Kết quả</h1>
+        <button class="btn-icon" onclick="confirmClearHistory()" title="Xoá lịch sử">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
+      </div>
+      <div class="scroll-content">
+        <div id="hst-quick-strip" class="hst-quick-strip"></div>
+        <div id="hst-nav-grid" class="hst-nav-grid"></div>
+      </div>
     </div>
-    <div class="scroll-content">
-      <div id="history-stats"></div>
-      <div class="section-label">Lịch sử làm bài</div>
-      <div id="history-content" class="history-content"></div>
+
+    <!-- CẤP 2: Tổng quan -->
+    <div id="hst-overview" class="hst-sub">
+      <div class="top-bar">
+        <button class="btn-icon" onclick="showHistoryHome()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h1>Tổng quan</h1>
+      </div>
+      <div class="scroll-content" id="hst-overview-body"></div>
     </div>
+
+    <!-- CẤP 2: Tiến bộ -->
+    <div id="hst-progress" class="hst-sub">
+      <div class="top-bar">
+        <button class="btn-icon" onclick="showHistoryHome()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h1>Tiến bộ</h1>
+      </div>
+      <div class="scroll-content" id="hst-progress-body"></div>
+    </div>
+
+    <!-- CẤP 2: Lỗi sai -->
+    <div id="hst-mistakes" class="hst-sub">
+      <div class="top-bar">
+        <button class="btn-icon" onclick="showHistoryHome()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h1>Lỗi sai</h1>
+      </div>
+      <div class="scroll-content" id="hst-mistakes-body"></div>
+    </div>
+
+    <!-- CẤP 2: Lịch sử -->
+    <div id="hst-log" class="hst-sub">
+      <div class="top-bar">
+        <button class="btn-icon" onclick="showHistoryHome()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h1>Lịch sử</h1>
+      </div>
+      <div class="scroll-content" id="hst-log-body"></div>
+    </div>
+
   </section>
 
   <!-- ===== MODALS ===== -->
@@ -331,6 +386,6 @@
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="app.js?v=14"></script>
+<script src="app.js?v=15"></script>
 </body>
 </html>
