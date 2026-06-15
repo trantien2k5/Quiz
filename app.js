@@ -461,7 +461,7 @@ function buildQuizQuestion(question, i) {
   const selected = _quiz.answers[i];
   return `
     <div class="question-block quiz-question-block" data-idx="${i}" id="quiz-q-${i}">
-      <div class="q-text"><span class="q-num-tag">Câu ${i + 1}.</span> ${esc(question.text)}</div>
+      <div class="q-text">${esc(question.text)}</div>
       <div class="options-list">
         ${question.options.map((opt, oi) => `
           <button class="option-btn ${selected === oi ? 'selected' : ''}"
@@ -820,9 +820,6 @@ function generateAndCopy() {
   const ta = document.getElementById('ai-prompt-text');
   ta.value = text;
 
-  const nameEl = document.getElementById('ai-setname');
-  if (!nameEl.value.trim()) nameEl.value = `${topic} — Trắc nghiệm`;
-
   const ok = () => toast('✅ Đã copy! Paste vào ChatGPT / Claude', 'success');
   const fail = () => toast('❌ Không copy được — thử lại', 'error');
 
@@ -900,9 +897,7 @@ function importAIText() {
   const arr = Array.isArray(data) ? data : [data];
 
   // Lấy tên bộ đề từ input hoặc topic
-  const setName = document.getElementById('ai-setname').value.trim()
-    || document.getElementById('ai-topic').value.trim()
-    || 'Bộ đề AI';
+  const setName = document.getElementById('ai-topic').value.trim() || 'Bộ đề AI';
 
   // Ghép tất cả câu hỏi vào 1 bộ đề
   const questions = [];
