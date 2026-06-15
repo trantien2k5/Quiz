@@ -101,7 +101,7 @@ function getBestScore(setId) {
 }
 
 /* ===== NAVIGATION ===== */
-const screens = ['screen-home', 'screen-editor', 'screen-ai', 'screen-quiz', 'screen-result', 'screen-history'];
+const screens = ['screen-home', 'screen-library', 'screen-editor', 'screen-quiz', 'screen-result', 'screen-history'];
 let _quizInProgress = false;
 
 function showScreen(id) {
@@ -148,55 +148,89 @@ function confirm(title, msg, onOk) {
 /* ===== HOME SCREEN ===== */
 function renderHome() {
   const sets = getSets();
-  const container = document.getElementById('set-list');
-  if (!sets.length) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">📚</div>
-        <h3>Chưa có bộ đề nào</h3>
-        <p>Tạo bộ đề mới hoặc dùng AI để tạo tự động</p>
-        <button class="btn btn-primary" onclick="openEditor(null)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Tạo bộ đề mới
-        </button>
+  const recentSets = sets.slice().reverse().slice(0, 3);
+  const recentSetsEl = document.getElementById('home-recent-sets');
+  if (!recentSets.length) {
+    recentSetsEl.innerHTML = `<div class="home-empty">Chưa có bộ đề nào. <button class="link-btn" onclick="navTo('library')">Tạo với AI →</button></div>`;
+  } else {
+    recentSetsEl.innerHTML = recentSets.map(set => {
+      const qCount = set.questions ? set.questions.length : 0;
+      const best = getBestScore(set.id);
+      return `<div class="recent-set-item">
+        <div class="recent-set-icon">📝</div>
+        <div class="recent-set-info">
+          <div class="recent-set-name">${esc(set.name)}</div>
+          <div class="recent-set-meta">${qCount} câu${best !== null ? ` · 🏆 ${best}%` : ''}</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="showQuizSettings('${set.id}')" ${qCount === 0 ? 'disabled' : ''}>▶</button>
       </div>`;
+    }).join('');
+  }
+
+  const history = getHistory().slice(0, 3);
+  const recentHistoryEl = document.getElementById('home-recent-history');
+  if (!history.length) {
+    recentHistoryEl.innerHTML = `<div class="home-empty">Chưa có lịch sử làm bài.</div>`;
+  } else {
+    recentHistoryEl.innerHTML = history.map(h => {
+      const pct = scorePct(h.score, h.total);
+      return `<div class="recent-history-item">
+        <div class="history-score-circle ${scoreClass(pct)}">${pct}%</div>
+        <div class="recent-history-info">
+          <div class="recent-history-name">${esc(h.setName)}</div>
+          <div class="recent-history-date">${fmtDate(h.date)}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+/* ===== LIBRARY SCREEN ===== */
+function buildSetCard(set) {
+  const qCount = set.questions ? set.questions.length : 0;
+  const best = getBestScore(set.id);
+  const bestBadge = best !== null ? `<span class="badge badge-green">🏆 ${best}%</span>` : `<span class="badge badge-gray">Chưa làm</span>`;
+  const timeBadge = set.timeLimit ? `<span class="badge badge-orange">⏱ ${set.timeLimit} phút</span>` : '';
+  return `<div class="set-card">
+    <div class="set-card-top">
+      <div class="set-card-icon">📝</div>
+      <div class="set-card-info">
+        <div class="set-card-name">${esc(set.name)}</div>
+        <div class="set-card-desc">${esc(set.description || 'Không có mô tả')}</div>
+      </div>
+    </div>
+    <div class="set-card-meta">
+      <span class="badge badge-purple">${qCount} câu</span>
+      ${bestBadge}
+      ${timeBadge}
+    </div>
+    <div class="set-card-actions">
+      <button class="btn btn-primary btn-sm" onclick="showQuizSettings('${set.id}')" ${qCount === 0 ? 'disabled' : ''}>▶ Làm bài</button>
+      <button class="btn btn-secondary btn-sm" onclick="openEditor('${set.id}')">✏️ Sửa</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmDeleteSet('${set.id}', '${esc(set.name)}')">🗑</button>
+      <button class="btn btn-outline btn-sm" onclick="exportSet('${set.id}')">↓ Xuất</button>
+    </div>
+  </div>`;
+}
+
+function renderLibrary() {
+  const sets = getSets();
+  const container = document.getElementById('library-set-list');
+  if (!sets.length) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">📚</div>
+      <h3>Chưa có bộ đề nào</h3>
+      <p>Dùng AI tạo đề hoặc nhấn "Tạo mới" bên trên</p>
+    </div>`;
     return;
   }
-  container.innerHTML = sets.map(set => {
-    const qCount = set.questions ? set.questions.length : 0;
-    const best = getBestScore(set.id);
-    const bestBadge = best !== null
-      ? `<span class="badge badge-green">🏆 ${best}%</span>`
-      : `<span class="badge badge-gray">Chưa làm</span>`;
-    const timeBadge = set.timeLimit ? `<span class="badge badge-orange">⏱ ${set.timeLimit} phút</span>` : '';
-    return `
-      <div class="set-card">
-        <div class="set-card-top">
-          <div class="set-card-icon">📝</div>
-          <div class="set-card-info">
-            <div class="set-card-name">${esc(set.name)}</div>
-            <div class="set-card-desc">${esc(set.description || 'Không có mô tả')}</div>
-          </div>
-        </div>
-        <div class="set-card-meta">
-          <span class="badge badge-purple">${qCount} câu</span>
-          ${bestBadge}
-          ${timeBadge}
-        </div>
-        <div class="set-card-actions">
-          <button class="btn btn-primary btn-sm" onclick="showQuizSettings('${set.id}')" ${qCount === 0 ? 'disabled' : ''}>▶ Làm bài</button>
-          <button class="btn btn-secondary btn-sm" onclick="openEditor('${set.id}')">✏️ Sửa</button>
-          <button class="btn btn-danger btn-sm" onclick="confirmDeleteSet('${set.id}', '${esc(set.name)}')">🗑</button>
-          <button class="btn btn-outline btn-sm" onclick="exportSet('${set.id}')">↓ Xuất</button>
-        </div>
-      </div>`;
-  }).join('');
+  container.innerHTML = sets.map(set => buildSetCard(set)).join('');
 }
 
 function confirmDeleteSet(id, name) {
   confirm('Xóa bộ đề', `Bạn có chắc muốn xóa bộ đề "${name}"? Lịch sử làm bài cũng sẽ bị xóa.`, () => {
     deleteSet(id);
-    renderHome();
+    renderLibrary();
     toast('Đã xóa bộ đề', 'error');
   });
 }
@@ -334,23 +368,15 @@ function saveEditor() {
   };
   saveSet(set);
   toast('Đã lưu bộ đề', 'success');
-  showScreen('screen-home');
-  renderHome();
-  document.querySelector('[data-nav="home"]').click();
+  navTo('library');
 }
 
 function cancelEditor() {
   const dirty = _editingQuestions.length > 0 || document.getElementById('set-name').value.trim();
   if (dirty) {
-    confirm('Thoát bộ đề', 'Các thay đổi chưa lưu sẽ bị mất. Tiếp tục?', () => {
-      showScreen('screen-home'); renderHome();
-      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-      document.querySelector('[data-nav="home"]').classList.add('active');
-    });
+    confirm('Thoát bộ đề', 'Các thay đổi chưa lưu sẽ bị mất. Tiếp tục?', () => navTo('library'));
   } else {
-    showScreen('screen-home'); renderHome();
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    document.querySelector('[data-nav="home"]').classList.add('active');
+    navTo('library');
   }
 }
 
@@ -590,16 +616,10 @@ function exitQuiz() {
       clearInterval(_quiz && _quiz.timerInterval);
       _quizInProgress = false;
       _quiz = null;
-      showScreen('screen-home');
-      renderHome();
-      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-      document.querySelector('[data-nav="home"]').classList.add('active');
+      navTo('home');
     });
   } else {
-    showScreen('screen-home');
-    renderHome();
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    document.querySelector('[data-nav="home"]').classList.add('active');
+    navTo('home');
   }
 }
 
@@ -652,16 +672,29 @@ function renderResult(entry, set) {
   }).join('');
 
   document.getElementById('result-retry-btn').onclick = () => showQuizSettings(entry.setId);
-  document.getElementById('result-home-btn').onclick = () => {
-    showScreen('screen-home'); renderHome();
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    document.querySelector('[data-nav="home"]').classList.add('active');
-  };
+  document.getElementById('result-home-btn').onclick = () => navTo('home');
 }
 
 /* ===== HISTORY ===== */
 function renderHistory() {
   const history = getHistory();
+
+  const statsEl = document.getElementById('history-stats');
+  if (history.length > 0) {
+    const avg = Math.round(history.reduce((s, h) => s + scorePct(h.score, h.total), 0) / history.length);
+    const best = Math.max(...history.map(h => scorePct(h.score, h.total)));
+    const totalCorrect = history.reduce((s, h) => s + h.score, 0);
+    const totalQ = history.reduce((s, h) => s + h.total, 0);
+    statsEl.innerHTML = `<div class="stats-row">
+      <div class="stat-box"><div class="stat-val">${history.length}</div><div class="stat-lbl">Lần làm</div></div>
+      <div class="stat-box"><div class="stat-val">${avg}%</div><div class="stat-lbl">Điểm TB</div></div>
+      <div class="stat-box"><div class="stat-val">${best}%</div><div class="stat-lbl">Cao nhất</div></div>
+      <div class="stat-box"><div class="stat-val">${totalCorrect}/${totalQ}</div><div class="stat-lbl">Câu đúng</div></div>
+    </div>`;
+  } else {
+    statsEl.innerHTML = '';
+  }
+
   const container = document.getElementById('history-content');
   if (!history.length) {
     container.innerHTML = `<div class="empty-state">
@@ -759,7 +792,7 @@ function importSetsFromData(arr) {
     });
     imported++;
   });
-  renderHome();
+  renderLibrary();
   if (imported > 0) toast(`Đã nhập ${imported} bộ đề`, 'success');
   if (skipped > 0) toast(`Bỏ qua ${skipped} bộ đề không hợp lệ`, 'error');
   return imported;
@@ -929,16 +962,10 @@ function importAIText() {
   saveSet(newSet);
   toast(`✅ Đã nhập ${questions.length} câu hỏi vào "${setName}"`, 'success');
 
-  // Reset form
   document.getElementById('ai-result-text').value = '';
   document.getElementById('ai-prompt-text').value = '';
   document.getElementById('ai-topic').value = '';
-  document.getElementById('ai-prompt-section').classList.add('hidden');
-
-  // Chuyển về home
-  setTimeout(() => {
-    document.querySelector('[data-nav="home"]').click();
-  }, 500);
+  setTimeout(() => navTo('library'), 500);
 }
 
 /* ===== BUTTON ANIMATIONS ===== */
@@ -970,6 +997,7 @@ function flashSuccess(btn, successText, duration = 1800) {
 document.addEventListener('DOMContentLoaded', () => {
   showScreen('screen-home');
   renderHome();
+  renderLibrary();
 
   document.getElementById('import-file-input').addEventListener('change', handleImportFile);
 
