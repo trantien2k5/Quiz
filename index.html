@@ -117,7 +117,7 @@
   <div id="modal-ai-create" class="modal-overlay" onclick="if(event.target===this)hideAICreate()">
     <div class="modal-sheet">
       <div class="modal-handle"></div>
-      <div class="modal-title">✨ Tạo đề AI</div>
+      <div id="ai-modal-title" class="modal-title">✨ Tạo đề AI</div>
 
       <input type="text" id="ai-topic" class="form-control ai-topic-main"
         placeholder="Bạn muốn học gì? Ví dụ: 20 câu từ loại TOEIC..."
@@ -431,7 +431,7 @@
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="app.js?v=40"></script>
+<script src="app.js?v=41"></script>
 <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(() => {});

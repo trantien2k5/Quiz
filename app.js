@@ -1,4 +1,4 @@
-const APP_V = 40;
+const APP_V = 41;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -264,6 +264,7 @@ function buildSetCard(set) {
       <button class="btn btn-primary btn-sm" onclick="startPractice('${set.id}')" ${qCount === 0 ? 'disabled' : ''}>🎯 Luyện tập</button>
       <button class="btn btn-secondary btn-sm" onclick="showQuizSettings('${set.id}')" ${qCount === 0 ? 'disabled' : ''}>📝 Thi thử</button>
       <button class="btn btn-secondary btn-sm" onclick="openEditor('${set.id}')">✏️ Sửa</button>
+      <button class="btn btn-outline btn-sm" onclick="showAICreate('${set.id}')">✨ Thêm câu</button>
       <button class="btn btn-danger btn-sm" onclick="confirmDeleteSet('${set.id}', '${esc(set.name)}')">🗑</button>
       <button class="btn btn-outline btn-sm" onclick="exportSet('${set.id}')">↓ Xuất</button>
     </div>
@@ -1797,11 +1798,24 @@ function renderAiChips() {
   ).join('');
 }
 
-function showAICreate() {
+let _appendToSetId = null;
+
+function showAICreate(appendSetId) {
+  _appendToSetId = appendSetId || null;
   renderAiChips();
+  const titleEl = document.getElementById('ai-modal-title');
+  if (_appendToSetId) {
+    const set = getSet(_appendToSetId);
+    titleEl.textContent = set ? `✨ Thêm câu vào "${set.name}"` : '✨ Tạo đề AI';
+  } else {
+    titleEl.textContent = '✨ Tạo đề AI';
+  }
   document.getElementById('modal-ai-create').classList.add('active');
 }
-function hideAICreate() { document.getElementById('modal-ai-create').classList.remove('active'); }
+function hideAICreate() {
+  _appendToSetId = null;
+  document.getElementById('modal-ai-create').classList.remove('active');
+}
 
 function showImportModal() { document.getElementById('import-overlay').classList.add('active'); }
 function hideImportModal() {
@@ -1994,6 +2008,23 @@ function importAIText() {
   if (!questions.length) {
     toast('Không tìm thấy câu hỏi hợp lệ trong JSON', 'error');
     return;
+  }
+
+  // Append vào set có sẵn nếu ở chế độ thêm câu
+  if (_appendToSetId) {
+    const existing = getSet(_appendToSetId);
+    if (existing) {
+      existing.questions = [...existing.questions, ...questions];
+      saveSet(existing);
+      toast(`✅ Đã thêm ${questions.length} câu vào "${existing.name}"`, 'success');
+      ['ai-result-text', 'ai-prompt-text'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      hideAICreate();
+      renderLibrary();
+      return;
+    }
   }
 
   const newSet = {
