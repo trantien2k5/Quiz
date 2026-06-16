@@ -1,8 +1,11 @@
-const APP_V = 21;
+const APP_V = 22;
 
 /* ===== AUTO UPDATE CHECK ===== */
+let _updateDetected = false;
+
 function startUpdateCheck() {
   setInterval(async () => {
+    if (_updateDetected) return; // đã phát hiện rồi, không check nữa
     try {
       const res = await fetch('version.json?t=' + Date.now());
       const { v } = await res.json();
@@ -12,8 +15,16 @@ function startUpdateCheck() {
 }
 
 function showUpdateBanner() {
+  if (_updateDetected) return;
+  _updateDetected = true;
   const el = document.getElementById('update-banner');
   if (el) el.classList.add('show');
+}
+
+function reloadApp() {
+  // Bypass HTML cache bằng cách thêm timestamp vào URL
+  const url = location.pathname + '?_=' + Date.now();
+  location.replace(url);
 }
 
 /* ===== UTILS ===== */
