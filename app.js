@@ -1,4 +1,4 @@
-const APP_V = 39;
+const APP_V = 40;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -17,8 +17,15 @@ function startUpdateCheck() {
 function showUpdateBanner() {
   if (_updateDetected) return;
   _updateDetected = true;
-  const el = document.getElementById('update-banner');
-  if (el) el.classList.add('show');
+  if (!_quizInProgress) {
+    // Tự reload khi không đang làm bài
+    toast('🆕 Cập nhật mới — đang tải lại...', '');
+    setTimeout(reloadApp, 2000);
+  } else {
+    // Đang làm bài → hiện banner để user tự quyết
+    const el = document.getElementById('update-banner');
+    if (el) el.classList.add('show');
+  }
 }
 
 function reloadApp() {
