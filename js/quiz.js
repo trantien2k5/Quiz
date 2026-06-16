@@ -73,10 +73,19 @@ function startPractice(setId) {
   }
   const questions = JSON.parse(JSON.stringify(set.questions)).map(q => shuffleOptions(q));
   const n = questions.length;
+
+  // Ưu tiên câu sai nhiều nhất lên đầu; câu chưa có stats giữ thứ tự gốc
+  const qStats = getQuestionStats();
+  const pQueue = questions.map((_, i) => i).sort((a, b) => {
+    const wa = (qStats[questions[a].id] || {}).wrong || 0;
+    const wb = (qStats[questions[b].id] || {}).wrong || 0;
+    if (wb !== wa) return wb - wa;
+    return a - b;
+  });
   _quiz = {
     set: { ...set, questions },
     originalSetId: setId,
-    pQueue:      questions.map((_, i) => i),
+    pQueue,
     pStreaks:    new Array(n).fill(0),   // streak đúng liên tiếp
     pMastered:  new Array(n).fill(false),
     pWrongCount: new Array(n).fill(0),  // tổng số lần sai trong phiên
