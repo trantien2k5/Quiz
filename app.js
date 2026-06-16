@@ -1,4 +1,4 @@
-const APP_V = 43;
+const APP_V = 44;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -1219,6 +1219,128 @@ function trendHtml(diff, unit = '%') {
   return '<span style="color:var(--text-muted)">→ Không đổi</span>';
 }
 
+function getLevelInfo(totalQ) {
+  const levels = [
+    { name: 'Mới bắt đầu', min: 0,    max: 49,       icon: '🌱', color: '#9CA3AF' },
+    { name: 'Học viên',    min: 50,   max: 199,      icon: '📚', color: '#6366F1' },
+    { name: 'Thành thạo',  min: 200,  max: 499,      icon: '⚡', color: '#059669' },
+    { name: 'Chuyên gia',  min: 500,  max: 999,      icon: '🏆', color: '#D97706' },
+    { name: 'Bậc thầy',   min: 1000, max: Infinity,  icon: '🌟', color: '#DC2626' }
+  ];
+  const idx = levels.findIndex(l => totalQ <= l.max);
+  const level = idx >= 0 ? levels[idx] : levels[4];
+  const next = idx >= 0 && idx < levels.length - 1 ? levels[idx + 1] : null;
+  const progress = level.max === Infinity ? 100
+    : Math.round((totalQ - level.min) / (level.max - level.min + 1) * 100);
+  return { ...level, progress, next, toNext: next ? next.min - totalQ : 0 };
+}
+
+function generateInsights(history) {
+  if (history.length < 3) return [];
+  const out = [];
+
+  const trend = calcScoreTrend(history);
+  if (trend) {
+    if (trend.diff >= 5)      out.push({ icon: '📈', text: `Điểm TB tăng ${trend.diff}% so với trước (${trend.pAvg}% → ${trend.rAvg}%)` });
+    else if (trend.diff <= -5) out.push({ icon: '📉', text: `Điểm TB giảm ${Math.abs(trend.diff)}% gần đây — hãy ôn lại đề yếu` });
+    else                       out.push({ icon: '📊', text: `Điểm ổn định ở mức ${trend.rAvg}% — tiếp tục duy trì!` });
+  }
+
+  const pm = {};
+  history.forEach(h => {
+    const hr = new Date(h.date).getHours();
+    const p = hr < 6 ? 'khuya' : hr < 12 ? 'sáng' : hr < 18 ? 'chiều' : 'tối';
+    if (!pm[p]) pm[p] = { c: 0, t: 0 };
+    pm[p].c += h.score; pm[p].t += h.total;
+  });
+  const periods = Object.entries(pm).filter(([, v]) => v.t >= 5)
+    .map(([p, v]) => ({ p, acc: Math.round(v.c / v.t * 100) })).sort((a, b) => b.acc - a.acc);
+  if (periods.length >= 2 && periods[0].acc - periods[periods.length - 1].acc >= 10)
+    out.push({ icon: '⏰', text: `Làm bài tốt nhất vào buổi ${periods[0].p} (TB ${periods[0].acc}%)` });
+
+  const tm = {};
+  history.forEach(h => {
+    if (!tm[h.setName]) tm[h.setName] = { c: 0, t: 0 };
+    tm[h.setName].c += h.score; tm[h.setName].t += h.total;
+  });
+  const topics = Object.entries(tm).filter(([, v]) => v.t >= 5)
+    .map(([n, v]) => ({ n, acc: Math.round(v.c / v.t * 100) }));
+  if (topics.length) {
+    const best  = [...topics].sort((a, b) => b.acc - a.acc)[0];
+    const worst = [...topics].sort((a, b) => a.acc - b.acc)[0];
+    if (best.acc >= 80) out.push({ icon: '💪', text: `Đề mạnh nhất: "${best.n}" (${best.acc}%)` });
+    if (worst.acc < 60 && worst.n !== best.n) out.push({ icon: '⚠️', text: `Cần cải thiện: "${worst.n}" (${worst.acc}%)` });
+  }
+
+  const sp = calcSpeedTrend(history);
+  if (sp !== null && sp < -4) out.push({ icon: '🚀', text: `Tốc độ làm bài nhanh hơn ~${Math.abs(Math.round(sp))}s/câu` });
+
+  const days = new Set(history.map(h => new Date(h.date).toDateString())).size;
+  const span = Math.max(1, Math.round((Date.now() - new Date(history[history.length - 1].date)) / 86400000));
+  const cons = Math.round(days / span * 100);
+  if (cons >= 60 && history.length >= 7) out.push({ icon: '🔥', text: `Học đều đặn ${cons}% số ngày — rất ổn định!` });
+
+  return out.slice(0, 3);
+}
+
+function renderCal30Html(history) {
+  const today = new Date();
+  const cells = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const ds = d.toDateString();
+    const cnt = history.filter(h => new Date(h.date).toDateString() === ds).length;
+    const lv = cnt === 0 ? 0 : cnt === 1 ? 1 : cnt <= 3 ? 2 : 3;
+    cells.push(`<div class="cal-cell cal-lv${lv}${i === 0 ? ' cal-today' : ''}" title="${d.toLocaleDateString('vi-VN',{day:'numeric',month:'numeric'})}: ${cnt} lần làm"></div>`);
+  }
+  return `<div class="cal-grid">${cells.join('')}</div>
+    <div class="cal-legend">
+      <span>Không</span>
+      <div class="cal-cell cal-lv1" style="width:12px;height:12px;flex-shrink:0"></div>
+      <div class="cal-cell cal-lv2" style="width:12px;height:12px;flex-shrink:0"></div>
+      <div class="cal-cell cal-lv3" style="width:12px;height:12px;flex-shrink:0"></div>
+      <span>Nhiều</span>
+    </div>`;
+}
+
+function renderSetBreakdownHtml(history) {
+  const sm = {};
+  [...history].reverse().forEach(h => {
+    if (!sm[h.setId]) sm[h.setId] = { name: h.setName, scores: [] };
+    sm[h.setId].scores.push(scorePct(h.score, h.total));
+  });
+  const rows = Object.values(sm).map(({ name, scores }) => {
+    const avg  = Math.round(scores.reduce((s, v) => s + v, 0) / scores.length);
+    const best = Math.max(...scores);
+    const diff = scores.length >= 3 ? scores[scores.length - 1] - scores[0] : null;
+    const tEl  = diff === null ? '—'
+      : diff > 0  ? `<span class="hst-trend-up">▲ +${diff}%</span>`
+      : diff < 0  ? `<span class="hst-trend-down">▼ ${diff}%</span>`
+      : '<span style="color:var(--text-muted)">→</span>';
+    const c = avg >= 80 ? 'var(--green)' : avg >= 60 ? 'var(--orange)' : 'var(--red)';
+    return { name, avg, best, n: scores.length, tEl, c };
+  }).sort((a, b) => b.n - a.n).slice(0, 10);
+
+  if (!rows.length) return '';
+  return `<div class="hst-set-breakdown">
+    <div class="hst-set-brow hst-set-head">
+      <span class="hst-set-name">Bộ đề</span>
+      <span class="hst-set-col">Lần</span>
+      <span class="hst-set-col">TB</span>
+      <span class="hst-set-col">Cao</span>
+      <span class="hst-set-col">Trend</span>
+    </div>
+    ${rows.map(r => `<div class="hst-set-brow">
+      <span class="hst-set-name">${esc(r.name)}</span>
+      <span class="hst-set-col" style="color:var(--text-muted)">${r.n}</span>
+      <span class="hst-set-col" style="color:${r.c};font-weight:700">${r.avg}%</span>
+      <span class="hst-set-col" style="color:var(--green)">${r.best}%</span>
+      <span class="hst-set-col">${r.tEl}</span>
+    </div>`).join('')}
+  </div>`;
+}
+
 /* --- Level 1 --- */
 function renderHistory() {
   showHistoryHome(); // đóng sub-section nếu đang mở
@@ -1282,27 +1404,51 @@ function renderHistoryOverview() {
     el.innerHTML = `<div class="empty-state"><div class="empty-icon">📈</div><h3>Chưa có dữ liệu</h3><p>Làm bài thi để xem thống kê</p></div>`;
     return;
   }
-  const totalQ = history.reduce((s, h) => s + h.total, 0);
+  const totalQ       = history.reduce((s, h) => s + h.total, 0);
   const totalCorrect = history.reduce((s, h) => s + h.score, 0);
-  const avg = Math.round(totalCorrect / totalQ * 100);
-  const best = Math.max(...history.map(h => scorePct(h.score, h.total)));
+  const avg          = Math.round(totalCorrect / totalQ * 100);
+  const best         = Math.max(...history.map(h => scorePct(h.score, h.total)));
   const totalSeconds = history.reduce((s, h) => s + (h.timeTaken || 0), 0);
-  const streak = calcStreak();
+  const streak       = calcStreak();
+  const level        = getLevelInfo(totalQ);
+  const insights     = generateInsights(history);
 
-  el.innerHTML = `<div class="hst-stats-grid">
-    <div class="hst-stat-card"><div class="hst-stat-val">${history.length}</div><div class="hst-stat-lbl">Lần làm bài</div></div>
-    <div class="hst-stat-card"><div class="hst-stat-val">${totalQ}</div><div class="hst-stat-lbl">Câu đã làm</div></div>
-    <div class="hst-stat-card"><div class="hst-stat-val">${totalCorrect}</div><div class="hst-stat-lbl">Câu đúng</div></div>
-    <div class="hst-stat-card hst-stat-accent"><div class="hst-stat-val">${avg}%</div><div class="hst-stat-lbl">Điểm TB</div></div>
-    <div class="hst-stat-card hst-stat-green"><div class="hst-stat-val">${best}%</div><div class="hst-stat-lbl">Cao nhất</div></div>
-    <div class="hst-stat-card hst-stat-orange">
-      <div class="hst-stat-val">${streak}</div><div class="hst-stat-lbl">Ngày liên tiếp 🔥</div>
+  const levelBarHtml = level.next
+    ? `<div class="hst-level-bar-wrap"><div class="hst-level-bar-fill" style="width:${level.progress}%;background:${level.color}"></div></div>
+       <div class="hst-level-next">→ ${esc(level.next.name)} sau ${level.toNext} câu nữa</div>`
+    : `<div class="hst-level-bar-wrap"><div class="hst-level-bar-fill" style="width:100%;background:${level.color}"></div></div>
+       <div class="hst-level-next">Đã đạt cấp độ tối đa 🎉</div>`;
+
+  const insightsHtml = insights.length
+    ? `<div class="hst-insights">${insights.map(i => `<div class="hst-insight-item"><span class="hst-insight-icon">${i.icon}</span>${esc(i.text)}</div>`).join('')}</div>`
+    : '';
+
+  el.innerHTML = `
+    <div class="hst-level-card" style="border-color:${level.color}">
+      <div class="hst-level-icon">${level.icon}</div>
+      <div class="hst-level-info">
+        <div class="hst-level-name">${esc(level.name)}</div>
+        <div class="hst-level-sub">${totalQ} câu đã làm</div>
+        ${levelBarHtml}
+      </div>
     </div>
-    <div class="hst-stat-card" style="grid-column:1/-1">
-      <div class="hst-stat-val" style="font-size:20px">${fmtStudyTime(totalSeconds)}</div>
-      <div class="hst-stat-lbl">Tổng thời gian học</div>
+    ${insightsHtml}
+    <div class="hst-chart-card">
+      <div class="hst-chart-title">Hoạt động 30 ngày qua</div>
+      ${renderCal30Html(history)}
     </div>
-  </div>`;
+    <div class="hst-stats-grid">
+      <div class="hst-stat-card"><div class="hst-stat-val">${history.length}</div><div class="hst-stat-lbl">Lần làm bài</div></div>
+      <div class="hst-stat-card"><div class="hst-stat-val">${totalQ}</div><div class="hst-stat-lbl">Câu đã làm</div></div>
+      <div class="hst-stat-card"><div class="hst-stat-val">${totalCorrect}</div><div class="hst-stat-lbl">Câu đúng</div></div>
+      <div class="hst-stat-card hst-stat-accent"><div class="hst-stat-val">${avg}%</div><div class="hst-stat-lbl">Điểm TB</div></div>
+      <div class="hst-stat-card hst-stat-green"><div class="hst-stat-val">${best}%</div><div class="hst-stat-lbl">Cao nhất</div></div>
+      <div class="hst-stat-card hst-stat-orange"><div class="hst-stat-val">${streak}</div><div class="hst-stat-lbl">Ngày liên tiếp 🔥</div></div>
+      <div class="hst-stat-card" style="grid-column:1/-1">
+        <div class="hst-stat-val" style="font-size:20px">${fmtStudyTime(totalSeconds)}</div>
+        <div class="hst-stat-lbl">Tổng thời gian học</div>
+      </div>
+    </div>`;
 }
 
 /* --- Level 2: Tiến bộ --- */
@@ -1323,6 +1469,7 @@ function renderHistoryProgress() {
     : speedDiff > 2 ? '<span class="hst-trend-down">▼ Chậm hơn</span>'
     : '<span style="color:var(--text-muted)">→ Tương đương</span>';
 
+  const setBreakdown = renderSetBreakdownHtml(history);
   el.innerHTML = `
     <div class="hst-chart-card">
       <div class="hst-chart-title">Điểm ${last10.length} lần gần nhất</div>
@@ -1342,7 +1489,11 @@ function renderHistoryProgress() {
         <div class="hst-metric-title">Tốc độ làm bài</div>
         <div class="hst-metric-val">${speedTrendHtml}</div>
       </div>
-    </div>`;
+    </div>
+    ${setBreakdown ? `<div class="hst-chart-card" style="margin-bottom:80px">
+      <div class="hst-chart-title">Kết quả theo bộ đề</div>
+      ${setBreakdown}
+    </div>` : ''}`;
 }
 
 /* --- Level 2: Lỗi sai --- */
@@ -1401,11 +1552,53 @@ function renderHistoryMistakes() {
         </div>`).join('')
     : '';
 
+  // Hotspot: câu sai 3+ lần
+  const wqMap = {};
+  history.forEach(h => {
+    const set = getSet(h.setId);
+    if (!set) return;
+    h.answers.forEach((ans, i) => {
+      const q = set.questions[i];
+      if (!q || ans === null || ans === q.correct) return;
+      const key = h.setId + ':' + (q.id || i);
+      if (!wqMap[key]) wqMap[key] = { q, setName: h.setName, count: 0 };
+      wqMap[key].count++;
+    });
+  });
+  const hotspots = Object.values(wqMap).filter(w => w.count >= 3)
+    .sort((a, b) => b.count - a.count).slice(0, 5);
+  const hotspotsHtml = hotspots.length
+    ? hotspots.map(({ q, setName, count }) => `
+        <div class="hst-mistake-card">
+          <div class="hst-mistake-badge hst-hotspot-badge">Sai ${count}×</div>
+          <div class="hst-mistake-content">
+            <div class="hst-mistake-set">${esc(setName)}</div>
+            <div class="hst-mistake-q">${esc(q.text)}</div>
+            <div class="hst-mistake-correct">✅ ${esc(q.options[q.correct])}</div>
+          </div>
+        </div>`).join('')
+    : '';
+
+  // Skill tag analysis
+  const skills = computeWeakSkills(history, getSets());
+  const skillsHtml = skills.length >= 2
+    ? `<div class="hst-section-header" style="margin-top:4px"><div class="section-label">Kỹ năng yếu nhất</div></div>
+       <div class="hst-weak-topics-list">
+         ${skills.slice(0, 5).map(s => `
+           <div class="hst-weak-topic">
+             <div class="hst-weak-topic-name">${esc(s.skill)}</div>
+             <div class="hst-weak-topic-bar"><div class="hst-weak-topic-fill" style="width:${100 - s.accuracy}%;background:var(--orange)"></div></div>
+             <div class="hst-weak-topic-pct" style="color:var(--orange)">${s.accuracy}% đúng</div>
+           </div>`).join('')}
+       </div>` : '';
+
   el.innerHTML = `
-    <div class="hst-section-header"><div class="section-label">Câu sai gần đây</div></div>
+    ${hotspotsHtml ? `<div class="hst-section-header"><div class="section-label">🔥 Câu hay sai nhất</div></div>${hotspotsHtml}` : ''}
+    <div class="hst-section-header" style="margin-top:4px"><div class="section-label">Câu sai gần đây</div></div>
     ${wrongHtml}
     ${topicsHtml ? `<div class="hst-section-header" style="margin-top:4px"><div class="section-label">Đề yếu nhất</div></div><div class="hst-weak-topics-list">${topicsHtml}</div>` : ''}
-    <div style="padding:16px">
+    ${skillsHtml}
+    <div style="padding:16px 16px 80px">
       <button class="btn btn-danger btn-full" onclick="retryAllWrongQuestions()">🔁 Làm lại câu sai gần đây</button>
     </div>`;
 }

@@ -37,7 +37,11 @@ html, body { height: 100%; overflow: hidden; }
 button, .nav-item, .set-card, .option-btn, .ai-chip,
 .hst-nav-card, .recent-set-item, .recent-history-item,
 .hst-log-item, .review-card, .qmap-btn, .result-stat-label,
-.result-stat-value, .q-num-row, .q-num-label, .practice-mastery-label {
+.result-stat-value, .q-num-row, .q-num-label, .practice-mastery-label,
+.practice-feedback, .practice-feedback-badge, .practice-feedback-correct,
+.practice-feedback-exp, .review-explanation, .q-text, .review-q-text,
+.quiz-question, .hst-stat-val, .hst-stat-lbl, .hst-metric-val,
+.hst-chart-title, .hst-section-header, .hst-mistake-badge {
   -webkit-user-select: none;
   user-select: none;
 }
@@ -865,6 +869,41 @@ textarea.form-control { resize: vertical; min-height: 72px; }
 .hst-weak-topic-bar { width: 72px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; flex-shrink: 0; }
 .hst-weak-topic-fill { height: 100%; background: var(--red); border-radius: 3px; }
 .hst-weak-topic-pct { font-size: 12px; color: var(--red); font-weight: 600; width: 48px; text-align: right; flex-shrink: 0; }
+
+/* Level card */
+.hst-level-card { display: flex; gap: 14px; align-items: center; background: var(--surface); border: 2px solid var(--purple); border-radius: var(--radius); padding: 16px; margin: 12px 16px 10px; }
+.hst-level-icon { font-size: 42px; line-height: 1; flex-shrink: 0; }
+.hst-level-info { flex: 1; min-width: 0; }
+.hst-level-name { font-size: 18px; font-weight: 800; color: var(--text); }
+.hst-level-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.hst-level-bar-wrap { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+.hst-level-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+.hst-level-next { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+/* Personal insights */
+.hst-insights { padding: 0 16px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.hst-insight-item { background: var(--surface); border-radius: var(--radius-sm); padding: 11px 14px; font-size: 13px; color: var(--text); display: flex; align-items: flex-start; gap: 8px; border: 1px solid var(--border); line-height: 1.5; }
+.hst-insight-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+/* Activity calendar */
+.cal-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; padding: 8px 0 4px; }
+.cal-cell { aspect-ratio: 1; border-radius: 3px; }
+.cal-lv0 { background: var(--border); }
+.cal-lv1 { background: #C4B5FD; }
+.cal-lv2 { background: #7C3AED; }
+.cal-lv3 { background: #4C1D95; }
+.cal-today { outline: 2px solid var(--purple); outline-offset: 1px; }
+.cal-legend { display: flex; align-items: center; gap: 6px; justify-content: center; padding: 4px 0; font-size: 11px; color: var(--text-muted); }
+
+/* Set breakdown table */
+.hst-set-breakdown { }
+.hst-set-brow { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; gap: 4px; }
+.hst-set-head { border-bottom: 2px solid var(--border); font-size: 11px; font-weight: 600; color: var(--text-muted); padding-bottom: 6px; }
+.hst-set-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+.hst-set-col { width: 52px; text-align: center; flex-shrink: 0; }
+
+/* Hotspot badge */
+.hst-hotspot-badge { background: #FEF3C7; color: var(--orange); }
 
 /* Log view */
 .hst-log-group { margin-bottom: 4px; }
