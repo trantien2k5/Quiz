@@ -1,4 +1,4 @@
-const APP_V = 27;
+const APP_V = 28;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -247,7 +247,11 @@ function buildSetCard(set) {
 }
 
 function renderLibrary() {
-  const sets = getSets();
+  const lastId = localStorage.getItem('quiz_last_set');
+  const all    = getSets();
+  const sets   = lastId
+    ? [...all.filter(s => s.id === lastId), ...all.filter(s => s.id !== lastId)]
+    : all;
   const container = document.getElementById('library-set-list');
   if (!sets.length) {
     container.innerHTML = `<div class="empty-state">
@@ -480,6 +484,7 @@ function startQuiz(setOrId, settings) {
     mode: 'one-by-one'
   };
   _quizInProgress = true;
+  localStorage.setItem('quiz_last_set', _quiz.originalSetId);
   renderQuiz();
   showScreen('screen-quiz');
 }
@@ -509,6 +514,7 @@ function startPractice(setId) {
     mode: 'one-by-one'
   };
   _quizInProgress = true;
+  localStorage.setItem('quiz_last_set', _quiz.originalSetId);
   renderQuiz();
   showScreen('screen-quiz');
 }
@@ -920,15 +926,11 @@ function toggleQuizMode() {
 }
 
 function exitQuiz() {
+  const goBack = () => { clearInterval(_quiz && _quiz.timerInterval); _quizInProgress = false; _quiz = null; navTo('library'); };
   if (_quizInProgress) {
-    confirm('Thoát bài thi', 'Bài thi chưa hoàn thành sẽ không được lưu. Thoát?', () => {
-      clearInterval(_quiz && _quiz.timerInterval);
-      _quizInProgress = false;
-      _quiz = null;
-      navTo('home');
-    });
+    confirm('Thoát bài thi', 'Bài thi chưa hoàn thành sẽ không được lưu. Thoát?', goBack);
   } else {
-    navTo('home');
+    goBack();
   }
 }
 
