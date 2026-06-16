@@ -1,4 +1,4 @@
-const APP_V = 45;
+const APP_V = 46;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -131,7 +131,7 @@ function getSet(id) {
 function saveSet(set) {
   const sets = getSets();
   const idx = sets.findIndex(s => s.id === set.id);
-  if (idx >= 0) sets[idx] = set; else sets.push(set);
+  if (idx >= 0) sets[idx] = set; else sets.unshift(set);
   saveSets(sets);
 }
 function deleteSet(id) {

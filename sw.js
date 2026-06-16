@@ -1,4 +1,4 @@
-const CACHE = 'quiz-v45';
+const CACHE = 'quiz-v46';
 const STATIC = [
   './index.html',
   './style.css?v=43',
