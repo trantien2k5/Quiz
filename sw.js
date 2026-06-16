@@ -1,7 +1,7 @@
 const CACHE = 'quiz-v42';
 const STATIC = [
   './index.html',
-  './style.css?v=40',
+  './style.css?v=43',
   './app.js?v=42',
   './manifest.json',
   './icon-192.svg',

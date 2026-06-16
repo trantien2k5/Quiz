@@ -33,6 +33,14 @@
 /* ===== RESET ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; overflow: hidden; }
+/* Chặn bôi đen text trên mobile khi tap */
+button, .nav-item, .set-card, .option-btn, .ai-chip,
+.hst-nav-card, .recent-set-item, .recent-history-item,
+.hst-log-item, .review-card, .qmap-btn, .result-stat-label,
+.result-stat-value, .q-num-row, .q-num-label, .practice-mastery-label {
+  -webkit-user-select: none;
+  user-select: none;
+}
 body {
   font-family: var(--font);
   background: var(--bg);
