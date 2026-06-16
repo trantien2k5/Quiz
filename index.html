@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=22">
+  <link rel="stylesheet" href="style.css?v=23">
 </head>
 <body>
 <div id="update-banner">
@@ -339,20 +339,7 @@
   <div id="modal-quiz-settings" class="modal-overlay" onclick="if(event.target===this)closeQuizSettings()">
     <div class="modal-sheet">
       <div class="modal-handle"></div>
-      <div class="modal-title">Chọn chế độ</div>
-      <div class="qs-mode-picker">
-        <button class="qs-mode-btn active" data-mode="practice" onclick="selectStudyMode('practice')">
-          <div class="qs-mode-icon">🎯</div>
-          <div class="qs-mode-name">Luyện tập</div>
-          <div class="qs-mode-desc">Xem đáp án + giải thích ngay sau mỗi câu</div>
-        </button>
-        <button class="qs-mode-btn" data-mode="exam" onclick="selectStudyMode('exam')">
-          <div class="qs-mode-icon">📝</div>
-          <div class="qs-mode-name">Thi thử</div>
-          <div class="qs-mode-desc">Nộp bài khi hoàn thành, xem kết quả cuối</div>
-        </button>
-      </div>
-      <div class="qs-divider"></div>
+      <div class="modal-title">📝 Cài đặt thi thử</div>
 
       <div class="settings-row">
         <div class="settings-row-info">
@@ -437,6 +424,6 @@
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="app.js?v=22"></script>
+<script src="app.js?v=23"></script>
 </body>
 </html>

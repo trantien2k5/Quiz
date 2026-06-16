@@ -1115,6 +1115,27 @@ textarea.form-control { resize: vertical; min-height: 72px; }
 .correct-tag { background: var(--green-light); color: var(--green); }
 .wrong-tag { background: var(--red-light); color: var(--red); }
 
+/* ===== PRACTICE NAV ===== */
+.practice-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; width: 100%;
+}
+.practice-mastery-label {
+  font-size: 13px; font-weight: 600; color: var(--purple); white-space: nowrap;
+}
+.practice-next-btn { flex: 1; }
+.practice-hint-nav {
+  flex: 1; text-align: center; font-size: 13px; color: var(--text-muted);
+  padding: 10px;
+}
+/* Streak dots in question header */
+.practice-streak {
+  font-size: 12px; margin-left: 8px; letter-spacing: 1px;
+}
+.q-num-total { color: var(--text-muted); font-weight: 400; }
+/* Two-button group in recent set card */
+.recent-set-btns { display: flex; gap: 4px; flex-shrink: 0; }
+
 /* ===== STUDY MODE PICKER ===== */
 .qs-mode-picker { display: flex; gap: 10px; margin-bottom: 16px; }
 .qs-mode-btn {

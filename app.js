@@ -1,4 +1,4 @@
-const APP_V = 22;
+const APP_V = 23;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -191,7 +191,10 @@ function renderHome() {
           <div class="recent-set-name">${esc(set.name)}</div>
           <div class="recent-set-meta">${qCount} câu${best !== null ? ` · 🏆 ${best}%` : ''}</div>
         </div>
-        <button class="btn btn-primary btn-sm" onclick="showQuizSettings('${set.id}')" ${qCount === 0 ? 'disabled' : ''}>▶</button>
+        <div class="recent-set-btns">
+          <button class="btn btn-primary btn-sm" onclick="startPractice('${set.id}')" ${qCount === 0 ? 'disabled' : ''}>🎯</button>
+          <button class="btn btn-secondary btn-sm" onclick="showQuizSettings('${set.id}')" ${qCount === 0 ? 'disabled' : ''}>📝</button>
+        </div>
       </div>`;
     }).join('');
   }
@@ -234,7 +237,8 @@ function buildSetCard(set) {
       ${timeBadge}
     </div>
     <div class="set-card-actions">
-      <button class="btn btn-primary btn-sm" onclick="showQuizSettings('${set.id}')" ${qCount === 0 ? 'disabled' : ''}>▶ Làm bài</button>
+      <button class="btn btn-primary btn-sm" onclick="startPractice('${set.id}')" ${qCount === 0 ? 'disabled' : ''}>🎯 Luyện tập</button>
+      <button class="btn btn-secondary btn-sm" onclick="showQuizSettings('${set.id}')" ${qCount === 0 ? 'disabled' : ''}>📝 Thi thử</button>
       <button class="btn btn-secondary btn-sm" onclick="openEditor('${set.id}')">✏️ Sửa</button>
       <button class="btn btn-danger btn-sm" onclick="confirmDeleteSet('${set.id}', '${esc(set.name)}')">🗑</button>
       <button class="btn btn-outline btn-sm" onclick="exportSet('${set.id}')">↓ Xuất</button>
@@ -432,18 +436,13 @@ function closeQuizSettings() {
   document.getElementById('modal-quiz-settings').classList.remove('active');
 }
 
-function selectStudyMode(mode) {
-  document.querySelectorAll('.qs-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
-}
-
 function beginQuiz() {
   closeQuizSettings();
   const shuffleQ    = document.getElementById('qs-shuffle-q').checked;
   const shuffleOpts = document.getElementById('qs-shuffle-opts').checked;
   const numQRaw     = document.getElementById('qs-num-q').value.trim();
   const numQ        = numQRaw ? parseInt(numQRaw) : null;
-  const studyMode   = document.querySelector('.qs-mode-btn.active')?.dataset.mode || 'practice';
-  startQuiz(_pendingSetId, { shuffleQ, shuffleOpts, numQ, studyMode });
+  startQuiz(_pendingSetId, { shuffleQ, shuffleOpts, numQ });
 }
 
 /* ===== QUIZ ===== */
@@ -474,13 +473,38 @@ function startQuiz(setOrId, settings) {
     originalSetId: typeof setOrId === 'string' ? setOrId : setOrId.id,
     answers: new Array(questions.length).fill(null),
     flagged: new Array(questions.length).fill(false),
-    locked: new Array(questions.length).fill(false),
     startTime: Date.now(),
     currentIdx: 0,
     timerInterval: null,
     timeLeft: set.timeLimit ? set.timeLimit * 60 : null,
-    mode: 'one-by-one',
-    studyMode: settings.studyMode || 'practice'
+    mode: 'one-by-one'
+  };
+  _quizInProgress = true;
+  renderQuiz();
+  showScreen('screen-quiz');
+}
+
+function startPractice(setId) {
+  const set = getSet(setId);
+  if (!set || !set.questions || !set.questions.length) {
+    toast('Bộ đề không có câu hỏi', 'error'); return;
+  }
+  const questions = JSON.parse(JSON.stringify(set.questions));
+  const n = questions.length;
+  _quiz = {
+    set: { ...set, questions },
+    originalSetId: setId,
+    pQueue: questions.map((_, i) => i),   // queue of question indices (grows with retries)
+    pStreaks: new Array(n).fill(0),        // consecutive correct per question
+    pMastered: new Array(n).fill(false),  // mastered per question
+    answers: new Array(n).fill(null),     // per queue slot (same length as pQueue initially)
+    locked: new Array(n).fill(false),
+    flagged: new Array(n).fill(false),
+    startTime: Date.now(),
+    currentIdx: 0,
+    timerInterval: null,
+    timeLeft: null,
+    mode: 'one-by-one'
   };
   _quizInProgress = true;
   renderQuiz();
@@ -526,17 +550,20 @@ function renderQuiz() {
 }
 
 function buildQuizQuestion(question, i) {
-  const letters = ['A', 'B', 'C', 'D'];
-  const selected  = _quiz.answers[i];
-  const isFlagged = _quiz.flagged[i];
-  const isLocked  = _quiz.studyMode === 'practice' && _quiz.locked[i];
-  const correct   = question.correct;
+  const letters    = ['A', 'B', 'C', 'D'];
+  const isPractice = !!_quiz.pQueue;
+  const qIdx       = isPractice ? _quiz.pQueue[i] : i;
+  const selected   = _quiz.answers[i];
+  const isLocked   = isPractice && _quiz.locked[i];
+  const isFlagged  = !isPractice && _quiz.flagged[i];
+  const correct    = question.correct;
+  const total      = _quiz.set.questions.length;
 
   const optHtml = question.options.map((opt, oi) => {
     let cls = 'option-btn';
     if (isLocked) {
       cls += ' locked';
-      if (oi === correct)  cls += ' correct-ans';
+      if (oi === correct)       cls += ' correct-ans';
       else if (oi === selected) cls += ' wrong-ans';
     } else if (selected === oi) {
       cls += ' selected';
@@ -554,13 +581,23 @@ function buildQuizQuestion(question, i) {
       ${question.explanation ? `<div class="practice-feedback-exp">${esc(question.explanation)}</div>` : ''}
     </div>` : '';
 
+  const streak = isPractice ? _quiz.pStreaks[qIdx] : 0;
+  const streakDots = isPractice
+    ? `<span class="practice-streak">${streak >= 1 ? '⭐' : '○'}${streak >= 2 ? '⭐' : '○'}</span>` : '';
+
+  const numLabel = isPractice
+    ? `Câu ${qIdx + 1}<span class="q-num-total"> / ${total}</span>` : `Câu ${i + 1}`;
+
+  const flagBtn = isPractice ? '' : `
+    <button class="quiz-flag-btn ${isFlagged ? 'flagged' : ''}" onclick="toggleFlag(${i})" title="Đánh dấu xem lại">
+      <svg viewBox="0 0 24 24" fill="${isFlagged ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+    </button>`;
+
   return `
     <div class="question-block quiz-question-block" data-idx="${i}" id="quiz-q-${i}">
       <div class="q-num-row">
-        <div class="q-num-label">Câu ${i + 1}</div>
-        <button class="quiz-flag-btn ${isFlagged ? 'flagged' : ''}" onclick="toggleFlag(${i})" title="Đánh dấu xem lại">
-          <svg viewBox="0 0 24 24" fill="${isFlagged ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-        </button>
+        <div class="q-num-label">${numLabel}${streakDots}</div>
+        ${flagBtn}
       </div>
       <div class="q-text">${esc(question.text)}</div>
       <div class="options-list">${optHtml}</div>
@@ -570,7 +607,10 @@ function buildQuizQuestion(question, i) {
 
 function renderCurrentQuestion() {
   const i = _quiz.currentIdx;
-  document.getElementById('quiz-questions-content').innerHTML = buildQuizQuestion(_quiz.set.questions[i], i);
+  const question = _quiz.pQueue
+    ? _quiz.set.questions[_quiz.pQueue[i]]
+    : _quiz.set.questions[i];
+  document.getElementById('quiz-questions-content').innerHTML = buildQuizQuestion(question, i);
   document.getElementById('quiz-questions-content').scrollTop = 0;
   updateQuizCounterDisplay();
 }
@@ -578,13 +618,19 @@ function renderCurrentQuestion() {
 function updateQuizCounterDisplay() {
   const q = _quiz;
   const total = q.set.questions.length;
-  const answered = q.answers.filter(a => a !== null).length;
-  if (q.mode === 'one-by-one') {
-    document.getElementById('quiz-counter').textContent = `Câu ${q.currentIdx + 1} / ${total}  ·  ${answered} đã làm`;
+  if (q.pQueue) {
+    const mastered = q.pMastered.filter(Boolean).length;
+    document.getElementById('quiz-counter').textContent = `${mastered}/${total} đã thuộc`;
+    document.getElementById('quiz-progress-fill').style.width = (mastered / total * 100) + '%';
   } else {
-    document.getElementById('quiz-counter').textContent = `${answered}/${total} đã trả lời`;
+    const answered = q.answers.filter(a => a !== null).length;
+    if (q.mode === 'one-by-one') {
+      document.getElementById('quiz-counter').textContent = `Câu ${q.currentIdx + 1} / ${total}  ·  ${answered} đã làm`;
+    } else {
+      document.getElementById('quiz-counter').textContent = `${answered}/${total} đã trả lời`;
+    }
+    document.getElementById('quiz-progress-fill').style.width = (answered / total * 100) + '%';
   }
-  document.getElementById('quiz-progress-fill').style.width = (answered / total * 100) + '%';
 }
 
 function renderTimer() {
@@ -596,14 +642,28 @@ function renderTimer() {
 
 function renderQuizNav() {
   const q = _quiz;
-  const total = q.set.questions.length;
   const nav = document.getElementById('quiz-nav');
+
+  if (q.pQueue) { // practice mode
+    const mastered = q.pMastered.filter(Boolean).length;
+    const total    = q.set.questions.length;
+    const isLocked = q.locked[q.currentIdx];
+    nav.innerHTML = `<div class="practice-nav">
+      <div class="practice-mastery-label">${mastered}/${total} đã thuộc</div>
+      ${isLocked
+        ? `<button class="btn btn-primary practice-next-btn" onclick="practiceAdvance()">Tiếp theo →</button>`
+        : `<div class="practice-hint-nav">Chọn đáp án để tiếp tục</div>`}
+    </div>`;
+    return;
+  }
+
+  const total = q.set.questions.length;
   if (q.mode === 'all') {
     nav.innerHTML = `<button class="btn btn-primary btn-full" onclick="submitQuizConfirm()">Nộp bài ✓</button>`;
     return;
   }
   const isFirst = q.currentIdx === 0;
-  const isLast = q.currentIdx === total - 1;
+  const isLast  = q.currentIdx === total - 1;
   const answered = q.answers.filter(a => a !== null).length;
   nav.innerHTML = `
     <button class="btn btn-secondary qnav-prev" onclick="quizPrev()" ${isFirst ? 'disabled' : ''}>← Trước</button>
@@ -617,11 +677,11 @@ function renderQuizNav() {
 }
 
 function selectAnswer(qIdx, optIdx) {
-  if (_quiz.studyMode === 'practice' && _quiz.locked[qIdx]) return; // đã chốt
+  if (_quiz.pQueue && _quiz.locked[qIdx]) return; // practice: đã chốt
   _quiz.answers[qIdx] = optIdx;
-  if (_quiz.studyMode === 'practice') {
+  if (_quiz.pQueue) { // practice mode
     _quiz.locked[qIdx] = true;
-    renderCurrentQuestion(); // re-render để hiện feedback
+    renderCurrentQuestion();
     renderQuizNav();
     return;
   }
@@ -643,6 +703,57 @@ function selectAnswer(qIdx, optIdx) {
   });
   updateQuizCounterDisplay();
   renderQuizNav();
+}
+
+function practiceAdvance() {
+  const pos  = _quiz.currentIdx;
+  const qIdx = _quiz.pQueue[pos];
+  const q    = _quiz.set.questions[qIdx];
+  const isCorrect = _quiz.answers[pos] === q.correct;
+
+  if (isCorrect) {
+    _quiz.pStreaks[qIdx]++;
+    if (_quiz.pStreaks[qIdx] >= 2) _quiz.pMastered[qIdx] = true;
+  } else {
+    _quiz.pStreaks[qIdx] = 0;
+    const insertAt = Math.min(pos + 2 + Math.floor(Math.random() * 3), _quiz.pQueue.length);
+    _quiz.pQueue.splice(insertAt, 0, qIdx);
+    _quiz.answers.splice(insertAt, 0, null);
+    _quiz.locked.splice(insertAt, 0, false);
+  }
+
+  _quiz.currentIdx++;
+
+  if (_quiz.pMastered.every(Boolean)) { finishPractice(); return; }
+
+  // Đảm bảo queue không cạn (vòng lại từ câu chưa thuộc)
+  if (_quiz.currentIdx >= _quiz.pQueue.length) {
+    const remaining = _quiz.pMastered.reduce((acc, m, i) => m ? acc : [...acc, i], []);
+    _quiz.pQueue.push(...remaining);
+    remaining.forEach(() => { _quiz.answers.push(null); _quiz.locked.push(false); });
+  }
+
+  renderCurrentQuestion();
+  renderQuizNav();
+}
+
+function finishPractice() {
+  _quizInProgress = false;
+  const timeTaken = Math.round((Date.now() - _quiz.startTime) / 1000);
+  const total = _quiz.set.questions.length;
+  const entry = {
+    id: uid(),
+    setId: _quiz.originalSetId,
+    setName: _quiz.set.name,
+    score: total,
+    total,
+    timeTaken,
+    date: Date.now(),
+    answers: _quiz.set.questions.map(q => q.correct)
+  };
+  addHistoryEntry(entry);
+  renderResult(entry, _quiz.set);
+  showScreen('screen-result');
 }
 
 function quizNext() {
