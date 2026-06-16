@@ -1,6 +1,7 @@
 /* ===== QUIZ ===== */
 let _quiz = null;
 let _quizInProgress = false;
+let _questionStartTime = null;
 
 /* ===== QUIZ SETTINGS ===== */
 let _pendingSetId = null;
@@ -53,6 +54,7 @@ function startQuiz(setOrId, settings) {
     set: { ...set, questions },
     originalSetId: typeof setOrId === 'string' ? setOrId : setOrId.id,
     answers: new Array(questions.length).fill(null),
+    responseTimes: new Array(questions.length).fill(null),
     flagged: new Array(questions.length).fill(false),
     startTime: Date.now(),
     currentIdx: 0,
@@ -87,11 +89,12 @@ function startPractice(setId) {
     set: { ...set, questions },
     originalSetId: setId,
     pQueue,
-    pStreaks:    new Array(n).fill(0),   // streak đúng liên tiếp
+    pStreaks:    new Array(n).fill(0),
     pMastered:  new Array(n).fill(false),
-    pWrongCount: new Array(n).fill(0),  // tổng số lần sai trong phiên
+    pWrongCount: new Array(n).fill(0),
     pSkipped:   new Array(n).fill(false),
     answers: new Array(n).fill(null),
+    responseTimes: new Array(n).fill(null),
     locked:  new Array(n).fill(false),
     flagged: new Array(n).fill(false),
     startTime: Date.now(),
@@ -210,6 +213,7 @@ function buildQuizQuestion(question, i) {
 }
 
 function renderCurrentQuestion() {
+  _questionStartTime = Date.now();
   const i = _quiz.currentIdx;
   const question = _quiz.pQueue
     ? _quiz.set.questions[_quiz.pQueue[i]]
@@ -286,6 +290,7 @@ function renderQuizNav() {
 
 function selectAnswer(qIdx, optIdx) {
   if (_quiz.pQueue && _quiz.locked[qIdx]) return; // practice: đã chốt
+  if (_questionStartTime) { _quiz.responseTimes[qIdx] = Date.now() - _questionStartTime; _questionStartTime = null; }
   _quiz.answers[qIdx] = optIdx;
   if (_quiz.pQueue) { // practice mode
     _quiz.locked[qIdx] = true;
@@ -372,6 +377,9 @@ function finishPractice() {
   const total    = _quiz.set.questions.length;
   const mastered = _quiz.pMastered.filter(Boolean).length;
   const skipped  = _quiz.pSkipped.filter(Boolean).length;
+  // Build responseTimes per original question index (last attempt wins)
+  const _rtByQIdx = {};
+  _quiz.pQueue.forEach((qIdx, pos) => { if (_quiz.responseTimes[pos] != null) _rtByQIdx[qIdx] = _quiz.responseTimes[pos]; });
   const entry = {
     id: uid(),
     setId: _quiz.originalSetId,
@@ -381,9 +389,23 @@ function finishPractice() {
     timeTaken,
     date: Date.now(),
     mode: 'practice',
-    answers: _quiz.set.questions.map((q, i) => _quiz.pMastered[i] ? q.correct : null)
+    answers: _quiz.set.questions.map((q, i) => _quiz.pMastered[i] ? q.correct : null),
+    responseTimes: _quiz.set.questions.map((_, i) => _rtByQIdx[i] ?? null)
   };
   addHistoryEntry(entry);
+  // Log skill + topic timeline
+  const _today = new Date().toISOString().slice(0,10);
+  const _sk = {}, _skW = {};
+  _quiz.set.questions.forEach((q, i) => {
+    if (_quiz.pSkipped[i]) return;
+    const ok = _quiz.pMastered[i];
+    (q.skillTags||[]).forEach(tag => {
+      _sk[tag] = (_sk[tag]||0) + (ok?1:0);
+      _skW[tag] = (_skW[tag]||0) + (ok?0:1);
+    });
+  });
+  Object.keys(_sk).forEach(t => appendSkillLog(t, _today, _sk[t], _skW[t]));
+  appendTopicLog(_quiz.set.name, _today, mastered, total - mastered - skipped);
   // Hiện kết quả practice riêng
   renderPracticeResult(mastered, skipped, total, timeTaken, _quiz.set);
   showScreen('screen-result');
@@ -525,6 +547,7 @@ function submitQuiz(autoSubmit) {
       trackQuestionResult(question.id, isCorrect, q.answers[i], question.correct);
     }
   });
+  const answered = q.answers.filter(a => a !== null).length;
   const entry = {
     id: uid(),
     setId: q.originalSetId,
@@ -534,9 +557,23 @@ function submitQuiz(autoSubmit) {
     timeTaken,
     date: Date.now(),
     mode: 'exam',
-    answers: q.answers.slice()
+    answers: q.answers.slice(),
+    responseTimes: q.responseTimes.slice()
   };
   addHistoryEntry(entry);
+  // Log skill + topic timeline
+  const _today = new Date().toISOString().slice(0,10);
+  const _sk = {}, _skW = {};
+  q.set.questions.forEach((question, i) => {
+    if (q.answers[i] === null) return;
+    const ok = q.answers[i] === question.correct;
+    (question.skillTags||[]).forEach(tag => {
+      _sk[tag] = (_sk[tag]||0) + (ok?1:0);
+      _skW[tag] = (_skW[tag]||0) + (ok?0:1);
+    });
+  });
+  Object.keys(_sk).forEach(t => appendSkillLog(t, _today, _sk[t], _skW[t]));
+  if (answered > 0) appendTopicLog(q.set.name, _today, score, answered - score);
   renderResult(entry, q.set);
   showScreen('screen-result');
 }

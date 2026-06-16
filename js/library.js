@@ -62,11 +62,229 @@ function confirmDeleteSet(id, name) {
 function exportPersonalizationData() {
   const history = getHistory();
   if (!history.length) { toast('Chưa có dữ liệu để xuất', 'error'); return; }
+  const json = _buildExportJson(history, getSets(), getQuestionStats(), getSkillLog(), getTopicLog());
+  const blob = new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `quiz-ai-data-${_nowStamp()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Đã xuất dữ liệu AI (' + history.length + ' phiên)', 'success');
+}
 
-  const totalQ       = history.reduce((s, h) => s + h.total, 0);
-  const totalCorrect = history.reduce((s, h) => s + h.score, 0);
-  const totalTime    = history.reduce((s, h) => s + (h.timeTaken || 0), 0);
-  const daySet       = new Set(history.map(h => new Date(h.date).toDateString()));
+function _buildExportJson(history, sets, qStats, skillLog, topicLog) {
+  const now = Date.now();
+  const toISO  = ts => new Date(ts).toISOString();
+  const toDate = ts => new Date(ts).toISOString().slice(0,10);
+  const classify = (ms, ok) => !ms ? 'unknown' : ok ? (ms < 5000 ? 'confident' : 'uncertain') : (ms < 3000 ? 'guessing' : 'confused');
+
+  // Lookup maps
+  const setById = {}; const qById = {};
+  sets.forEach(s => {
+    setById[s.id] = s;
+    (s.questions||[]).forEach(q => { qById[q.id] = { ...q, setName: s.name, setId: s.id }; });
+  });
+
+  const examH  = history.filter(h => h.mode !== 'practice');
+  const practH = history.filter(h => h.mode === 'practice');
+  const totalQ       = history.reduce((s,h) => s + h.total, 0);
+  const totalCorrect = history.reduce((s,h) => s + h.score, 0);
+  const totalTime    = history.reduce((s,h) => s + (h.timeTaken||0), 0);
+  const daySet = new Set(history.map(h => toDate(h.date)));
+  const sortedDays = [...daySet].sort();
+
+  // --- overview ---
+  const overview = {
+    totalSessions: history.length,
+    examSessions: examH.length,
+    practiceSessions: practH.length,
+    totalQuestions: totalQ,
+    totalCorrect,
+    overallAccuracy: totalQ ? Math.round(totalCorrect/totalQ*100) : 0,
+    totalStudyMinutes: Math.round(totalTime/60),
+    activeDays: daySet.size,
+    firstActivity: sortedDays[0]||null,
+    lastActivity: sortedDays[sortedDays.length-1]||null,
+    currentStreak: calcStreak()
+  };
+
+  // --- examStats ---
+  const examStats = examH.length ? {
+    sessions: examH.length,
+    avgAccuracy: Math.round(examH.reduce((s,h) => s+scorePct(h.score,h.total),0)/examH.length),
+    bestScore: Math.max(...examH.map(h => scorePct(h.score,h.total))),
+    worstScore: Math.min(...examH.map(h => scorePct(h.score,h.total))),
+    avgSecondsPerQuestion: examH.reduce((s,h) => s+(h.timeTaken||0)/h.total,0)/examH.length|0
+  } : null;
+
+  // --- practiceStats ---
+  const practiceStats = practH.length ? {
+    sessions: practH.length,
+    totalMastered: practH.reduce((s,h) => s+h.score,0),
+    avgMasteryRate: Math.round(practH.reduce((s,h) => s+h.score/h.total*100,0)/practH.length)
+  } : null;
+
+  // --- topicStats ---
+  const topicMap = {};
+  history.forEach(h => {
+    if (!topicMap[h.setName]) topicMap[h.setName] = {correct:0,wrong:0,sessions:0,totalTime:0,lastStudied:0};
+    const t = topicMap[h.setName];
+    t.correct += h.score; t.wrong += h.total-h.score;
+    t.sessions++; t.totalTime += h.timeTaken||0;
+    if (h.date > t.lastStudied) t.lastStudied = h.date;
+  });
+  const topicStats = Object.entries(topicMap).map(([topic,s]) => ({
+    topic, sessions: s.sessions, correct: s.correct, wrong: s.wrong,
+    accuracy: Math.round(s.correct/(s.correct+s.wrong)*100),
+    lastStudied: toDate(s.lastStudied)
+  })).sort((a,b) => a.accuracy-b.accuracy);
+
+  // --- skillStats from qStats ---
+  const skillMap = {};
+  Object.entries(qStats).forEach(([qId,qs]) => {
+    const q = qById[qId];
+    (q?.skillTags||[]).forEach(sk => {
+      if (!skillMap[sk]) skillMap[sk] = {correct:0,wrong:0};
+      skillMap[sk].correct += qs.correct||0;
+      skillMap[sk].wrong   += qs.wrong||0;
+    });
+  });
+  const skillStats = Object.entries(skillMap).map(([skill,s]) => {
+    const total = s.correct+s.wrong;
+    return { skill, correct:s.correct, wrong:s.wrong, total, accuracy: total?Math.round(s.correct/total*100):0 };
+  }).sort((a,b) => a.accuracy-b.accuracy);
+
+  // --- timelines from daily logs ---
+  const _buildTimeline = log => {
+    const out = {};
+    Object.entries(log).forEach(([name,days]) => {
+      out[name] = Object.entries(days).sort(([a],[b]) => a.localeCompare(b))
+        .map(([date,v]) => ({ date, correct:v.c, wrong:v.w, accuracy:v.c+v.w?Math.round(v.c/(v.c+v.w)*100):0 }));
+    });
+    return out;
+  };
+  const skillTimeline = _buildTimeline(skillLog);
+  const topicTimeline = _buildTimeline(topicLog);
+
+  // --- questionStats ---
+  const questionStats = Object.entries(qStats).map(([qId,qs]) => {
+    const q = qById[qId];
+    const total = (qs.correct||0)+(qs.wrong||0);
+    return {
+      questionId: qId,
+      questionText: q?.text||null,
+      setName: q?.setName||null,
+      skills: q?.skillTags||[],
+      correct: qs.correct||0,
+      wrong: qs.wrong||0,
+      accuracy: total?Math.round((qs.correct||0)/total*100):0,
+      firstSeen: qs.firstSeen||null
+    };
+  }).sort((a,b) => a.accuracy-b.accuracy);
+
+  // --- attemptHistory + learningPatterns (computed in one pass) ---
+  const attempts = [];
+  let fastCorrect=0, slowCorrect=0, fastWrong=0, slowWrong=0;
+  let maxWrongStreak=0, curStreak=0;
+  const confusionMap = {};
+
+  history.forEach(h => {
+    const set = setById[h.setId];
+    if (!set) return;
+    (set.questions||[]).forEach((q,i) => {
+      const ans = h.answers[i];
+      if (ans == null) return;
+      const ok = ans === q.correct;
+      const rt = h.responseTimes?.[i] || null;
+      const signal = classify(rt, ok);
+      if (ok) { curStreak=0; if(rt){ if(rt<5000) fastCorrect++; else slowCorrect++; } }
+      else {
+        curStreak++; if(curStreak>maxWrongStreak) maxWrongStreak=curStreak;
+        if(rt){ if(rt<3000) fastWrong++; else slowWrong++; }
+        const ck = `${q.options[ans]}|||${q.options[q.correct]}`;
+        confusionMap[ck] = (confusionMap[ck]||0)+1;
+      }
+      attempts.push({
+        sessionId: h.id, date: toISO(h.date), setName: h.setName, mode: h.mode||'exam',
+        questionId: q.id, questionText: q.text,
+        selectedAnswer: q.options[ans], correctAnswer: q.options[q.correct],
+        isCorrect: ok, responseTimeMs: rt, signal
+      });
+    });
+  });
+  const attemptHistory = attempts.slice(-1000); // giới hạn 1000 attempt gần nhất
+
+  const confusionPairs = Object.entries(confusionMap)
+    .sort(([,a],[,b]) => b-a).slice(0,10)
+    .map(([k,count]) => { const [sel,cor] = k.split('|||'); return {selected:sel,correct:cor,count}; });
+
+  const learningPatterns = { fastCorrect, slowCorrect, fastWrong, slowWrong, maxWrongStreak, confusionPairs };
+
+  // --- masteryScores ---
+  const masteryScores = Object.entries(qStats).map(([qId,qs]) => {
+    const q = qById[qId];
+    const total = (qs.correct||0)+(qs.wrong||0);
+    const accuracy = total?Math.round((qs.correct||0)/total*100):0;
+    const signal = total<3?'insufficient_data': accuracy>=80?'strong':accuracy>=50?'learning':'weak';
+    return { questionId:qId, questionText:q?.text||null, skills:q?.skillTags||[], mastery:accuracy, totalAttempts:total, signal };
+  }).sort((a,b) => a.mastery-b.mastery);
+
+  // --- studyBehavior ---
+  const hourCounts = {};
+  history.forEach(h => { const hr=new Date(h.date).getHours(); hourCounts[hr]=(hourCounts[hr]||0)+1; });
+  const bestStudyHour = Object.entries(hourCounts).sort(([,a],[,b]) => b-a)[0]?.[0];
+  const weekSet = new Set(history.map(h => getISOWeek(h.date)));
+  const studyBehavior = {
+    avgSessionMinutes: history.length?Math.round(totalTime/history.length/6)/10:0,
+    avgQuestionsPerSession: history.length?Math.round(totalQ/history.length):0,
+    bestStudyHour: bestStudyHour!=null?parseInt(bestStudyHour):null,
+    totalActiveDays: daySet.size,
+    avgDaysPerWeek: weekSet.size?Math.round(daySet.size/weekSet.size*10)/10:0
+  };
+
+  // --- weak / strong questions ---
+  const weakQuestions = Object.entries(qStats)
+    .filter(([,s]) => (s.wrong||0)>=2)
+    .sort(([,a],[,b]) => (b.wrong||0)-(a.wrong||0)).slice(0,20)
+    .map(([qId,s]) => {
+      const q=qById[qId]; const total=(s.correct||0)+(s.wrong||0);
+      return { questionId:qId, text:q?.text||null, setName:q?.setName||null,
+        skills:q?.skillTags||[], correct:s.correct||0, wrong:s.wrong||0,
+        accuracy:total?Math.round((s.correct||0)/total*100):0 };
+    });
+  const strongQuestions = Object.entries(qStats)
+    .filter(([,s]) => { const t=(s.correct||0)+(s.wrong||0); return t>=3&&Math.round((s.correct||0)/t*100)>=90; })
+    .sort(([,a],[,b]) => (b.correct||0)-(a.correct||0)).slice(0,20)
+    .map(([qId,s]) => {
+      const q=qById[qId]; const total=(s.correct||0)+(s.wrong||0);
+      return { questionId:qId, text:q?.text||null, setName:q?.setName||null,
+        skills:q?.skillTags||[], correct:s.correct||0, wrong:s.wrong||0,
+        accuracy:total?Math.round((s.correct||0)/total*100):0 };
+    });
+
+  // --- recommendations ---
+  const recommendations = {
+    weakestSkills:   skillStats.slice(0,5).map(s => ({skill:s.skill,accuracy:s.accuracy,attempts:s.total})),
+    strongestSkills: [...skillStats].reverse().slice(0,5).map(s => ({skill:s.skill,accuracy:s.accuracy,attempts:s.total})),
+    weakestTopics:   topicStats.slice(0,3).map(t => ({topic:t.topic,accuracy:t.accuracy,sessions:t.sessions})),
+    priorityQuestions: weakQuestions.slice(0,5).map(q => ({questionId:q.questionId,text:q.text,wrong:q.wrong,accuracy:q.accuracy}))
+  };
+
+  return {
+    meta: { exportedAt: toISO(now), purpose: 'AI learning analysis — quiz performance data' },
+    overview, examStats, practiceStats,
+    topicStats, skillStats,
+    skillTimeline, topicTimeline,
+    questionStats, attemptHistory,
+    masteryScores, learningPatterns,
+    studyBehavior,
+    weakQuestions, strongQuestions,
+    recommendations
+  };
+}
+
+function _buildReportTxt_DELETED() { // removed — export is now JSON
 
   /* topic stats */
   const topicMap = {};
@@ -253,9 +471,7 @@ Mục đích  : Gửi AI/chuyên gia đánh giá và đề xuất lộ trình h�
     t += `  ${s.date.padEnd(12)} ${modeTag} ${String(s.accuracy).padStart(3)}% (${s.score}/${s.total}) ${s.duration.padStart(6)}  ${s.topic}\n`;
   });
 
-  t += `\n${'─'.repeat(44)}\n▌RAW JSON (dùng cho phân tích tự động)\n${'─'.repeat(44)}\n`;
-  t += JSON.stringify(d, null, 2);
-  return t;
+  return '';
 }
 
 function exportSet(setId) {

@@ -55,3 +55,23 @@ function getBestScore(setId) {
     return pct > best ? pct : best;
   }, 0);
 }
+
+/* ===== SKILL / TOPIC DAILY LOG ===== */
+function getSkillLog() { try { return JSON.parse(localStorage.getItem('quiz_skill_log')||'{}'); } catch{return{};} }
+function getTopicLog() { try { return JSON.parse(localStorage.getItem('quiz_topic_log')||'{}'); } catch{return{};} }
+function _appendDayLog(storageKey, name, date, c, w) {
+  if (!name || (!c && !w)) return;
+  try {
+    const log = JSON.parse(localStorage.getItem(storageKey)||'{}');
+    if (!log[name]) log[name] = {};
+    if (!log[name][date]) log[name][date] = {c:0,w:0};
+    log[name][date].c += c;
+    log[name][date].w += w;
+    // Giữ tối đa 90 ngày gần nhất
+    const days = Object.keys(log[name]).sort();
+    if (days.length > 90) days.slice(0, days.length-90).forEach(d => delete log[name][d]);
+    localStorage.setItem(storageKey, JSON.stringify(log));
+  } catch(e){}
+}
+function appendSkillLog(skill, date, c, w) { _appendDayLog('quiz_skill_log', skill, date, c, w); }
+function appendTopicLog(topic, date, c, w)  { _appendDayLog('quiz_topic_log', topic, date, c, w); }
