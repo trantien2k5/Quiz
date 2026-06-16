@@ -1,4 +1,4 @@
-const APP_V = 34;
+const APP_V = 35;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -1794,11 +1794,23 @@ function renderAiChips() {
   const recent   = getRecentAiTopics();
   const defaults = AI_DEFAULTS.filter(t => !recent.includes(t));
   const all      = [...recent, ...defaults];
-  document.getElementById('ai-suggestions').innerHTML = all.map((t, i) =>
-    `<button class="ai-chip${i < recent.length ? ' ai-chip-recent' : ''}" onclick="setAiTopic('${t.replace(/'/g,"&#39;")}')">
-      ${i < recent.length ? '🕐 ' : ''}${t}
-    </button>`
-  ).join('');
+  document.getElementById('ai-suggestions').innerHTML = all.map((t, i) => {
+    const escaped = t.replace(/'/g, "&#39;");
+    const isRecent = i < recent.length;
+    const removeBtn = isRecent
+      ? `<span class="ai-chip-remove" onclick="removeRecentTopic(event,'${escaped}')" title="Xoá">×</span>`
+      : '';
+    return `<button class="ai-chip${isRecent ? ' ai-chip-recent' : ''}" onclick="setAiTopic('${escaped}')">
+      ${isRecent ? '🕐 ' : ''}${esc(t)}${removeBtn}
+    </button>`;
+  }).join('');
+}
+
+function removeRecentTopic(e, topic) {
+  e.stopPropagation();
+  const list = getRecentAiTopics().filter(t => t !== topic);
+  localStorage.setItem('quiz_ai_recent', JSON.stringify(list));
+  renderAiChips();
 }
 
 function showAICreate() {
