@@ -262,10 +262,7 @@ function renderQuizNav() {
     const isLocked = q.locked[pos];
     const qIdx     = q.pQueue[pos];
     const statLabel  = `${mastered}/${total} đã thuộc${skipped ? ' · ' + skipped + ' bỏ qua' : ''}`;
-    nav.innerHTML = `<div class="practice-nav">
-      <div class="practice-mastery-label">${statLabel}</div>
-      ${!isLocked ? `<div class="practice-hint-nav">Chọn đáp án để tiếp tục</div>` : ''}
-    </div>`;
+    nav.innerHTML = !isLocked ? `<div class="practice-nav"><div class="practice-hint-nav">Chọn đáp án để tiếp tục</div></div>` : '';
     return;
   }
 
