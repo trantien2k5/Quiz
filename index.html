@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=63">
+  <link rel="stylesheet" href="style.css?v=64">
 </head>
 <body>
 <div id="update-banner">
@@ -316,9 +316,10 @@
         </button>
         <h1>Lỗi sai</h1>
       </div>
-      <div class="scroll-content" id="hst-mistakes-body"></div>
-      <div class="hst-mistakes-footer">
-        <button class="btn btn-danger btn-full" onclick="retryAllWrongQuestions()">🔁 Làm lại câu sai gần đây</button>
+      <div class="scroll-content" id="hst-mistakes-body">
+        <div style="padding:16px 0 8px">
+          <button class="btn btn-danger btn-full" onclick="retryAllWrongQuestions()">🔁 Làm lại câu sai gần đây</button>
+        </div>
       </div>
     </div>
 
@@ -447,7 +448,7 @@
 <script src="js/library.js?v=63"></script>
 <script src="js/history.js?v=63"></script>
 <script src="js/ai.js?v=63"></script>
-<script src="js/app.js?v=63"></script>
+<script src="js/app.js?v=64"></script>
 <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(() => {});

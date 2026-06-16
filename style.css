@@ -803,7 +803,7 @@ textarea.form-control { resize: vertical; min-height: 72px; }
 }
 .hst-sub.active { display: flex; }
 .hst-sub .scroll-content { padding-bottom: 16px; }
-.hst-mistakes-footer { flex-shrink: 0; padding: 12px 16px; background: var(--bg); border-top: 1px solid var(--border); }
+
 
 /* Quick chips */
 .hst-quick-strip { display: flex; gap: 8px; padding: 12px 16px 4px; overflow-x: auto; scrollbar-width: none; }
