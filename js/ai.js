@@ -14,17 +14,19 @@ function renderAiChips() {
 function showAICreate(appendSetId) {
   _appendToSetId = appendSetId || null;
   const topicEl = document.getElementById('ai-topic');
+  const descEl  = document.getElementById('ai-desc');
   const titleEl = document.getElementById('ai-modal-title');
   const suggestionsEl = document.getElementById('ai-suggestions');
   if (_appendToSetId) {
     const set = getSet(_appendToSetId);
     titleEl.textContent = set ? `✨ Thêm câu vào "${set.name}"` : '✨ Tạo đề AI';
-    // Tự điền topic từ tên set, ẩn chip gợi ý
     topicEl.value = set ? set.name : '';
+    descEl.value  = (set && set.description) ? set.description : '';
     suggestionsEl.innerHTML = '';
   } else {
     titleEl.textContent = '✨ Tạo đề AI';
     topicEl.value = '';
+    descEl.value  = '';
     renderAiChips();
   }
   document.getElementById('modal-ai-create').classList.add('active');
@@ -40,9 +42,10 @@ function setAiTopic(text) {
   el.focus();
 }
 
-function buildPromptText({ topic, level, count }) {
+function buildPromptText({ topic, desc, level, count }) {
+  const descLine  = desc  ? `\nMô tả thêm: ${desc}`  : '';
   const levelLine = level ? `\nCấp độ: ${level}` : '';
-  return `Tạo ${count} câu hỏi trắc nghiệm chất lượng cao về: "${topic}"${levelLine}
+  return `Tạo ${count} câu hỏi trắc nghiệm chất lượng cao về: "${topic}"${descLine}${levelLine}
 
 CHỈ trả về JSON thuần, không markdown, không giải thích thêm:
 
@@ -105,10 +108,11 @@ Tạo đúng ${count} câu, không thiếu, không thừa.`;
 
 function generateAndCopy() {
   const topic = document.getElementById('ai-topic').value.trim();
+  const desc  = document.getElementById('ai-desc').value.trim();
   const level = document.getElementById('ai-level').value;
   const count = parseInt(document.getElementById('ai-count').value) || 20;
   if (!topic) { toast('Nhập chủ đề bạn muốn học!', 'error'); document.getElementById('ai-topic').focus(); return; }
-  const text = buildPromptText({ topic, level, count });
+  const text = buildPromptText({ topic, desc, level, count });
 
   const ta = document.getElementById('ai-prompt-text');
   ta.value = text;
