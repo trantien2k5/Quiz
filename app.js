@@ -1,4 +1,4 @@
-const APP_V = 26;
+const APP_V = 27;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -494,11 +494,13 @@ function startPractice(setId) {
   _quiz = {
     set: { ...set, questions },
     originalSetId: setId,
-    pQueue: questions.map((_, i) => i),   // queue of question indices (grows with retries)
-    pStreaks: new Array(n).fill(0),        // consecutive correct per question
-    pMastered: new Array(n).fill(false),  // mastered per question
-    answers: new Array(n).fill(null),     // per queue slot (same length as pQueue initially)
-    locked: new Array(n).fill(false),
+    pQueue:      questions.map((_, i) => i),
+    pStreaks:    new Array(n).fill(0),   // streak đúng liên tiếp
+    pMastered:  new Array(n).fill(false),
+    pWrongCount: new Array(n).fill(0),  // tổng số lần sai trong phiên
+    pSkipped:   new Array(n).fill(false),
+    answers: new Array(n).fill(null),
+    locked:  new Array(n).fill(false),
     flagged: new Array(n).fill(false),
     startTime: Date.now(),
     currentIdx: 0,
@@ -620,8 +622,10 @@ function updateQuizCounterDisplay() {
   const total = q.set.questions.length;
   if (q.pQueue) {
     const mastered = q.pMastered.filter(Boolean).length;
-    document.getElementById('quiz-counter').textContent = `${mastered}/${total} đã thuộc`;
-    document.getElementById('quiz-progress-fill').style.width = (mastered / total * 100) + '%';
+    const skipped  = q.pSkipped.filter(Boolean).length;
+    document.getElementById('quiz-counter').textContent =
+      `${mastered}/${total} đã thuộc${skipped ? ' · ' + skipped + ' bỏ qua' : ''}`;
+    document.getElementById('quiz-progress-fill').style.width = ((mastered + skipped) / total * 100) + '%';
   } else {
     const answered = q.answers.filter(a => a !== null).length;
     if (q.mode === 'one-by-one') {
@@ -646,12 +650,22 @@ function renderQuizNav() {
 
   if (q.pQueue) { // practice mode
     const mastered = q.pMastered.filter(Boolean).length;
+    const skipped  = q.pSkipped.filter(Boolean).length;
     const total    = q.set.questions.length;
-    const isLocked = q.locked[q.currentIdx];
+    const pos      = q.currentIdx;
+    const isLocked = q.locked[pos];
+    const qIdx     = q.pQueue[pos];
+    const isWrong  = isLocked && q.answers[pos] !== null && q.answers[pos] !== q.set.questions[qIdx].correct;
+    const wrongCount = q.pWrongCount[qIdx] || 0;
+    const skipLabel  = `⏭ Bỏ qua${wrongCount >= 2 ? ' (đã sai ' + wrongCount + ' lần)' : ''}`;
+    const statLabel  = `${mastered}/${total} đã thuộc${skipped ? ' · ' + skipped + ' bỏ qua' : ''}`;
     nav.innerHTML = `<div class="practice-nav">
-      <div class="practice-mastery-label">${mastered}/${total} đã thuộc</div>
+      <div class="practice-mastery-label">${statLabel}</div>
       ${isLocked
-        ? `<button class="btn btn-primary practice-next-btn" onclick="practiceAdvance()">Tiếp theo →</button>`
+        ? `<div class="practice-btn-row">
+            <button class="btn btn-primary practice-next-btn" onclick="practiceAdvance()">Tiếp theo →</button>
+            ${isWrong ? `<button class="btn btn-secondary practice-skip-btn" onclick="practiceSkip()">⏭ Bỏ qua</button>` : ''}
+           </div>`
         : `<div class="practice-hint-nav">Chọn đáp án để tiếp tục</div>`}
     </div>`;
     return;
@@ -705,6 +719,12 @@ function selectAnswer(qIdx, optIdx) {
   renderQuizNav();
 }
 
+const PRACTICE_MAX_WRONG = 3; // sai 3 lần → tự động bỏ qua
+
+function _practiceIsDone() {
+  return _quiz.pMastered.every((m, i) => m || _quiz.pSkipped[i]);
+}
+
 function practiceAdvance() {
   const pos  = _quiz.currentIdx;
   const qIdx = _quiz.pQueue[pos];
@@ -716,23 +736,36 @@ function practiceAdvance() {
     if (_quiz.pStreaks[qIdx] >= 2) _quiz.pMastered[qIdx] = true;
   } else {
     _quiz.pStreaks[qIdx] = 0;
-    const insertAt = Math.min(pos + 2 + Math.floor(Math.random() * 3), _quiz.pQueue.length);
-    _quiz.pQueue.splice(insertAt, 0, qIdx);
-    _quiz.answers.splice(insertAt, 0, null);
-    _quiz.locked.splice(insertAt, 0, false);
+    _quiz.pWrongCount[qIdx]++;
+    if (_quiz.pWrongCount[qIdx] >= PRACTICE_MAX_WRONG) {
+      // Sai quá nhiều → bỏ qua, không lặp lại
+      _quiz.pSkipped[qIdx] = true;
+    } else {
+      // Chèn lại vào hàng đợi, cách 2-4 vị trí
+      const insertAt = Math.min(pos + 2 + Math.floor(Math.random() * 3), _quiz.pQueue.length);
+      _quiz.pQueue.splice(insertAt, 0, qIdx);
+      _quiz.answers.splice(insertAt, 0, null);
+      _quiz.locked.splice(insertAt, 0, false);
+    }
   }
 
   _quiz.currentIdx++;
+  if (_practiceIsDone()) { finishPractice(); return; }
 
-  if (_quiz.pMastered.every(Boolean)) { finishPractice(); return; }
+  // Nếu queue cạn nhưng vẫn còn câu chưa xong (không nên xảy ra nhưng để an toàn)
+  if (_quiz.currentIdx >= _quiz.pQueue.length) { finishPractice(); return; }
 
-  // Đảm bảo queue không cạn (vòng lại từ câu chưa thuộc)
-  if (_quiz.currentIdx >= _quiz.pQueue.length) {
-    const remaining = _quiz.pMastered.reduce((acc, m, i) => m ? acc : [...acc, i], []);
-    _quiz.pQueue.push(...remaining);
-    remaining.forEach(() => { _quiz.answers.push(null); _quiz.locked.push(false); });
-  }
+  renderCurrentQuestion();
+  renderQuizNav();
+}
 
+function practiceSkip() {
+  const pos  = _quiz.currentIdx;
+  const qIdx = _quiz.pQueue[pos];
+  _quiz.pSkipped[qIdx] = true;
+  _quiz.pStreaks[qIdx] = 0;
+  _quiz.currentIdx++;
+  if (_practiceIsDone() || _quiz.currentIdx >= _quiz.pQueue.length) { finishPractice(); return; }
   renderCurrentQuestion();
   renderQuizNav();
 }
@@ -740,20 +773,52 @@ function practiceAdvance() {
 function finishPractice() {
   _quizInProgress = false;
   const timeTaken = Math.round((Date.now() - _quiz.startTime) / 1000);
-  const total = _quiz.set.questions.length;
+  const total    = _quiz.set.questions.length;
+  const mastered = _quiz.pMastered.filter(Boolean).length;
+  const skipped  = _quiz.pSkipped.filter(Boolean).length;
   const entry = {
     id: uid(),
     setId: _quiz.originalSetId,
     setName: _quiz.set.name,
-    score: total,
+    score: mastered,
     total,
     timeTaken,
     date: Date.now(),
-    answers: _quiz.set.questions.map(q => q.correct)
+    answers: _quiz.set.questions.map((q, i) =>
+      _quiz.pMastered[i] ? q.correct : (_quiz.answers.find ? null : null))
   };
   addHistoryEntry(entry);
-  renderResult(entry, _quiz.set);
+  // Hiện kết quả practice riêng
+  renderPracticeResult(mastered, skipped, total, timeTaken, _quiz.set);
   showScreen('screen-result');
+}
+
+function renderPracticeResult(mastered, skipped, total, timeTaken, set) {
+  const pct = Math.round(mastered / total * 100);
+  const emoji = pct === 100 ? '🎉' : pct >= 70 ? '👍' : '💪';
+
+  document.getElementById('result-emoji').textContent = emoji;
+  document.getElementById('result-title').textContent =
+    pct === 100 ? 'Xuất sắc! Thuộc hết rồi!' : `Hoàn thành luyện tập!`;
+  document.getElementById('result-subtitle').textContent =
+    `${set.name} · ${fmtTime(timeTaken)}`;
+
+  document.getElementById('result-score-correct').textContent = mastered;
+  document.getElementById('result-score-wrong').textContent = skipped;
+  document.getElementById('result-score-pct').textContent = pct + '%';
+
+  // Đổi label "Sai" thành "Bỏ qua" cho practice
+  const labels = document.querySelectorAll('#screen-result .result-stat-label');
+  if (labels[0]) labels[0].textContent = 'Đã thuộc';
+  if (labels[1]) labels[1].textContent = 'Bỏ qua';
+  if (labels[2]) labels[2].textContent = 'Điểm';
+
+  const retryBtn = document.getElementById('result-retry-btn');
+  retryBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg> ${skipped > 0 ? 'Luyện lại (gồm câu bỏ qua)' : 'Luyện tập lại'}`;
+  retryBtn.onclick = () => startPractice(set.id);
+
+  document.getElementById('result-home-btn').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Về kho đề`;
+  document.getElementById('result-home-btn').onclick = () => navTo('library');
 }
 
 function quizNext() {

@@ -1146,6 +1146,9 @@ textarea.form-control { resize: vertical; min-height: 72px; }
   font-size: 13px; font-weight: 600; color: var(--purple); white-space: nowrap;
 }
 .practice-next-btn { flex: 1; }
+.practice-btn-row { display: flex; gap: 8px; width: 100%; }
+.practice-btn-row .practice-next-btn { flex: 1; }
+.practice-skip-btn { flex-shrink: 0; font-size: 13px; }
 .practice-hint-nav {
   flex: 1; text-align: center; font-size: 13px; color: var(--text-muted);
   padding: 10px;
