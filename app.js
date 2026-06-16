@@ -1,4 +1,4 @@
-const APP_V = 17;
+const APP_V = 20;
 
 /* ===== AUTO UPDATE CHECK ===== */
 function startUpdateCheck() {
@@ -421,13 +421,18 @@ function closeQuizSettings() {
   document.getElementById('modal-quiz-settings').classList.remove('active');
 }
 
+function selectStudyMode(mode) {
+  document.querySelectorAll('.qs-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+}
+
 function beginQuiz() {
   closeQuizSettings();
-  const shuffleQ = document.getElementById('qs-shuffle-q').checked;
+  const shuffleQ    = document.getElementById('qs-shuffle-q').checked;
   const shuffleOpts = document.getElementById('qs-shuffle-opts').checked;
-  const numQRaw = document.getElementById('qs-num-q').value.trim();
-  const numQ = numQRaw ? parseInt(numQRaw) : null;
-  startQuiz(_pendingSetId, { shuffleQ, shuffleOpts, numQ });
+  const numQRaw     = document.getElementById('qs-num-q').value.trim();
+  const numQ        = numQRaw ? parseInt(numQRaw) : null;
+  const studyMode   = document.querySelector('.qs-mode-btn.active')?.dataset.mode || 'practice';
+  startQuiz(_pendingSetId, { shuffleQ, shuffleOpts, numQ, studyMode });
 }
 
 /* ===== QUIZ ===== */
@@ -458,11 +463,13 @@ function startQuiz(setOrId, settings) {
     originalSetId: typeof setOrId === 'string' ? setOrId : setOrId.id,
     answers: new Array(questions.length).fill(null),
     flagged: new Array(questions.length).fill(false),
+    locked: new Array(questions.length).fill(false),
     startTime: Date.now(),
     currentIdx: 0,
     timerInterval: null,
     timeLeft: set.timeLimit ? set.timeLimit * 60 : null,
-    mode: 'one-by-one'
+    mode: 'one-by-one',
+    studyMode: settings.studyMode || 'practice'
   };
   _quizInProgress = true;
   renderQuiz();
@@ -509,8 +516,33 @@ function renderQuiz() {
 
 function buildQuizQuestion(question, i) {
   const letters = ['A', 'B', 'C', 'D'];
-  const selected = _quiz.answers[i];
+  const selected  = _quiz.answers[i];
   const isFlagged = _quiz.flagged[i];
+  const isLocked  = _quiz.studyMode === 'practice' && _quiz.locked[i];
+  const correct   = question.correct;
+
+  const optHtml = question.options.map((opt, oi) => {
+    let cls = 'option-btn';
+    if (isLocked) {
+      cls += ' locked';
+      if (oi === correct)  cls += ' correct-ans';
+      else if (oi === selected) cls += ' wrong-ans';
+    } else if (selected === oi) {
+      cls += ' selected';
+    }
+    return `<button class="${cls}" onclick="${isLocked ? '' : `selectAnswer(${i}, ${oi})`}">
+      <span class="opt-letter">${letters[oi]}</span>
+      <span>${esc(opt)}</span>
+    </button>`;
+  }).join('');
+
+  const feedbackHtml = isLocked ? `
+    <div class="practice-feedback ${selected === correct ? 'correct' : 'wrong'}">
+      <div class="practice-feedback-badge">${selected === correct ? '✅ Chính xác!' : '❌ Sai rồi!'}</div>
+      ${selected !== correct ? `<div class="practice-feedback-correct">Đáp án đúng: <strong>${esc(question.options[correct])}</strong></div>` : ''}
+      ${question.explanation ? `<div class="practice-feedback-exp">${esc(question.explanation)}</div>` : ''}
+    </div>` : '';
+
   return `
     <div class="question-block quiz-question-block" data-idx="${i}" id="quiz-q-${i}">
       <div class="q-num-row">
@@ -520,14 +552,8 @@ function buildQuizQuestion(question, i) {
         </button>
       </div>
       <div class="q-text">${esc(question.text)}</div>
-      <div class="options-list">
-        ${question.options.map((opt, oi) => `
-          <button class="option-btn ${selected === oi ? 'selected' : ''}"
-            onclick="selectAnswer(${i}, ${oi})">
-            <span class="opt-letter">${letters[oi]}</span>
-            <span>${esc(opt)}</span>
-          </button>`).join('')}
-      </div>
+      <div class="options-list">${optHtml}</div>
+      ${feedbackHtml}
     </div>`;
 }
 
@@ -580,7 +606,15 @@ function renderQuizNav() {
 }
 
 function selectAnswer(qIdx, optIdx) {
+  if (_quiz.studyMode === 'practice' && _quiz.locked[qIdx]) return; // đã chốt
   _quiz.answers[qIdx] = optIdx;
+  if (_quiz.studyMode === 'practice') {
+    _quiz.locked[qIdx] = true;
+    renderCurrentQuestion(); // re-render để hiện feedback
+    renderQuizNav();
+    return;
+  }
+  // exam mode: cập nhật UI inline
   const block = document.getElementById('quiz-q-' + qIdx);
   if (!block) return;
   block.querySelectorAll('.option-btn').forEach((btn, i) => {
