@@ -795,6 +795,7 @@ textarea.form-control { resize: vertical; min-height: 72px; }
 
 /* ===== HISTORY SCREEN ===== */
 #screen-history { position: relative; }
+#hst-home { flex: 1; display: flex; flex-direction: column; min-height: 0; }
 .hst-sub {
   display: none; flex-direction: column;
   position: absolute; top: 0; left: 0; right: 0; bottom: var(--nav-h);
@@ -810,7 +811,7 @@ textarea.form-control { resize: vertical; min-height: 72px; }
 .hst-quick-chip { padding: 5px 14px; border-radius: 20px; white-space: nowrap; font-size: 13px; font-weight: 600; color: white; }
 
 /* Nav grid 2×2 */
-.hst-nav-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px 16px 80px; }
+.hst-nav-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px 16px 8px; }
 .hst-nav-card {
   background: var(--surface); border-radius: var(--radius); padding: 20px 16px 16px;
   cursor: pointer; border: 1px solid var(--border); box-shadow: var(--shadow-sm);
@@ -823,7 +824,7 @@ textarea.form-control { resize: vertical; min-height: 72px; }
 .hst-nav-card-sub { font-size: 12px; color: var(--text-muted); }
 
 /* Stats grid */
-.hst-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 16px 16px 80px; }
+.hst-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 16px; }
 .hst-stat-card { background: var(--surface); border-radius: var(--radius-sm); padding: 16px; text-align: center; border: 1px solid var(--border); }
 .hst-stat-val { font-size: 26px; font-weight: 800; color: var(--text); line-height: 1.1; }
 .hst-stat-lbl { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
@@ -836,7 +837,7 @@ textarea.form-control { resize: vertical; min-height: 72px; }
 .hst-chart-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
 
 /* Trend metrics */
-.hst-metric-row { display: flex; gap: 10px; padding: 0 16px 80px; }
+.hst-metric-row { display: flex; gap: 10px; padding: 0 16px 16px; }
 .hst-metric-card { flex: 1; background: var(--surface); border-radius: var(--radius-sm); padding: 14px; border: 1px solid var(--border); }
 .hst-metric-title { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
 .hst-metric-val { font-size: 16px; font-weight: 700; }
