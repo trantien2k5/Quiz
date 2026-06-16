@@ -361,7 +361,7 @@ function renderHistoryProgress() {
         <div class="hst-metric-val">${speedTrendHtml}</div>
       </div>
     </div>
-    ${setBreakdown ? `<div class="hst-chart-card" style="margin-bottom:80px">
+    ${setBreakdown ? `<div class="hst-chart-card">
       <div class="hst-chart-title">Kết quả theo bộ đề</div>
       ${setBreakdown}
     </div>` : ''}`;
@@ -462,10 +462,7 @@ function renderHistoryMistakes() {
     <div class="hst-section-header" style="margin-top:4px"><div class="section-label">Câu sai gần đây</div></div>
     ${wrongHtml}
     ${topicsHtml ? `<div class="hst-section-header" style="margin-top:4px"><div class="section-label">Đề yếu nhất</div></div><div class="hst-weak-topics-list">${topicsHtml}</div>` : ''}
-    ${skillsHtml}
-    <div style="padding:12px 16px 16px">
-      <button class="btn btn-danger btn-full" onclick="retryAllWrongQuestions()">🔁 Làm lại câu sai gần đây</button>
-    </div>`;
+    ${skillsHtml}`;
 }
 
 function retryAllWrongQuestions() {

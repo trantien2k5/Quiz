@@ -807,10 +807,12 @@ textarea.form-control { resize: vertical; min-height: 72px; }
 #screen-history { position: relative; }
 .hst-sub {
   display: none; flex-direction: column;
-  position: absolute; inset: 0;
+  position: absolute; top: 0; left: 0; right: 0; bottom: var(--nav-h);
   background: var(--bg); z-index: 1;
 }
 .hst-sub.active { display: flex; }
+.hst-sub .scroll-content { padding-bottom: 16px; }
+.hst-mistakes-footer { flex-shrink: 0; padding: 12px 16px; background: var(--bg); border-top: 1px solid var(--border); }
 
 /* Quick chips */
 .hst-quick-strip { display: flex; gap: 8px; padding: 12px 16px 4px; overflow-x: auto; scrollbar-width: none; }
