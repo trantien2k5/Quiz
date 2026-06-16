@@ -32,7 +32,7 @@
 
 /* ===== RESET ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; overflow: hidden; user-select: none; -webkit-user-select: none; }
+html, body { height: 100%; overflow: hidden; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
 /* Chặn bôi đen text trên mobile khi tap */
 button, .nav-item, .set-card, .option-btn, .ai-chip,
 .hst-nav-card, .recent-set-item, .recent-history-item,
