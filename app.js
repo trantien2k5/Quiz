@@ -1,4 +1,4 @@
-const APP_V = 37;
+const APP_V = 38;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -1862,13 +1862,13 @@ SKILL TAGS:
 - Ví dụ: ["word_form", "adjective_vs_adverb"], ["preposition", "time_expression"], ["tense", "present_perfect"]
 - Tags phải cụ thể, không dùng tags chung chung như "grammar" hay "vocabulary"
 
-GIẢI THÍCH (explanation) — quan trọng nhất:
-- Giải thích TẠI SAO đáp án đúng là đúng: nêu nguyên lý/quy tắc/lý do cốt lõi
-- Chỉ ra lỗi sai của từng đáp án sai: người học hay nhầm điều gì
-- Thêm ví dụ cụ thể hoặc công thức nếu giúp dễ nhớ hơn
-- Dùng ngôn ngữ đơn giản, dễ hiểu, như thầy cô giải thích cho học sinh
-- Dài 2-5 câu — đủ để người học hiểu sâu và nhớ lâu
-- QUAN TRỌNG: Trong explanation chỉ dùng dấu nháy đơn (') không dùng dấu nháy kép (") để tránh lỗi JSON
+GIẢI THÍCH (explanation) — ngắn gọn, đúng trọng tâm:
+- Tối đa 2 câu, không dài hơn
+- Câu 1: lý do cốt lõi tại sao đáp án đúng — nêu quy tắc/dấu hiệu nhận dạng ngay trong câu hỏi
+- Câu 2 (nếu cần): mẹo nhanh để nhớ hoặc pattern hay gặp trong đề thi
+- KHÔNG giải thích tại sao đáp án sai — không cần thiết
+- KHÔNG lặp lại nội dung câu hỏi
+- QUAN TRỌNG: chỉ dùng dấu nháy đơn (') không dùng dấu nháy kép (") để tránh lỗi JSON
 
 Tạo đúng ${count} câu, không thiếu, không thừa.`;
 }
