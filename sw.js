@@ -1,8 +1,8 @@
-const CACHE = 'quiz-v42';
+const CACHE = 'quiz-v43';
 const STATIC = [
   './index.html',
   './style.css?v=43',
-  './app.js?v=42',
+  './app.js?v=43',
   './manifest.json',
   './icon-192.svg',
   './icon-512.svg'

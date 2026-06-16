@@ -1,4 +1,4 @@
-const APP_V = 42;
+const APP_V = 43;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -519,7 +519,7 @@ function startPractice(setId) {
   if (!set || !set.questions || !set.questions.length) {
     toast('Bộ đề không có câu hỏi', 'error'); return;
   }
-  const questions = JSON.parse(JSON.stringify(set.questions));
+  const questions = JSON.parse(JSON.stringify(set.questions)).map(q => shuffleOptions(q));
   const n = questions.length;
   _quiz = {
     set: { ...set, questions },
