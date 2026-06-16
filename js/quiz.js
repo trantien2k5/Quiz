@@ -175,7 +175,6 @@ function buildQuizQuestion(question, i) {
       ${question.explanation ? `<div class="practice-feedback-exp">${esc(question.explanation)}</div>` : ''}
       <div class="practice-inline-nav">
         <button class="btn btn-primary practice-next-btn" onclick="practiceAdvance()">Tiếp theo →</button>
-        ${selected !== correct ? `<button class="btn btn-secondary practice-skip-btn" onclick="practiceSkip()">⏭ Bỏ qua</button>` : ''}
       </div>
     </div>` : '';
 
@@ -256,9 +255,6 @@ function renderQuizNav() {
     const pos      = q.currentIdx;
     const isLocked = q.locked[pos];
     const qIdx     = q.pQueue[pos];
-    const isWrong  = isLocked && q.answers[pos] !== null && q.answers[pos] !== q.set.questions[qIdx].correct;
-    const wrongCount = q.pWrongCount[qIdx] || 0;
-    const skipLabel  = `⏭ Bỏ qua${wrongCount >= 2 ? ' (đã sai ' + wrongCount + ' lần)' : ''}`;
     const statLabel  = `${mastered}/${total} đã thuộc${skipped ? ' · ' + skipped + ' bỏ qua' : ''}`;
     nav.innerHTML = `<div class="practice-nav">
       <div class="practice-mastery-label">${statLabel}</div>
