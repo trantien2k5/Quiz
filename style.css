@@ -1236,7 +1236,7 @@ textarea.form-control { resize: vertical; min-height: 72px; }
   background: var(--red) !important; border-color: var(--red) !important; color: #fff !important;
 }
 .practice-feedback {
-  margin-top: 16px; padding: 14px;
+  padding: 14px;
   border-radius: var(--radius-sm); border: 1px solid;
 }
 .practice-feedback.correct { background: #DCFCE7; border-color: #86EFAC; }
@@ -1244,6 +1244,8 @@ textarea.form-control { resize: vertical; min-height: 72px; }
 .practice-feedback-badge   { font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
 .practice-feedback-correct { font-size: 13px; color: var(--text); margin-bottom: 6px; }
 .practice-feedback-exp     { font-size: 14px; color: var(--text); line-height: 1.6; }
+.practice-inline-nav       { display: flex; gap: 10px; margin-top: 14px; }
+.practice-inline-nav .btn  { flex: 1; }
 
 /* ===== RESPONSIVE ===== */
 @media (min-width: 600px) {

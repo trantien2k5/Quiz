@@ -173,6 +173,10 @@ function buildQuizQuestion(question, i) {
       <div class="practice-feedback-badge">${selected === correct ? '✅ Chính xác!' : '❌ Sai rồi!'}</div>
       ${selected !== correct ? `<div class="practice-feedback-correct">Đáp án đúng: <strong>${esc(question.options[correct])}</strong></div>` : ''}
       ${question.explanation ? `<div class="practice-feedback-exp">${esc(question.explanation)}</div>` : ''}
+      <div class="practice-inline-nav">
+        <button class="btn btn-primary practice-next-btn" onclick="practiceAdvance()">Tiếp theo →</button>
+        ${selected !== correct ? `<button class="btn btn-secondary practice-skip-btn" onclick="practiceSkip()">⏭ Bỏ qua</button>` : ''}
+      </div>
     </div>` : '';
 
   const isMastered = isPractice && _quiz.pMastered[qIdx];
@@ -200,8 +204,7 @@ function buildQuizQuestion(question, i) {
         ${flagBtn}
       </div>
       <div class="q-text">${esc(question.text)}</div>
-      <div class="options-list">${optHtml}</div>
-      ${feedbackHtml}
+      ${isLocked ? feedbackHtml : `<div class="options-list">${optHtml}</div>`}
     </div>`;
 }
 
@@ -259,12 +262,7 @@ function renderQuizNav() {
     const statLabel  = `${mastered}/${total} đã thuộc${skipped ? ' · ' + skipped + ' bỏ qua' : ''}`;
     nav.innerHTML = `<div class="practice-nav">
       <div class="practice-mastery-label">${statLabel}</div>
-      ${isLocked
-        ? `<div class="practice-btn-row">
-            <button class="btn btn-primary practice-next-btn" onclick="practiceAdvance()">Tiếp theo →</button>
-            ${isWrong ? `<button class="btn btn-secondary practice-skip-btn" onclick="practiceSkip()">⏭ Bỏ qua</button>` : ''}
-           </div>`
-        : `<div class="practice-hint-nav">Chọn đáp án để tiếp tục</div>`}
+      ${!isLocked ? `<div class="practice-hint-nav">Chọn đáp án để tiếp tục</div>` : ''}
     </div>`;
     return;
   }
