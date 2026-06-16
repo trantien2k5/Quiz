@@ -1,4 +1,4 @@
-const APP_V = 41;
+const APP_V = 42;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -1802,13 +1802,19 @@ let _appendToSetId = null;
 
 function showAICreate(appendSetId) {
   _appendToSetId = appendSetId || null;
-  renderAiChips();
+  const topicEl = document.getElementById('ai-topic');
   const titleEl = document.getElementById('ai-modal-title');
+  const suggestionsEl = document.getElementById('ai-suggestions');
   if (_appendToSetId) {
     const set = getSet(_appendToSetId);
     titleEl.textContent = set ? `✨ Thêm câu vào "${set.name}"` : '✨ Tạo đề AI';
+    // Tự điền topic từ tên set, ẩn chip gợi ý
+    topicEl.value = set ? set.name : '';
+    suggestionsEl.innerHTML = '';
   } else {
     titleEl.textContent = '✨ Tạo đề AI';
+    topicEl.value = '';
+    renderAiChips();
   }
   document.getElementById('modal-ai-create').classList.add('active');
 }
