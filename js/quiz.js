@@ -193,8 +193,7 @@ function buildQuizQuestion(question, i) {
           : '')
     : '';
 
-  const numLabel = isPractice
-    ? `Câu ${qIdx + 1}<span class="q-num-total"> / ${total}</span>` : `Câu ${i + 1}`;
+  const numLabel = isPractice ? '' : `Câu ${i + 1}`;
 
   const flagBtn = isPractice ? '' : `
     <button class="quiz-flag-btn ${isFlagged ? 'flagged' : ''}" onclick="toggleFlag(${i})" title="Đánh dấu xem lại">
