@@ -1,4 +1,4 @@
-const APP_V = 29;
+const APP_V = 30;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -89,6 +89,23 @@ function shuffleOptions(q) {
 }
 
 /* ===== STORAGE ===== */
+function getQuestionStats() {
+  try { return JSON.parse(localStorage.getItem('quiz_q_stats') || '{}'); } catch { return {}; }
+}
+function saveQuestionStats(stats) { localStorage.setItem('quiz_q_stats', JSON.stringify(stats)); }
+function trackQuestionResult(questionId, isCorrect, selectedIdx, correctIdx) {
+  const stats = getQuestionStats();
+  if (!stats[questionId]) stats[questionId] = { firstSeen: new Date().toISOString().slice(0, 10), reviewCount: 0, correct: 0, wrong: 0, optionPattern: {} };
+  stats[questionId].reviewCount++;
+  if (isCorrect) stats[questionId].correct++;
+  else {
+    stats[questionId].wrong++;
+    const key = `${selectedIdx}->${correctIdx}`;
+    stats[questionId].optionPattern[key] = (stats[questionId].optionPattern[key] || 0) + 1;
+  }
+  saveQuestionStats(stats);
+}
+
 function getSets() {
   try { return JSON.parse(localStorage.getItem('quiz_sets') || '[]'); } catch { return []; }
 }
@@ -743,6 +760,8 @@ function practiceAdvance() {
   const q    = _quiz.set.questions[qIdx];
   const isCorrect = _quiz.answers[pos] === q.correct;
 
+  trackQuestionResult(q.id, isCorrect, _quiz.answers[pos], q.correct);
+
   if (isCorrect) {
     _quiz.pStreaks[qIdx]++;
     if (_quiz.pStreaks[qIdx] >= 1) _quiz.pMastered[qIdx] = true; // đúng 1 lần = thuộc
@@ -796,6 +815,7 @@ function finishPractice() {
     total,
     timeTaken,
     date: Date.now(),
+    mode: 'practice',
     answers: _quiz.set.questions.map((q, i) =>
       _quiz.pMastered[i] ? q.correct : (_quiz.answers.find ? null : null))
   };
@@ -901,7 +921,11 @@ function submitQuiz(autoSubmit) {
   const q = _quiz;
   let score = 0;
   q.set.questions.forEach((question, i) => {
-    if (q.answers[i] === question.correct) score++;
+    const isCorrect = q.answers[i] === question.correct;
+    if (isCorrect) score++;
+    if (q.answers[i] !== null) {
+      trackQuestionResult(question.id, isCorrect, q.answers[i], question.correct);
+    }
   });
   const entry = {
     id: uid(),
@@ -911,6 +935,7 @@ function submitQuiz(autoSubmit) {
     total: q.set.questions.length,
     timeTaken,
     date: Date.now(),
+    mode: 'exam',
     answers: q.answers.slice()
   };
   addHistoryEntry(entry);
@@ -1416,6 +1441,28 @@ function getISOWeek(date) {
   return `${d.getFullYear()}-W${String(wn).padStart(2, '0')}`;
 }
 
+function computeWeakSkills(history, sets) {
+  const skillStats = {};
+  history.forEach(entry => {
+    const set = sets.find(s => s.id === entry.setId);
+    if (!set) return;
+    entry.answers.forEach((ans, i) => {
+      const q = set.questions[i];
+      if (!q || !q.skillTags || !q.skillTags.length) return;
+      const isCorrect = ans === q.correct;
+      q.skillTags.forEach(tag => {
+        if (!skillStats[tag]) skillStats[tag] = { correct: 0, total: 0 };
+        skillStats[tag].total++;
+        if (isCorrect) skillStats[tag].correct++;
+      });
+    });
+  });
+  return Object.entries(skillStats)
+    .map(([skill, s]) => ({ skill, accuracy: Math.round(s.correct / s.total * 100), total: s.total }))
+    .filter(s => s.total >= 2)
+    .sort((a, b) => a.accuracy - b.accuracy);
+}
+
 function exportPersonalizationData() {
   const history = getHistory();
   if (!history.length) { toast('Chưa có dữ liệu để xuất', 'error'); return; }
@@ -1482,6 +1529,26 @@ function exportPersonalizationData() {
     .map(([week, s]) => ({ week, sessions: s.sessions, questions: s.total,
       accuracy: Math.round(s.correct / s.total * 100), topics: [...s.topics] }));
 
+  /* practice vs exam stats */
+  const examHistory     = history.filter(h => h.mode === 'exam' || !h.mode);
+  const practiceHistory = history.filter(h => h.mode === 'practice');
+  const examStats = examHistory.length ? {
+    sessions: examHistory.length,
+    avgAccuracy: Math.round(examHistory.reduce((s, h) => s + scorePct(h.score, h.total), 0) / examHistory.length),
+    best: Math.max(...examHistory.map(h => scorePct(h.score, h.total)))
+  } : null;
+  const masteredInPractice = practiceHistory.reduce((s, h) => s + h.score, 0);
+  const practiceStats = practiceHistory.length ? {
+    sessions: practiceHistory.length,
+    totalMastered: masteredInPractice
+  } : null;
+
+  /* weak skills */
+  const sets = getSets();
+  const weakSkillsAll = computeWeakSkills(history, sets);
+  const weakSkills = weakSkillsAll.filter(s => s.accuracy < 70);
+  const goodSkills = weakSkillsAll.filter(s => s.accuracy >= 70).reverse();
+
   const data = {
     exportDate: new Date().toISOString().slice(0, 10),
     overview: {
@@ -1493,16 +1560,22 @@ function exportPersonalizationData() {
       studyDays: daySet.size,
       currentStreak: calcStreak()
     },
+    examStats,
+    practiceStats,
     weeklyBreakdown,
     topicStats,
     topWeakTopics,
+    weakSkills,
+    goodSkills,
     weakQuestions,
+    questionStats: getQuestionStats(),
     recentSessions: history.slice(0, 30).map(h => ({
       date: new Date(h.date).toLocaleDateString('vi-VN'),
       topic: h.setName,
       score: h.score, total: h.total,
       accuracy: scorePct(h.score, h.total),
-      duration: fmtTime(h.timeTaken)
+      duration: fmtTime(h.timeTaken),
+      mode: h.mode || 'exam'
     }))
   };
 
@@ -1532,9 +1605,16 @@ Mục đích  : Gửi AI/chuyên gia đánh giá và đề xuất lộ trình h�
   Câu đúng     : ${o.totalCorrect} (${o.accuracy}%)
   TB mỗi buổi  : ${o.avgTimePerSession}
   Ngày có học  : ${o.studyDays} ngày
-  Chuỗi hiện tại: ${o.currentStreak} ngày
+  Chuỗi hiện tại: ${o.currentStreak} ngày\n`;
 
-▌THỐNG KÊ THEO CHỦ ĐỀ\n`;
+  if (d.examStats) {
+    t += `\n=== THI THỬ ===\n  Số lần thi   : ${d.examStats.sessions} | Điểm TB: ${d.examStats.avgAccuracy}% | Cao nhất: ${d.examStats.best}%\n`;
+  }
+  if (d.practiceStats) {
+    t += `\n=== LUYỆN TẬP ===\n  Số phiên     : ${d.practiceStats.sessions} | Câu đã thuộc: ${d.practiceStats.totalMastered}\n`;
+  }
+
+  t += `\n▌THỐNG KÊ THEO CHỦ ĐỀ\n`;
   Object.entries(d.topicStats)
     .sort(([,a],[,b]) => a.accuracy - b.accuracy)
     .forEach(([n, s]) => {
@@ -1545,6 +1625,19 @@ Mục đích  : Gửi AI/chuyên gia đánh giá và đề xuất lộ trình h�
   d.topWeakTopics.forEach((w, i) => {
     t += `  ${i+1}. ${w.topic} — ${w.accuracy}% (${w.sessions} buổi)\n`;
   });
+
+  if (d.weakSkills && d.weakSkills.length) {
+    t += `\n=== KỸ NĂNG YẾU ===\n`;
+    d.weakSkills.forEach(s => {
+      t += `  ${s.skill.padEnd(30)} ${String(s.accuracy).padStart(3)}% (${s.total} lần)\n`;
+    });
+  }
+  if (d.goodSkills && d.goodSkills.length) {
+    t += `\n=== KỸ NĂNG TỐT ===\n`;
+    d.goodSkills.forEach(s => {
+      t += `  ${s.skill.padEnd(30)} ${String(s.accuracy).padStart(3)}% (${s.total} lần)\n`;
+    });
+  }
 
   if (d.weakQuestions.length) {
     t += `\n▌CÂU HỎI SAI NHIỀU LẦN (top ${Math.min(d.weakQuestions.length, 10)})\n`;
@@ -1560,7 +1653,8 @@ Mục đích  : Gửi AI/chuyên gia đánh giá và đề xuất lộ trình h�
 
   t += `\n▌30 BUỔI GẦN NHẤT\n`;
   d.recentSessions.forEach(s => {
-    t += `  ${s.date.padEnd(12)} ${String(s.accuracy).padStart(3)}% (${s.score}/${s.total}) ${s.duration.padStart(6)}  ${s.topic}\n`;
+    const modeTag = s.mode === 'practice' ? '[Luyện]' : '[Thi]  ';
+    t += `  ${s.date.padEnd(12)} ${modeTag} ${String(s.accuracy).padStart(3)}% (${s.score}/${s.total}) ${s.duration.padStart(6)}  ${s.topic}\n`;
   });
 
   t += `\n${'─'.repeat(44)}\n▌RAW JSON (dùng cho phân tích tự động)\n${'─'.repeat(44)}\n`;
@@ -1622,7 +1716,8 @@ function importSetsFromData(arr) {
         text: q.text.trim(),
         options: q.options.map(o => String(o).trim()),
         correct: q.correct,
-        explanation: (q.explanation || '').trim()
+        explanation: (q.explanation || '').trim(),
+        skillTags: (q.skillTags || []).map(t => String(t).toLowerCase().trim())
       }))
     });
     imported++;
@@ -1702,7 +1797,8 @@ CHỈ trả về JSON thuần, không markdown, không giải thích thêm:
     "text": "Câu hỏi rõ ràng, hỏi đúng 1 khái niệm?",
     "options": ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
     "correct": 0,
-    "explanation": "Đáp án A đúng vì [lý do cụ thể]. B sai vì [lý do]. C sai vì [lý do]. D sai vì [lý do]."
+    "explanation": "Đáp án A đúng vì [lý do cụ thể]. B sai vì [lý do]. C sai vì [lý do]. D sai vì [lý do].",
+    "skillTags": ["word_form", "adverb"]
   }
 ]
 
@@ -1720,6 +1816,11 @@ CÂU HỎI:
 - Đáp án sai phải hợp lý — người chưa học dễ nhầm, nhưng người học kỹ sẽ phân biệt được
 - Tránh đáp án sai quá hiển nhiên hoặc vô nghĩa
 - Phân bố vị trí đáp án đúng đều ở A/B/C/D, không dồn vào 1 vị trí
+
+SKILL TAGS:
+- Mỗi câu PHẢI có "skillTags": mảng 1-3 string, snake_case, mô tả kỹ năng được test
+- Ví dụ: ["word_form", "adjective_vs_adverb"], ["preposition", "time_expression"], ["tense", "present_perfect"]
+- Tags phải cụ thể, không dùng tags chung chung như "grammar" hay "vocabulary"
 
 GIẢI THÍCH (explanation) — quan trọng nhất:
 - Giải thích TẠI SAO đáp án đúng là đúng: nêu nguyên lý/quy tắc/lý do cốt lõi
@@ -1831,7 +1932,8 @@ function importAIText() {
         text: String(item.text).trim(),
         options: item.options.map(o => String(o).trim()),
         correct: item.correct,
-        explanation: (item.explanation || '').trim()
+        explanation: (item.explanation || '').trim(),
+        skillTags: (item.skillTags || []).map(t => String(t).toLowerCase().trim())
       });
     }
   });
