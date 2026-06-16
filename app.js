@@ -1,4 +1,4 @@
-const APP_V = 38;
+const APP_V = 39;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -2016,6 +2016,14 @@ function navTo(name) {
   if (name === 'home') { showScreen('screen-home'); renderHome(); }
   else if (name === 'library') { showScreen('screen-library'); renderLibrary(); }
   else if (name === 'history') { showScreen('screen-history'); renderHistory(); }
+}
+
+function confirmClearAllData() {
+  confirm('Xoá toàn bộ dữ liệu', 'Tất cả bộ đề, lịch sử và thống kê sẽ bị xoá vĩnh viễn. Không thể khôi phục!', () => {
+    ['quiz_sets','quiz_history','quiz_q_stats','quiz_last_set'].forEach(k => localStorage.removeItem(k));
+    renderHome(); renderLibrary(); renderHistory();
+    toast('Đã xoá toàn bộ dữ liệu', 'success');
+  });
 }
 
 function confirmClearHistory() {
