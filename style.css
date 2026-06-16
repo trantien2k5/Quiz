@@ -1078,6 +1078,27 @@ textarea.form-control { resize: vertical; min-height: 72px; }
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
+/* Main single-line AI topic input */
+.ai-topic-main {
+  font-size: 15px !important;
+  padding: 14px 16px !important;
+  border-width: 2px !important;
+}
+.ai-topic-main:focus { border-color: var(--purple) !important; }
+
+/* Quick suggestion chips */
+.ai-suggestions {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px;
+}
+.ai-chip {
+  padding: 6px 12px; border-radius: 20px;
+  border: 1.5px solid var(--border); background: var(--bg);
+  font-size: 13px; color: var(--text); cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+  white-space: nowrap;
+}
+.ai-chip:hover { border-color: var(--purple); background: #EEF2FF; color: var(--purple); }
+
 .ai-row {
   display: flex;
   gap: 8px;
