@@ -1098,6 +1098,7 @@ textarea.form-control { resize: vertical; min-height: 72px; }
   white-space: nowrap;
 }
 .ai-chip:hover { border-color: var(--purple); background: #EEF2FF; color: var(--purple); }
+.ai-chip-recent { border-color: var(--purple); color: var(--purple); background: #EEF2FF; }
 
 .ai-row {
   display: flex;

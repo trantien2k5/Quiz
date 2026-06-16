@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=24">
+  <link rel="stylesheet" href="style.css?v=25">
 </head>
 <body>
 <div id="update-banner">
@@ -116,16 +116,7 @@
         placeholder="Bạn muốn học gì? Ví dụ: 20 câu từ loại TOEIC..."
         style="margin-bottom:10px">
 
-      <div class="ai-suggestions">
-        <button class="ai-chip" onclick="setAiTopic('Từ loại TOEIC')">Từ loại TOEIC</button>
-        <button class="ai-chip" onclick="setAiTopic('Giới từ TOEIC')">Giới từ TOEIC</button>
-        <button class="ai-chip" onclick="setAiTopic('Từ vựng TOEIC')">Từ vựng TOEIC</button>
-        <button class="ai-chip" onclick="setAiTopic('Tiếng Anh lớp 10')">Tiếng Anh lớp 10</button>
-        <button class="ai-chip" onclick="setAiTopic('Toán THPT')">Toán THPT</button>
-        <button class="ai-chip" onclick="setAiTopic('Lịch sử Việt Nam')">Lịch sử Việt Nam</button>
-        <button class="ai-chip" onclick="setAiTopic('Java OOP cơ bản')">Java OOP</button>
-        <button class="ai-chip" onclick="setAiTopic('Python cơ bản')">Python</button>
-      </div>
+      <div id="ai-suggestions" class="ai-suggestions"></div>
 
       <div class="ai-row" style="margin:14px 0">
         <select id="ai-level" class="form-control">
@@ -430,6 +421,6 @@
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="app.js?v=24"></script>
+<script src="app.js?v=25"></script>
 </body>
 </html>

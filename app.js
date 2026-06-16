@@ -1,4 +1,4 @@
-const APP_V = 24;
+const APP_V = 25;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -1569,7 +1569,31 @@ function importSetsFromJSON(jsonStr) {
   hideImportModal();
 }
 
-function showAICreate() { document.getElementById('modal-ai-create').classList.add('active'); }
+const AI_DEFAULTS = ['Từ loại TOEIC','Giới từ TOEIC','Từ vựng TOEIC','Tiếng Anh lớp 10','Toán THPT','Lịch sử Việt Nam','Java OOP cơ bản','Python cơ bản'];
+
+function getRecentAiTopics() {
+  try { return JSON.parse(localStorage.getItem('quiz_ai_recent') || '[]'); } catch { return []; }
+}
+function saveRecentAiTopic(topic) {
+  const list = getRecentAiTopics().filter(t => t !== topic);
+  list.unshift(topic);
+  localStorage.setItem('quiz_ai_recent', JSON.stringify(list.slice(0, 5)));
+}
+function renderAiChips() {
+  const recent   = getRecentAiTopics();
+  const defaults = AI_DEFAULTS.filter(t => !recent.includes(t));
+  const all      = [...recent, ...defaults];
+  document.getElementById('ai-suggestions').innerHTML = all.map((t, i) =>
+    `<button class="ai-chip${i < recent.length ? ' ai-chip-recent' : ''}" onclick="setAiTopic('${t.replace(/'/g,"&#39;")}')">
+      ${i < recent.length ? '🕐 ' : ''}${t}
+    </button>`
+  ).join('');
+}
+
+function showAICreate() {
+  renderAiChips();
+  document.getElementById('modal-ai-create').classList.add('active');
+}
 function hideAICreate() { document.getElementById('modal-ai-create').classList.remove('active'); }
 
 function showImportModal() { document.getElementById('import-overlay').classList.add('active'); }
@@ -1640,6 +1664,7 @@ function generateAndCopy() {
   const level = document.getElementById('ai-level').value;
   const count = parseInt(document.getElementById('ai-count').value) || 20;
   if (!topic) { toast('Nhập chủ đề bạn muốn học!', 'error'); document.getElementById('ai-topic').focus(); return; }
+  saveRecentAiTopic(topic);
   const text = buildPromptText({ topic, level, count });
 
   const ta = document.getElementById('ai-prompt-text');
