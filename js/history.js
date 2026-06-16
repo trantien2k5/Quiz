@@ -405,12 +405,9 @@ function renderHistoryMistakes() {
   const wrongHtml = recentWrongs.length
     ? recentWrongs.map(({ q, setName }) => `
         <div class="hst-mistake-card">
-          <div class="hst-mistake-badge">Sai</div>
-          <div class="hst-mistake-content">
-            <div class="hst-mistake-set">${esc(setName)}</div>
-            <div class="hst-mistake-q">${esc(q.text)}</div>
-            <div class="hst-mistake-correct">✅ ${esc(q.options[q.correct])}</div>
-          </div>
+          <div class="hst-mistake-top"><span class="hst-mistake-badge">Sai</span><span class="hst-mistake-set">${esc(setName)}</span></div>
+          <div class="hst-mistake-q">${esc(q.text)}</div>
+          <div class="hst-mistake-correct">✅ ${esc(q.options[q.correct])}</div>
         </div>`).join('')
     : '<p style="text-align:center;padding:20px;color:var(--text-muted)">Không có câu sai gần đây 🎉</p>';
 
@@ -441,12 +438,9 @@ function renderHistoryMistakes() {
   const hotspotsHtml = hotspots.length
     ? hotspots.map(({ q, setName, count }) => `
         <div class="hst-mistake-card">
-          <div class="hst-mistake-badge hst-hotspot-badge">Sai ${count}×</div>
-          <div class="hst-mistake-content">
-            <div class="hst-mistake-set">${esc(setName)}</div>
-            <div class="hst-mistake-q">${esc(q.text)}</div>
-            <div class="hst-mistake-correct">✅ ${esc(q.options[q.correct])}</div>
-          </div>
+          <div class="hst-mistake-top"><span class="hst-mistake-badge hst-hotspot-badge">Sai ${count}×</span><span class="hst-mistake-set">${esc(setName)}</span></div>
+          <div class="hst-mistake-q">${esc(q.text)}</div>
+          <div class="hst-mistake-correct">✅ ${esc(q.options[q.correct])}</div>
         </div>`).join('')
     : '';
 
@@ -469,7 +463,7 @@ function renderHistoryMistakes() {
     ${wrongHtml}
     ${topicsHtml ? `<div class="hst-section-header" style="margin-top:4px"><div class="section-label">Đề yếu nhất</div></div><div class="hst-weak-topics-list">${topicsHtml}</div>` : ''}
     ${skillsHtml}
-    <div style="padding:16px 16px 80px">
+    <div style="padding:12px 16px 16px">
       <button class="btn btn-danger btn-full" onclick="retryAllWrongQuestions()">🔁 Làm lại câu sai gần đây</button>
     </div>`;
 }
