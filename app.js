@@ -1,4 +1,4 @@
-const APP_V = 36;
+const APP_V = 37;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -1782,36 +1782,12 @@ function importSetsFromJSON(jsonStr) {
 
 const AI_DEFAULTS = ['Từ loại TOEIC','Giới từ TOEIC','Từ vựng TOEIC','Tiếng Anh lớp 10','Toán THPT','Lịch sử Việt Nam','Java OOP cơ bản','Python cơ bản'];
 
-function getRecentAiTopics() {
-  try { return JSON.parse(localStorage.getItem('quiz_ai_recent') || '[]'); } catch { return []; }
-}
-function saveRecentAiTopic(topic) {
-  if (!topic || topic.length > 50) return; // bỏ qua topic quá dài
-  const list = getRecentAiTopics().filter(t => t !== topic);
-  list.unshift(topic);
-  localStorage.setItem('quiz_ai_recent', JSON.stringify(list.slice(0, 5)));
-}
 function renderAiChips() {
-  const recent   = getRecentAiTopics();
-  const defaults = AI_DEFAULTS.filter(t => !recent.includes(t));
-  const all      = [...recent, ...defaults];
-  document.getElementById('ai-suggestions').innerHTML = all.map((t, i) => {
-    const escaped = t.replace(/'/g, "&#39;");
-    const isRecent = i < recent.length;
-    const removeBtn = isRecent
-      ? `<span class="ai-chip-remove" onclick="removeRecentTopic(event,'${escaped}')" title="Xoá">×</span>`
-      : '';
-    return `<button class="ai-chip${isRecent ? ' ai-chip-recent' : ''}" onclick="setAiTopic('${escaped}')">
-      ${isRecent ? '🕐 ' : ''}${esc(t)}${removeBtn}
-    </button>`;
-  }).join('');
-}
-
-function removeRecentTopic(e, topic) {
-  e.stopPropagation();
-  const list = getRecentAiTopics().filter(t => t !== topic);
-  localStorage.setItem('quiz_ai_recent', JSON.stringify(list));
-  renderAiChips();
+  document.getElementById('ai-suggestions').innerHTML = AI_DEFAULTS.map(t =>
+    `<button class="ai-chip" onclick="setAiTopic('${t.replace(/'/g,"&#39;")}')">
+      ${esc(t)}
+    </button>`
+  ).join('');
 }
 
 function showAICreate() {
@@ -1902,7 +1878,6 @@ function generateAndCopy() {
   const level = document.getElementById('ai-level').value;
   const count = parseInt(document.getElementById('ai-count').value) || 20;
   if (!topic) { toast('Nhập chủ đề bạn muốn học!', 'error'); document.getElementById('ai-topic').focus(); return; }
-  saveRecentAiTopic(topic);
   const text = buildPromptText({ topic, level, count });
 
   const ta = document.getElementById('ai-prompt-text');
