@@ -4,9 +4,10 @@ function buildSetCard(set) {
   const best = getBestScore(set.id);
   const bestBadge = best !== null ? `<span class="badge badge-green">🏆 ${best}%</span>` : `<span class="badge badge-gray">Chưa làm</span>`;
   const timeBadge = set.timeLimit ? `<span class="badge badge-orange">⏱ ${set.timeLimit} phút</span>` : '';
-  return `<div class="set-card">
+  const borderColor = best === null ? '#E5E7EB' : best >= 80 ? '#059669' : best >= 60 ? '#6366F1' : '#D97706';
+  return `<div class="set-card" style="border-left: 4px solid ${borderColor}">
     <div class="set-card-top">
-      <div class="set-card-icon">📝</div>
+      <div class="set-card-icon">📋</div>
       <div class="set-card-info">
         <div class="set-card-name">${esc(set.name)}</div>
         <div class="set-card-desc">${esc(set.description || 'Không có mô tả')}</div>
@@ -22,7 +23,7 @@ function buildSetCard(set) {
       <button class="btn btn-secondary btn-sm" onclick="showQuizSettings('${set.id}')" ${qCount === 0 ? 'disabled' : ''}>📝 Thi thử</button>
       <button class="btn btn-secondary btn-sm" onclick="openEditor('${set.id}')">✏️ Sửa</button>
       <button class="btn btn-outline btn-sm" onclick="showAICreate('${set.id}')">✨ Thêm câu</button>
-      <button class="btn btn-danger btn-sm" onclick="confirmDeleteSet('${set.id}', '${esc(set.name)}')">🗑</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmDeleteSet('${set.id}', '${esc(set.name)}')">🗑 Xóa</button>
       <button class="btn btn-outline btn-sm" onclick="exportSet('${set.id}')">↓ Xuất</button>
     </div>
   </div>`;
@@ -171,7 +172,7 @@ function exportPersonalizationData() {
   };
 
   const txt = _buildReportTxt(data);
-  const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+  const blob = new Blob(['﻿' + txt], { type: 'text/plain;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

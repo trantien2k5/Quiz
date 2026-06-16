@@ -239,7 +239,7 @@ function importAIText() {
   const newSet = {
     id: uid(),
     name: setName,
-    description: `Tạo bởi AI · ${questions.length} câu hỏi`,
+    description: 'Tạo bởi AI',
     timeLimit: null,
     createdAt: Date.now(),
     questions
