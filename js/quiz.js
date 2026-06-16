@@ -62,6 +62,7 @@ function startQuiz(setOrId, settings) {
   };
   _quizInProgress = true;
   localStorage.setItem('quiz_last_set', _quiz.originalSetId);
+  document.querySelector('[onclick="toggleQuizMode()"]').style.display = '';
   renderQuiz();
   showScreen('screen-quiz');
 }
@@ -101,6 +102,7 @@ function startPractice(setId) {
   };
   _quizInProgress = true;
   localStorage.setItem('quiz_last_set', _quiz.originalSetId);
+  document.querySelector('[onclick="toggleQuizMode()"]').style.display = 'none';
   renderQuiz();
   showScreen('screen-quiz');
 }
