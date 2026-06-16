@@ -1,4 +1,4 @@
-const APP_V = 44;
+const APP_V = 45;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -2076,6 +2076,14 @@ CÂU HỎI:
 - Đáp án sai phải hợp lý — người chưa học dễ nhầm, nhưng người học kỹ sẽ phân biệt được
 - Tránh đáp án sai quá hiển nhiên hoặc vô nghĩa
 - Phân bố vị trí đáp án đúng đều ở A/B/C/D, không dồn vào 1 vị trí
+
+CHỐNG PATTERN (CỰC KỲ QUAN TRỌNG):
+- KHÔNG dùng cùng 1 bộ 4 options lặp đi lặp lại nhiều câu liên tiếp — người học sẽ đoán được vị trí
+- Nếu topic chỉ hỏi 2–3 loại (vd: adjective vs adverb), PHẢI đa dạng hoá theo 3 cách:
+  1. Thay đổi loại câu hỏi: mix dạng "từ loại nào?" + "câu nào ĐÚNG?" + "từ nào SAI/khác loại?" + "chọn dạng đúng để điền vào chỗ trống"
+  2. Thay đổi distractors: 1 câu dùng [Noun, Verb, Adjective, Adverb]; câu khác dùng 4 từ cụ thể (quickly/quick/quickness/quieter); câu khác dùng [Adjective, Adverb, Cả hai đều đúng, Không phải từ nào]
+  3. Đảo vị trí đáp án đúng trong options — không có quy luật A=đúng hay D=đúng
+- Mục tiêu: sau 20 câu, người học KHÔNG THỂ đoán đáp án dựa vào pattern mà phải thực sự hiểu nội dung
 
 SKILL TAGS:
 - Mỗi câu PHẢI có "skillTags": mảng 1-3 string, snake_case, mô tả kỹ năng được test
