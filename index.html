@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Quiz App — Trắc nghiệm</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icon-192.svg">
+  <link rel="apple-touch-icon" href="assets/icon-192.svg">
   <meta name="theme-color" content="#6366F1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=65">
+  <link rel="stylesheet" href="css/style.css?v=66">
 </head>
 <body>
 <div id="update-banner">
@@ -439,16 +439,16 @@
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="js/storage.js?v=63"></script>
-<script src="js/utils.js?v=63"></script>
-<script src="js/home.js?v=63"></script>
-<script src="js/editor.js?v=63"></script>
-<script src="js/quiz.js?v=63"></script>
-<script src="js/results.js?v=63"></script>
-<script src="js/library.js?v=63"></script>
-<script src="js/history.js?v=63"></script>
-<script src="js/ai.js?v=63"></script>
-<script src="js/app.js?v=64"></script>
+<script src="js/core/storage.js?v=66"></script>
+<script src="js/core/utils.js?v=66"></script>
+<script src="js/home/home.js?v=66"></script>
+<script src="js/editor/editor.js?v=66"></script>
+<script src="js/quiz/quiz.js?v=66"></script>
+<script src="js/results/results.js?v=66"></script>
+<script src="js/library/library.js?v=66"></script>
+<script src="js/history/history.js?v=66"></script>
+<script src="js/ai/ai.js?v=66"></script>
+<script src="js/core/app.js?v=66"></script>
 <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(() => {});

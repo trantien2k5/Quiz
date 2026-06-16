@@ -1,20 +1,20 @@
-const CACHE = 'quiz-v63';
+const CACHE = 'quiz-v66';
 const STATIC = [
   './index.html',
-  './style.css?v=63',
-  './js/storage.js?v=63',
-  './js/utils.js?v=63',
-  './js/home.js?v=63',
-  './js/editor.js?v=63',
-  './js/quiz.js?v=63',
-  './js/results.js?v=63',
-  './js/library.js?v=63',
-  './js/history.js?v=63',
-  './js/ai.js?v=63',
-  './js/app.js?v=63',
+  './css/style.css?v=66',
+  './js/core/storage.js?v=66',
+  './js/core/utils.js?v=66',
+  './js/core/app.js?v=66',
+  './js/home/home.js?v=66',
+  './js/editor/editor.js?v=66',
+  './js/quiz/quiz.js?v=66',
+  './js/results/results.js?v=66',
+  './js/library/library.js?v=66',
+  './js/history/history.js?v=66',
+  './js/ai/ai.js?v=66',
   './manifest.json',
-  './icon-192.svg',
-  './icon-512.svg'
+  './assets/icon-192.svg',
+  './assets/icon-512.svg'
 ];
 
 // Cài đặt: cache toàn bộ assets tĩnh

@@ -6,7 +6,7 @@ const root = path.join(__dirname, '..');
 const versionFile = path.join(root, 'version.json');
 const swFile = path.join(root, 'sw.js');
 const htmlFile = path.join(root, 'index.html');
-const appJsFile = path.join(root, 'js', 'app.js');
+const appJsFile = path.join(root, 'js', 'core', 'app.js');
 
 const args = process.argv.slice(2);
 const verFlagIdx = args.indexOf('--ver');
