@@ -1,4 +1,4 @@
-const APP_V = 28;
+const APP_V = 29;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -589,9 +589,15 @@ function buildQuizQuestion(question, i) {
       ${question.explanation ? `<div class="practice-feedback-exp">${esc(question.explanation)}</div>` : ''}
     </div>` : '';
 
-  const streak = isPractice ? _quiz.pStreaks[qIdx] : 0;
+  const isMastered = isPractice && _quiz.pMastered[qIdx];
+  const wrongCount = isPractice ? (_quiz.pWrongCount[qIdx] || 0) : 0;
   const streakDots = isPractice
-    ? `<span class="practice-streak">${streak >= 1 ? '⭐' : '○'}${streak >= 2 ? '⭐' : '○'}</span>` : '';
+    ? (isMastered
+        ? `<span class="practice-badge mastered">✅ Đã thuộc</span>`
+        : wrongCount > 0
+          ? `<span class="practice-badge wrong-hint">Sai ${wrongCount}/3</span>`
+          : '')
+    : '';
 
   const numLabel = isPractice
     ? `Câu ${qIdx + 1}<span class="q-num-total"> / ${total}</span>` : `Câu ${i + 1}`;
@@ -739,7 +745,7 @@ function practiceAdvance() {
 
   if (isCorrect) {
     _quiz.pStreaks[qIdx]++;
-    if (_quiz.pStreaks[qIdx] >= 2) _quiz.pMastered[qIdx] = true;
+    if (_quiz.pStreaks[qIdx] >= 1) _quiz.pMastered[qIdx] = true; // đúng 1 lần = thuộc
   } else {
     _quiz.pStreaks[qIdx] = 0;
     _quiz.pWrongCount[qIdx]++;

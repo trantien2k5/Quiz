@@ -1153,11 +1153,13 @@ textarea.form-control { resize: vertical; min-height: 72px; }
   flex: 1; text-align: center; font-size: 13px; color: var(--text-muted);
   padding: 10px;
 }
-/* Streak dots in question header */
-.practice-streak {
-  font-size: 12px; margin-left: 8px; letter-spacing: 1px;
-}
 .q-num-total { color: var(--text-muted); font-weight: 400; }
+.practice-badge {
+  margin-left: 8px; padding: 2px 8px; border-radius: 10px;
+  font-size: 11px; font-weight: 600; vertical-align: middle;
+}
+.practice-badge.mastered { background: #DCFCE7; color: #15803D; }
+.practice-badge.wrong-hint { background: #FEF2F2; color: #B91C1C; }
 /* Two-button group in recent set card */
 .recent-set-btns { display: flex; gap: 4px; flex-shrink: 0; }
 
