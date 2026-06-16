@@ -1,4 +1,4 @@
-const APP_V = 31;
+const APP_V = 34;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -1835,17 +1835,25 @@ function buildPromptText({ topic, level, count }) {
 
 CHỈ trả về JSON thuần, không markdown, không giải thích thêm:
 
-[
-  {
-    "text": "Câu hỏi rõ ràng, hỏi đúng 1 khái niệm?",
-    "options": ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
-    "correct": 0,
-    "explanation": "Đáp án A đúng vì [lý do cụ thể]. B sai vì [lý do]. C sai vì [lý do]. D sai vì [lý do].",
-    "skillTags": ["word_form", "adverb"]
-  }
-]
+{
+  "name": "Tên bộ đề ngắn gọn, chuyên nghiệp (≤ 50 ký tự, không đề số câu)",
+  "questions": [
+    {
+      "text": "Câu hỏi rõ ràng, hỏi đúng 1 khái niệm?",
+      "options": ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
+      "correct": 0,
+      "explanation": "Đáp án A đúng vì [lý do cụ thể]. B sai vì [lý do]. C sai vì [lý do]. D sai vì [lý do].",
+      "skillTags": ["word_form", "adverb"]
+    }
+  ]
+}
 
 == YÊU CẦU CHẤT LƯỢNG ==
+
+TÊN BỘ ĐỀ (name):
+- Ngắn gọn, chuyên nghiệp, ≤ 50 ký tự
+- Mô tả đúng nội dung: ví dụ "Từ loại TOEIC cơ bản", "Giới từ thời gian tiếng Anh", "Toán THPT — Đạo hàm"
+- KHÔNG ghi số câu, không ghi độ khó, không thêm emoji hay ký tự đặc biệt
 
 CÂU HỎI:
 - Hỏi đúng 1 khái niệm cụ thể, không mơ hồ, không có 2 cách hiểu
@@ -1961,10 +1969,17 @@ function importAIText() {
     return;
   }
 
-  const arr = Array.isArray(data) ? data : [data];
+  // Hỗ trợ cả 2 format: array (cũ) và { name, questions } (mới)
+  let arr, aiName;
+  if (Array.isArray(data)) {
+    arr = data; aiName = null;
+  } else if (data && Array.isArray(data.questions)) {
+    arr = data.questions; aiName = data.name || null;
+  } else {
+    arr = [data]; aiName = null;
+  }
 
-  const setName = document.getElementById('ai-topic').value.trim() || 'Bộ đề AI';
-  const count   = parseInt(document.getElementById('ai-count').value) || 20;
+  const setName = (aiName && aiName.trim()) || document.getElementById('ai-topic').value.trim() || 'Bộ đề AI';
 
   // Ghép tất cả câu hỏi vào 1 bộ đề
   const questions = [];
