@@ -1,4 +1,8 @@
 /* ===== LIBRARY SCREEN ===== */
+function _nowStamp() {
+  const d = new Date(), p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
+}
 function buildSetCard(set) {
   const qCount = set.questions ? set.questions.length : 0;
   const best = getBestScore(set.id);
@@ -176,7 +180,7 @@ function exportPersonalizationData() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `quiz-report-${data.exportDate}.txt`;
+  a.download = `quiz-report-${_nowStamp()}.txt`;
   a.click();
   URL.revokeObjectURL(url);
   toast('Đã xuất báo cáo học tập', 'success');
@@ -261,7 +265,7 @@ function exportSet(setId) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${set.name.replace(/[^a-z0-9]/gi, '_')}_quiz.json`;
+  a.download = `${set.name.replace(/[^a-z0-9]/gi, '_')}_quiz_${_nowStamp()}.json`;
   a.click();
   URL.revokeObjectURL(url);
   toast('Đã xuất bộ đề', 'success');
@@ -274,7 +278,7 @@ function exportAllSets() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'quiz_sets_all.json';
+  a.download = `quiz_sets_all_${_nowStamp()}.json`;
   a.click();
   URL.revokeObjectURL(url);
   toast(`Đã xuất ${sets.length} bộ đề`, 'success');
