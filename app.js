@@ -1,4 +1,4 @@
-const APP_V = 30;
+const APP_V = 31;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -816,8 +816,7 @@ function finishPractice() {
     timeTaken,
     date: Date.now(),
     mode: 'practice',
-    answers: _quiz.set.questions.map((q, i) =>
-      _quiz.pMastered[i] ? q.correct : (_quiz.answers.find ? null : null))
+    answers: _quiz.set.questions.map((q, i) => _quiz.pMastered[i] ? q.correct : null)
   };
   addHistoryEntry(entry);
   // Hiện kết quả practice riêng
@@ -851,6 +850,40 @@ function renderPracticeResult(mastered, skipped, total, timeTaken, set) {
 
   document.getElementById('result-home-btn').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Về kho đề`;
   document.getElementById('result-home-btn').onclick = () => navTo('library');
+
+  // Ẩn nút xem đáp án và populate review list với kết quả practice
+  document.getElementById('result-detail-btn').style.display = 'none';
+  const letters = ['A', 'B', 'C', 'D'];
+  document.getElementById('review-list').innerHTML = set.questions.map((q, i) => {
+    const isMastered = _quiz.pMastered[i];
+    const isSkipped  = _quiz.pSkipped[i];
+    const statusClass = isMastered ? 'correct' : isSkipped ? 'skipped' : 'wrong';
+    const statusIcon  = isMastered ? '✅' : isSkipped ? '⚪' : '❌';
+    const statusLabel = isMastered ? 'Đã thuộc' : isSkipped ? 'Bỏ qua' : 'Chưa thuộc';
+    const expHTML = q.explanation ? `<div class="review-explanation">💡 ${esc(q.explanation)}</div>` : '';
+    return `<div class="review-card ${statusClass}" data-result="${statusClass}">
+      <div class="review-card-header">
+        <span class="review-status-icon">${statusIcon}</span>
+        <span class="review-q-num">Câu ${i + 1}</span>
+        <span class="review-q-text">${esc(q.text)}</span>
+      </div>
+      <div class="review-card-body">
+        ${q.options.map((opt, oi) => {
+          const cls = oi === q.correct ? 'correct-ans' : '';
+          return `<div class="review-option ${cls}">
+            <span class="opt-letter">${letters[oi]}</span>
+            <span style="flex:1">${esc(opt)}</span>
+            ${oi === q.correct ? '<span class="review-tag correct-tag">✓ Đúng</span>' : ''}
+          </div>`;
+        }).join('')}
+        ${expHTML}
+        <div style="margin-top:8px;font-size:13px;color:var(--text-muted)">${statusLabel}</div>
+      </div>
+    </div>`;
+  }).join('');
+  // Cho phép xem đáp án practice
+  document.getElementById('result-detail-btn').style.display = '';
+  document.getElementById('result-detail-btn').textContent = '📋 Xem đáp án chi tiết';
 }
 
 function quizNext() {
@@ -972,6 +1005,16 @@ function renderResult(entry, set) {
   _resultEntry = entry;
   _resultSet = set;
   const pct = scorePct(entry.score, entry.total);
+
+  // Reset labels/buttons có thể bị renderPracticeResult đổi
+  const labels = document.querySelectorAll('#screen-result .result-stat-label');
+  if (labels[0]) labels[0].textContent = 'Đúng';
+  if (labels[1]) labels[1].textContent = 'Sai';
+  if (labels[2]) labels[2].textContent = 'Điểm';
+  document.getElementById('result-retry-btn').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg> Làm lại đề`;
+  document.getElementById('result-home-btn').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Về trang chủ`;
+  document.getElementById('result-detail-btn').style.display = '';
+  document.getElementById('result-detail-btn').innerHTML = '📋 Xem đáp án chi tiết';
 
   // Populate summary
   document.getElementById('result-emoji').textContent = resultEmoji(pct);
