@@ -1,4 +1,4 @@
-const APP_V = 20;
+const APP_V = 21;
 
 /* ===== AUTO UPDATE CHECK ===== */
 function startUpdateCheck() {
@@ -1466,8 +1466,16 @@ function handleImportFile(e) {
 }
 
 /* ===== AI CREATE ===== */
-function buildPromptText(topic, count) {
-  return `Tạo ${count} câu hỏi trắc nghiệm chất lượng cao về: "${topic}".
+function buildPromptText({ name, topic, desc, level, count }) {
+  const lines = [];
+  lines.push(`Tên bộ đề: "${name}"`);
+  lines.push(`Chủ đề: "${topic}"`);
+  if (desc) lines.push(`Mô tả / phạm vi: "${desc}"`);
+  if (level) lines.push(`Cấp độ: ${level}`);
+  const context = lines.join('\n');
+
+  return `Tạo ${count} câu hỏi trắc nghiệm chất lượng cao với thông tin sau:
+${context}
 
 CHỈ trả về JSON thuần, không markdown, không giải thích thêm:
 
@@ -1507,10 +1515,13 @@ Tạo đúng ${count} câu, không thiếu, không thừa.`;
 }
 
 function generateAndCopy() {
+  const name  = document.getElementById('ai-name').value.trim();
   const topic = document.getElementById('ai-topic').value.trim();
-  if (!topic) { toast('Vui lòng nhập chủ đề', 'error'); return; }
+  const desc  = document.getElementById('ai-desc').value.trim();
+  const level = document.getElementById('ai-level').value;
   const count = parseInt(document.getElementById('ai-count').value) || 10;
-  const text = buildPromptText(topic, count);
+  if (!name && !topic) { toast('Vui lòng nhập ít nhất tên hoặc chủ đề', 'error'); return; }
+  const text = buildPromptText({ name: name || topic, topic: topic || name, desc, level, count });
 
   const ta = document.getElementById('ai-prompt-text');
   ta.value = text;
@@ -1591,8 +1602,10 @@ function importAIText() {
 
   const arr = Array.isArray(data) ? data : [data];
 
-  // Lấy tên bộ đề từ input hoặc topic
-  const setName = document.getElementById('ai-topic').value.trim() || 'Bộ đề AI';
+  const setName = document.getElementById('ai-name').value.trim()
+    || document.getElementById('ai-topic').value.trim()
+    || 'Bộ đề AI';
+  const setDesc = document.getElementById('ai-desc').value.trim();
 
   // Ghép tất cả câu hỏi vào 1 bộ đề
   const questions = [];
@@ -1616,7 +1629,7 @@ function importAIText() {
   const newSet = {
     id: uid(),
     name: setName,
-    description: `Tạo bởi AI · ${questions.length} câu hỏi`,
+    description: setDesc || `Tạo bởi AI · ${questions.length} câu hỏi`,
     timeLimit: null,
     createdAt: Date.now(),
     questions
@@ -1624,9 +1637,11 @@ function importAIText() {
   saveSet(newSet);
   toast(`✅ Đã nhập ${questions.length} câu hỏi vào "${setName}"`, 'success');
 
-  document.getElementById('ai-result-text').value = '';
-  document.getElementById('ai-prompt-text').value = '';
-  document.getElementById('ai-topic').value = '';
+  ['ai-name', 'ai-topic', 'ai-desc', 'ai-result-text', 'ai-prompt-text'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('ai-level').value = '';
   hideAICreate();
   renderLibrary();
 }

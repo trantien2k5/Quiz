@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20">
+  <link rel="stylesheet" href="style.css?v=21">
 </head>
 <body>
 <div id="update-banner">
@@ -111,9 +111,23 @@
     <div class="modal-sheet">
       <div class="modal-handle"></div>
       <div class="modal-title">✨ Tạo đề AI</div>
-      <label class="form-label">Chủ đề &amp; số câu</label>
-      <div class="ai-row" style="margin-bottom:10px">
-        <input type="text" id="ai-topic" class="form-control" placeholder="Ví dụ: TOEIC grammar, Lịch sử VN...">
+
+      <label class="form-label">Tên bộ đề</label>
+      <input type="text" id="ai-name" class="form-control" placeholder="Ví dụ: Ngữ pháp TOEIC, Lịch sử Việt Nam..." style="margin-bottom:10px">
+
+      <label class="form-label">Chủ đề / nội dung cần ra câu hỏi</label>
+      <input type="text" id="ai-topic" class="form-control" placeholder="Mô tả chi tiết hơn nội dung, phạm vi..." style="margin-bottom:10px">
+
+      <label class="form-label">Mô tả <span style="font-weight:400;color:var(--text-muted)">(tuỳ chọn)</span></label>
+      <input type="text" id="ai-desc" class="form-control" placeholder="Dành cho ai, mục tiêu gì, phạm vi ra sao..." style="margin-bottom:10px">
+
+      <div class="ai-row" style="margin-bottom:14px">
+        <select id="ai-level" class="form-control">
+          <option value="">Mọi cấp độ</option>
+          <option value="cơ bản">Cơ bản</option>
+          <option value="trung bình">Trung bình</option>
+          <option value="nâng cao">Nâng cao</option>
+        </select>
         <select id="ai-count" class="form-control ai-count-select">
           <option value="5">5 câu</option>
           <option value="10" selected>10 câu</option>
@@ -123,6 +137,7 @@
           <option value="50">50 câu</option>
         </select>
       </div>
+
       <button class="btn btn-primary btn-full" onclick="generateAndCopy()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
         Tạo &amp; Copy Prompt
@@ -422,6 +437,6 @@
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="app.js?v=20"></script>
+<script src="app.js?v=21"></script>
 </body>
 </html>
