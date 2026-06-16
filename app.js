@@ -1,4 +1,4 @@
-const APP_V = 35;
+const APP_V = 36;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -1786,6 +1786,7 @@ function getRecentAiTopics() {
   try { return JSON.parse(localStorage.getItem('quiz_ai_recent') || '[]'); } catch { return []; }
 }
 function saveRecentAiTopic(topic) {
+  if (!topic || topic.length > 50) return; // bỏ qua topic quá dài
   const list = getRecentAiTopics().filter(t => t !== topic);
   list.unshift(topic);
   localStorage.setItem('quiz_ai_recent', JSON.stringify(list.slice(0, 5)));
