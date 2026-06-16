@@ -799,7 +799,7 @@ textarea.form-control { resize: vertical; min-height: 72px; }
 .hst-sub {
   display: none; flex-direction: column;
   position: absolute; top: 0; left: 0; right: 0; bottom: var(--nav-h);
-  background: var(--bg); z-index: 1;
+  background: var(--bg); z-index: 20;
 }
 .hst-sub.active { display: flex; }
 .hst-sub .scroll-content { padding-bottom: 16px; }
