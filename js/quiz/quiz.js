@@ -595,3 +595,38 @@ function exitQuiz() {
     goBack();
   }
 }
+
+/* ===== KEYBOARD SHORTCUTS ===== */
+document.addEventListener('keydown', e => {
+  if (!_quiz || !_quizInProgress) return;
+  if (document.querySelector('.modal-overlay.active')) return;
+  if (e.target.matches('input, textarea, select')) return;
+
+  const isPractice = !!_quiz.pQueue;
+  const pos = _quiz.currentIdx;
+  const isLocked = isPractice ? _quiz.locked[pos] : false;
+
+  const optMap = { '1': 0, 'a': 0, '2': 1, 'b': 1, '3': 2, 'c': 2, '4': 3, 'd': 3 };
+  const key = e.key.toLowerCase();
+
+  if (optMap[key] !== undefined && !isLocked) {
+    selectAnswer(pos, optMap[key]);
+    return;
+  }
+
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    if (isPractice) {
+      if (isLocked) practiceAdvance();
+    } else if (_quiz.mode === 'one-by-one') {
+      const isLast = pos === _quiz.set.questions.length - 1;
+      isLast ? submitQuizConfirm() : quizNext();
+    }
+    return;
+  }
+
+  if (!isPractice && _quiz.mode === 'one-by-one') {
+    if (e.key === 'ArrowLeft') quizPrev();
+    else if (e.key === 'ArrowRight') quizNext();
+  }
+});
