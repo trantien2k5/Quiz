@@ -1,0 +1,47 @@
+/* =====================================================
+   COMPONENT: Toggle switch
+   ===================================================== */
+
+.toggle {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  width: 3rem;
+  height: 1.75rem;
+}
+
+.toggle input {
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-border);
+  cursor: pointer;
+  transition: background var(--transition-medium);
+}
+
+.toggle-slider::before {
+  position: absolute;
+  top: 0.25rem;
+  left: 0.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: #fff;
+  content: '';
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform var(--transition-medium);
+}
+
+.toggle input:checked + .toggle-slider {
+  background: var(--color-brand);
+}
+
+.toggle input:checked + .toggle-slider::before {
+  transform: translateX(1.25rem);
+}

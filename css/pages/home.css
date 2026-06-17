@@ -1,0 +1,111 @@
+/* =====================================================
+   PAGE: Home — stats · recent sets · recent history
+   ===================================================== */
+
+/* ===== STATS ROW ===== */
+.stats-row {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: 1.25rem;
+}
+
+.stat-box {
+  flex: 1;
+  padding: 0.75rem var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-val {
+  font-size: var(--text-2xl);
+  font-weight: var(--fw-bold);
+  color: var(--color-brand);
+}
+
+.stat-lbl {
+  margin-top: 0.125rem;
+  font-size: var(--text-2xs);
+  color: var(--color-text-muted);
+}
+
+.home-empty {
+  padding: 0.75rem 0 var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* ===== RECENT SETS ===== */
+.recent-set-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: var(--space-2);
+  padding: 0.75rem 0.875rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.recent-set-icon {
+  flex-shrink: 0;
+  font-size: 1.375rem;
+}
+
+.recent-set-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.recent-set-name {
+  overflow: hidden;
+  font-size: var(--text-md);
+  font-weight: var(--fw-semi);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.recent-set-meta {
+  margin-top: 0.125rem;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.recent-set-btns {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-1);
+}
+
+/* ===== RECENT HISTORY ===== */
+.recent-history-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.recent-history-item:last-child {
+  border-bottom: none;
+}
+
+.recent-history-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.recent-history-name {
+  overflow: hidden;
+  font-size: var(--text-md);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.recent-history-date {
+  margin-top: 0.125rem;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}

@@ -1,0 +1,56 @@
+/* =====================================================
+   ANIMATIONS — keyframes used across components
+   ===================================================== */
+
+/* Ripple expand (used by .btn ripple effect) */
+@keyframes ripple-expand {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Option selected pop */
+@keyframes option-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+/* Toast enter */
+@keyframes toast-in {
+  from {
+    transform: translateY(100%) translateX(-50%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) translateX(-50%);
+    opacity: 1;
+  }
+}
+
+/* Toast exit */
+@keyframes toastOut {
+  to {
+    transform: translateY(100%) translateX(-50%);
+    opacity: 0;
+  }
+}
+
+/* Generic fade in */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Fade + slide up (modals, cards) */
+@keyframes fadeSlideUp {
+  from {
+    transform: translateY(0.5rem);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

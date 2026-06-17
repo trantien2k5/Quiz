@@ -1,0 +1,40 @@
+/* =====================================================
+   SHELL — app container · SPA screens
+   ===================================================== */
+
+/* App container — max-width centering for desktop */
+.app {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+/*
+  Screen — full-bleed SPA panels (hidden by default).
+  Note: IDs (#screen-*) are used by JS routing — styled
+  here as a type selector for uniqueness guarantee.
+  z-index scale: top-bar=10, sub=20, nav=100, modal=200, toast=300
+*/
+section {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+
+section.active {
+  display: flex;
+}
+
+/* Scroll area — fills remaining height below top-bar */
+.scroll-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--space-4);
+  padding-bottom: calc(var(--nav-h) + var(--space-4));
+}

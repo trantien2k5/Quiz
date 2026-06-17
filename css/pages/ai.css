@@ -1,0 +1,89 @@
+/* =====================================================
+   PAGE: AI — AI generate screen
+   ===================================================== */
+
+.ai-card {
+  margin-bottom: 0.875rem;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.ai-card-label {
+  margin-bottom: 0.75rem;
+  font-size: var(--text-sm);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.025rem;
+  text-transform: uppercase;
+  color: var(--color-brand);
+}
+
+/* Main topic input — larger than default form-control */
+.ai-topic-main {
+  padding: 0.875rem var(--space-4);
+  border-width: 2px;
+  font-size: var(--text-lg);
+}
+
+.ai-topic-main:focus { border-color: var(--color-brand-dark); }
+
+/* Suggestion chips */
+.ai-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.ai-chip {
+  padding: 0.375rem 0.75rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  color: var(--color-text);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-base),
+    background var(--transition-base),
+    color var(--transition-base);
+}
+
+@media (hover: hover) {
+  .ai-chip:hover {
+    border-color: var(--color-brand);
+    background: var(--color-brand-light);
+    color: var(--color-brand);
+  }
+}
+
+/* Row with count input */
+.ai-row {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: 0.625rem;
+}
+
+.ai-row .form-control { flex: 1; }
+
+.ai-count-input {
+  flex: 0 0 4.5rem;
+  width: 4.5rem;
+  text-align: center;
+}
+
+.ai-count-select {
+  flex: 0 0 5.625rem;
+  cursor: pointer;
+}
+
+.ai-hint {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  text-align: center;
+  color: var(--color-text-muted);
+}

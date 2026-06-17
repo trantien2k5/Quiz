@@ -1,0 +1,30 @@
+/* =====================================================
+   COMPONENT: FAB (Floating Action Button)
+   ===================================================== */
+
+.fab {
+  position: absolute;
+  bottom: calc(var(--nav-h) + var(--space-4));
+  right: var(--space-4);
+  z-index: var(--z-sub);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 50%;
+  background: var(--color-brand);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(99,102,241,0.4);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.fab:active {
+  box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+  transform: scale(0.93);
+}
+
+.fab svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}

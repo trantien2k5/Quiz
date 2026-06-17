@@ -1,0 +1,66 @@
+/* =====================================================
+   COMPONENT: Update banner (app update notification)
+   ===================================================== */
+
+.update-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-banner);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem var(--space-4);
+  background: var(--color-brand);
+  font-size: var(--text-md);
+  font-weight: var(--fw-medium);
+  color: #fff;
+  transform: translateY(-100%);
+  transition: transform var(--transition-slow);
+}
+
+.update-banner.show {
+  transform: translateY(0);
+}
+
+.update-banner__btn {
+  padding: 0.3125rem 0.875rem;
+  border-radius: var(--radius-full);
+  background: rgba(255,255,255,0.25);
+  font-size: var(--text-sm);
+  font-weight: var(--fw-semi);
+  color: #fff;
+}
+
+/* ID alias — element uses id="update-banner" */
+#update-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-banner);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem var(--space-4);
+  background: var(--color-brand);
+  font-size: var(--text-md);
+  font-weight: var(--fw-medium);
+  color: #fff;
+  transform: translateY(-100%);
+  transition: transform var(--transition-slow);
+}
+
+#update-banner.show {
+  transform: translateY(0);
+}
+
+#update-banner button {
+  padding: 0.3125rem 0.875rem;
+  border-radius: var(--radius-full);
+  background: rgba(255,255,255,0.25);
+  font-size: var(--text-sm);
+  font-weight: var(--fw-semi);
+  color: #fff;
+}

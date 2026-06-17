@@ -1,0 +1,61 @@
+/* =====================================================
+   COMPONENT: Form controls
+   ===================================================== */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3125rem;
+  margin-bottom: 0.875rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: var(--text-sm);
+  font-weight: var(--fw-semi);
+  color: var(--color-text-muted);
+}
+
+.form-group label {
+  font-size: var(--text-sm);
+  font-weight: var(--fw-semi);
+  color: var(--color-text-muted);
+}
+
+.form-group label span {
+  font-weight: var(--fw-normal);
+  color: var(--color-text-light);
+}
+
+.form-hint {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.form-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font-size: var(--text-lg);
+  color: var(--color-text);
+  outline: none;
+  transition: border-color var(--transition-base);
+}
+
+.form-control:focus {
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 4.5rem;
+}
