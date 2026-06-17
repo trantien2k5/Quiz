@@ -1,0 +1,29 @@
+/* =====================================================
+   AI — AI generate screen
+   ===================================================== */
+
+.ai-card       { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 16px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
+.ai-card-label { font-size: 13px; font-weight: 700; color: var(--purple); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.4px; }
+
+/* Main topic input */
+.ai-topic-main       { font-size: 15px !important; padding: 14px 16px !important; border-width: 2px !important; }
+.ai-topic-main:focus { border-color: var(--purple) !important; }
+
+/* Suggestion chips */
+.ai-suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.ai-chip        {
+  padding: 6px 12px; border-radius: 20px;
+  border: 1.5px solid var(--border); background: var(--bg);
+  font-size: 13px; color: var(--text); cursor: pointer;
+  transition: border-color 0.12s, background 0.12s; white-space: nowrap;
+}
+@media (hover: hover) {
+  .ai-chip:hover { border-color: var(--purple); background: #EEF2FF; color: var(--purple); }
+}
+
+/* Row with count input */
+.ai-row              { display: flex; gap: 8px; margin-bottom: 10px; }
+.ai-row .form-control { flex: 1; }
+.ai-count-input      { width: 72px !important; flex: 0 0 72px !important; text-align: center; }
+.ai-count-select     { flex: 0 0 90px; cursor: pointer; }
+.ai-hint             { font-size: 12px; color: var(--text-muted); text-align: center; margin: 8px 0 0; line-height: 1.4; }

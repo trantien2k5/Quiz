@@ -1,0 +1,119 @@
+/* =====================================================
+   HISTORY — hst-home · sub-screens · stats · charts
+              calendar · log · score circle
+   ===================================================== */
+
+/* ===== SCREEN LAYOUT ===== */
+#hst-home { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.hst-sub  {
+  display: none; flex-direction: column;
+  position: absolute; top: 0; left: 0; right: 0; bottom: var(--nav-h);
+  background: var(--bg); z-index: 20;
+}
+.hst-sub.active              { display: flex; }
+.hst-sub .scroll-content     { padding-bottom: 16px; }
+
+/* ===== QUICK CHIPS ===== */
+.hst-quick-strip              { display: flex; gap: 8px; padding: 12px 16px 4px; overflow-x: auto; scrollbar-width: none; }
+.hst-quick-strip::-webkit-scrollbar { display: none; }
+.hst-quick-chip               { padding: 5px 14px; border-radius: 20px; white-space: nowrap; font-size: 13px; font-weight: 600; color: white; }
+
+/* ===== NAV GRID 2×2 ===== */
+.hst-nav-grid     { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px 16px 8px; }
+.hst-nav-card     {
+  background: var(--surface); border-radius: var(--radius); padding: 20px 16px 16px;
+  cursor: pointer; border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+  display: flex; flex-direction: column; gap: 4px;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.hst-nav-card:active      { transform: scale(0.97); }
+.hst-nav-card-icon        { font-size: 28px; line-height: 1; }
+.hst-nav-card-title       { font-size: 15px; font-weight: 700; color: var(--text); margin-top: 6px; }
+.hst-nav-card-sub         { font-size: 12px; color: var(--text-muted); }
+
+/* ===== STATS GRID ===== */
+.hst-stats-grid   { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 16px; }
+.hst-stat-card    { background: var(--surface); border-radius: var(--radius-sm); padding: 16px; text-align: center; border: 1px solid var(--border); }
+.hst-stat-val     { font-size: 26px; font-weight: 800; color: var(--text); line-height: 1.1; }
+.hst-stat-lbl     { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.hst-stat-accent .hst-stat-val { color: var(--purple); }
+.hst-stat-green  .hst-stat-val { color: var(--green); }
+.hst-stat-orange .hst-stat-val { color: var(--orange); }
+
+/* ===== CHART CARD ===== */
+.hst-chart-card   { background: var(--surface); border-radius: var(--radius); margin: 0 16px 12px; padding: 16px; border: 1px solid var(--border); overflow: hidden; }
+.hst-chart-title  { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
+
+/* ===== TREND METRICS ===== */
+.hst-metric-row    { display: flex; gap: 10px; padding: 0 16px 16px; }
+.hst-metric-card   { flex: 1; background: var(--surface); border-radius: var(--radius-sm); padding: 14px; border: 1px solid var(--border); }
+.hst-metric-title  { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+.hst-metric-val    { font-size: 16px; font-weight: 700; }
+.hst-trend-up      { color: var(--green); }
+.hst-trend-down    { color: var(--red); }
+
+.hst-section-header { padding: 12px 16px 4px; }
+
+/* ===== MISTAKE CARDS ===== */
+.hst-mistake-card   { padding: 10px 16px; border-bottom: 1px solid var(--border); }
+.hst-mistake-top    { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+.hst-mistake-badge  { background: #FEE2E2; color: var(--red); font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+.hst-mistake-set    { font-size: 11px; color: var(--text-muted); }
+.hst-mistake-q      { font-size: 14px; color: var(--text); line-height: 1.4; margin-bottom: 3px; }
+.hst-mistake-correct { font-size: 12px; color: var(--green); }
+
+/* ===== WEAK TOPICS ===== */
+.hst-weak-topics-list  { padding: 4px 16px 8px; }
+.hst-weak-topic        { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.hst-weak-topic-name   { font-size: 13px; flex: 1; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hst-weak-topic-bar    { width: 72px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+.hst-weak-topic-fill   { height: 100%; background: var(--red); border-radius: 3px; }
+.hst-weak-topic-pct    { font-size: 12px; color: var(--red); font-weight: 600; width: 48px; text-align: right; flex-shrink: 0; }
+
+/* ===== LEVEL CARD ===== */
+.hst-level-card      { display: flex; gap: 14px; align-items: center; background: var(--surface); border: 2px solid var(--purple); border-radius: var(--radius); padding: 16px; margin: 12px 16px 10px; }
+.hst-level-icon      { font-size: 42px; line-height: 1; flex-shrink: 0; }
+.hst-level-info      { flex: 1; min-width: 0; }
+.hst-level-name      { font-size: 18px; font-weight: 800; color: var(--text); }
+.hst-level-sub       { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.hst-level-bar-wrap  { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+.hst-level-bar-fill  { height: 100%; border-radius: 3px; transition: width 0.5s; }
+.hst-level-next      { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+/* ===== INSIGHTS ===== */
+.hst-insights      { padding: 0 16px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.hst-insight-item  { background: var(--surface); border-radius: var(--radius-sm); padding: 11px 14px; font-size: 13px; color: var(--text); display: flex; align-items: flex-start; gap: 8px; border: 1px solid var(--border); line-height: 1.5; }
+.hst-insight-icon  { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+/* ===== ACTIVITY CALENDAR ===== */
+.cal-grid    { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; padding: 8px 0 4px; }
+.cal-cell    { aspect-ratio: 1; border-radius: 3px; }
+.cal-lv0     { background: var(--border); }
+.cal-lv1     { background: #C4B5FD; }
+.cal-lv2     { background: #7C3AED; }
+.cal-lv3     { background: #4C1D95; }
+.cal-today   { outline: 2px solid var(--purple); outline-offset: 1px; }
+.cal-legend  { display: flex; align-items: center; gap: 6px; justify-content: center; padding: 4px 0; font-size: 11px; color: var(--text-muted); }
+
+/* ===== SET BREAKDOWN TABLE ===== */
+.hst-set-breakdown { }
+.hst-set-brow      { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; gap: 4px; }
+.hst-set-head      { border-bottom: 2px solid var(--border); font-size: 11px; font-weight: 600; color: var(--text-muted); padding-bottom: 6px; }
+.hst-set-name      { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+.hst-set-col       { width: 52px; text-align: center; flex-shrink: 0; }
+.hst-hotspot-badge { background: #FEF3C7; color: var(--orange); }
+
+/* ===== HISTORY LOG ===== */
+.hst-log-group     { margin-bottom: 4px; }
+.hst-log-date      { font-size: 11px; font-weight: 700; color: var(--text-muted); padding: 12px 16px 5px; text-transform: uppercase; letter-spacing: 0.06em; }
+.hst-log-item      { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; }
+.hst-log-item:active     { background: var(--bg); }
+.hst-log-item-info       { flex: 1; min-width: 0; }
+.hst-log-item-name       { font-size: 14px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hst-log-item-meta       { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+/* ===== SCORE CIRCLE (shared) ===== */
+.history-score-circle      { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; flex-shrink: 0; }
+.history-score-circle.good { background: var(--green-light);  color: var(--green); }
+.history-score-circle.mid  { background: var(--orange-light); color: var(--orange); }
+.history-score-circle.bad  { background: var(--red-light);    color: var(--red); }
