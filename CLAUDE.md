@@ -30,7 +30,7 @@
 **Quiz App** — SPA trắc nghiệm chạy trên browser, không cần server.
 - Vanilla HTML + CSS + JS, không framework, không build tool
 - Lưu trữ: `localStorage` (`quiz_sets`, `quiz_history`)
-- Deploy: GitHub Pages (`trantien2k5.github.io/Quiz/`) — version hiện tại: **v66**
+- Deploy: Cloudflare Pages — version hiện tại: **v71**
 
 ---
 
@@ -44,7 +44,35 @@ version.json            ← { "v": N } — dùng để detect update
 CLAUDE.md               ← file này
 
 css/
-  style.css             ← toàn bộ CSS
+  base/
+    tokens.css          ← design tokens (colors, spacing, typography, z-index, transitions)
+    reset.css           ← box-sizing reset, base element styles
+  layout/
+    shell.css           ← .app, section screens, .scroll-content
+    nav.css             ← .top-bar, #bottom-nav, .nav-item
+  components/
+    button.css          ← .btn + modifiers, ripple, .btn-icon
+    form.css            ← .form-group, .form-control, .form-hint, .form-row
+    toggle.css          ← .toggle, .toggle-slider
+    badge.css           ← .badge + variants
+    modal.css           ← .modal-overlay, .modal-sheet
+    toast.css           ← .toast-container, .toast
+    update-banner.css   ← .update-banner / #update-banner
+    fab.css             ← .fab
+    card.css            ← .set-list, .set-card, .empty-state
+    section-label.css   ← .section-label, .section-row, .link-btn
+    drop-zone.css       ← .import-drop-zone
+    settings-row.css    ← .settings-row (quiz settings modal)
+  pages/
+    home.css            ← .stat-box, .recent-set-item, .recent-history-item
+    editor.css          ← .question-card, .option-row, .add-question-btn
+    quiz.css            ← .quiz-header, .option-btn, .qmap-*, practice mode
+    results.css         ← .result-hero, .review-card, .review-option
+    history.css         ← .hst-*, .cal-*, .hst-log-*, .history-score-circle
+    ai.css              ← .ai-card, .ai-chip, .ai-suggestions
+  utilities/
+    utilities.css       ← .hidden, .text-center, .mt-*, .flex, .truncate
+    animations.css      ← @keyframes (ripple-expand, toast-in, fadeIn...)
 
 js/
   core/
@@ -192,36 +220,50 @@ startQuiz(set, settings)   // bắt đầu quiz với settings {shuffleQ, shuffl
 
 ---
 
-## CSS CONVENTIONS
+## CSS CONVENTIONS (v71+)
 
+**Design tokens** (`css/base/tokens.css`) — dùng tên semantic, KHÔNG dùng tên primitive:
 ```css
-/* Màu chính */
---purple: #6366F1    --green: #059669    --red: #DC2626    --orange: #D97706
+/* Brand / semantic colors */
+--color-brand        --color-brand-dark    --color-brand-light
+--color-success      --color-success-light
+--color-danger       --color-danger-light
+--color-warning      --color-warning-light
 
 /* Surface */
---bg: #F8FAFF        --surface: #FFFFFF   --border: #E5E7EB
---text: #1E293B      --text-muted: #6B7280
+--color-bg           --color-surface       --color-border    --color-border-focus
+--color-text         --color-text-muted    --color-text-light
+
+/* Spacing (rem) */
+--space-1 (0.25rem) ... --space-16 (4rem)
+
+/* Typography */
+--text-2xs (11px) ... --text-4xl (28px)
+--fw-normal ... --fw-black
 
 /* Shape */
---radius: 16px       --radius-sm: 10px   --shadow-sm: ...
+--radius (16px)      --radius-sm (10px)   --radius-xs (6px)   --radius-full
+--shadow-sm          --shadow-md
 
 /* Layout */
---nav-h: 64px        --top-h: 56px       --max-w: 680px
+--nav-h: var(--space-16)    --top-h: var(--space-14)    --max-w: 42.5rem
+
+/* Transitions */
+--transition-fast (0.1s)  --transition-base (0.15s)  --transition-slow (0.3s)
 ```
 
-**Z-index scale** (css/style.css):
+**Z-index** — dùng biến, không ghi số:
 ```
-Screen content (default): 0
-Top bar (.top-bar):        z-index 10
-Sub-screens (.hst-sub):    z-index 20   ← phải > top-bar để che hst-home
-Nav bar (#bottom-nav):     z-index 100
-Modals (.modal-overlay):   z-index 200
-Toast:                     z-index 300
+--z-base: 0      --z-top-bar: 10    --z-sub: 20
+--z-nav: 100     --z-modal: 200     --z-toast: 300    --z-banner: 9999
 ```
 
-- Class prefix theo khu vực: `.set-*`, `.quiz-*`, `.result-*`, `.recent-*`, `.stat-*`, `.ai-*`, `.hst-*`
+- Đơn vị: **rem** (không px), trừ border width (1px/2px OK)
+- KHÔNG dùng `!important` — locked options dùng `pointer-events: none` thay thế
+- Class prefix: `.set-*`, `.quiz-*`, `.result-*`, `.recent-*`, `.hst-*`, `.ai-*`
 - Button base: `.btn` + modifier `.btn-primary / -secondary / -danger / -outline / -sm / -full`
-- Tất cả button kế thừa ripple effect tự động (class `.btn`)
+- Ripple effect tự động qua class `.btn`
+- Breakpoint: 37.5rem = 600px (hard-code vì CSS vars không dùng được trong @media)
 
 ---
 
@@ -231,7 +273,7 @@ Toast:                     z-index 300
 - Sau mỗi mutate data → gọi `renderXxx()` tương ứng để UI sync
 - `navTo()` tự gọi `renderXxx()` — nếu đang ở đúng screen thì không cần gọi thêm
 - `confirm()` là custom function (override `window.confirm`) — nhận callback không phải return boolean
-- CSS cache: bump `?v=N` trong index.html (css/style.css + tất cả js) và sw.js STATIC array
+- CSS cache: bump `?v=N` trong index.html (tất cả 24 css file + tất cả js) và sw.js STATIC array
 - Dùng `node scripts/bump.js` để tự động bump tất cả cùng lúc
 - `hst-home` là flex item của `screen-history` — KHÔNG dùng z-index < 20 cho `.hst-sub` (sẽ bị top-bar che)
 - Quiz mode default là `'all'` (hiện tất cả câu) — `'one-by-one'` là chế độ thứ 2
