@@ -77,22 +77,22 @@ function startPractice(setId) {
   const questions = JSON.parse(JSON.stringify(set.questions)).map(q => shuffleOptions(q));
   const n = questions.length;
 
-  // Ưu tiên câu sai nhiều nhất lên đầu; câu chưa có stats giữ thứ tự gốc
+  // Ưu tiên câu pL thấp nhất lên đầu (chưa thuộc nhất)
   const qStats = getQuestionStats();
   const pQueue = questions.map((_, i) => i).sort((a, b) => {
-    const wa = (qStats[questions[a].id] || {}).wrong || 0;
-    const wb = (qStats[questions[b].id] || {}).wrong || 0;
-    if (wb !== wa) return wb - wa;
-    return a - b;
+    const pLa = (qStats[questions[a].id] || {}).pL ?? 0.3;
+    const pLb = (qStats[questions[b].id] || {}).pL ?? 0.3;
+    return pLa - pLb;
   });
+  const pL = questions.map(q => (qStats[q.id] || {}).pL ?? 0.3);
   _quiz = {
     set: { ...set, questions },
     originalSetId: setId,
     pQueue,
-    pStreaks:    new Array(n).fill(0),
-    pMastered:  new Array(n).fill(false),
+    pL,
+    pMastered:   new Array(n).fill(false),
     pWrongCount: new Array(n).fill(0),
-    pSkipped:   new Array(n).fill(false),
+    pSkipped:    new Array(n).fill(false),
     answers: new Array(n).fill(null),
     responseTimes: new Array(n).fill(null),
     locked:  new Array(n).fill(false),
@@ -184,13 +184,11 @@ function buildQuizQuestion(question, i) {
     </div>` : '';
 
   const isMastered = isPractice && _quiz.pMastered[qIdx];
-  const wrongCount = isPractice ? (_quiz.pWrongCount[qIdx] || 0) : 0;
+  const pLPct = isPractice ? Math.round((_quiz.pL[qIdx] ?? 0.3) * 100) : 0;
   const streakDots = isPractice
     ? (isMastered
         ? `<span class="practice-badge mastered">✅ Đã thuộc</span>`
-        : wrongCount > 0
-          ? `<span class="practice-badge wrong-hint">Sai ${wrongCount}/3</span>`
-          : '')
+        : `<span class="practice-badge ${pLPct < 50 ? 'wrong-hint' : 'progress-hint'}">📊 ${pLPct}%</span>`)
     : '';
 
   const numLabel = isPractice ? '' : `Câu ${i + 1}`;
@@ -320,26 +318,37 @@ function _practiceIsDone() {
   return _quiz.pMastered.every((m, i) => m || _quiz.pSkipped[i]);
 }
 
+const PRACTICE_MASTERED_PL = 0.90; // ngưỡng BKT để coi là thuộc
+
 function practiceAdvance() {
   const pos  = _quiz.currentIdx;
   const qIdx = _quiz.pQueue[pos];
   const q    = _quiz.set.questions[qIdx];
   const isCorrect = _quiz.answers[pos] === q.correct;
+  const rtMs = _quiz.responseTimes[pos];
 
-  trackQuestionResult(q.id, isCorrect, _quiz.answers[pos], q.correct);
+  trackQuestionResult(q.id, isCorrect, _quiz.answers[pos], q.correct, rtMs);
 
-  if (isCorrect) {
-    _quiz.pStreaks[qIdx]++;
-    if (_quiz.pStreaks[qIdx] >= 1) _quiz.pMastered[qIdx] = true; // đúng 1 lần = thuộc
+  // Đọc pL mới sau khi BKT update
+  const updatedStats = getQuestionStats();
+  const newPL = (updatedStats[q.id] || {}).pL ?? 0.3;
+  _quiz.pL[qIdx] = newPL;
+
+  if (newPL >= PRACTICE_MASTERED_PL) {
+    _quiz.pMastered[qIdx] = true;
   } else {
-    _quiz.pStreaks[qIdx] = 0;
-    _quiz.pWrongCount[qIdx]++;
-    if (_quiz.pWrongCount[qIdx] >= PRACTICE_MAX_WRONG) {
-      // Sai quá nhiều → bỏ qua, không lặp lại
-      _quiz.pSkipped[qIdx] = true;
-    } else {
-      // Chèn lại vào hàng đợi, cách 2-4 vị trí
-      const insertAt = Math.min(pos + 2 + Math.floor(Math.random() * 3), _quiz.pQueue.length);
+    if (!isCorrect) {
+      _quiz.pWrongCount[qIdx]++;
+      if (_quiz.pWrongCount[qIdx] >= PRACTICE_MAX_WRONG) {
+        _quiz.pSkipped[qIdx] = true;
+      }
+    }
+    if (!_quiz.pSkipped[qIdx]) {
+      // pL thấp → ôn lại sớm hơn; pL cao hơn → chèn xa hơn
+      const dist = newPL < 0.5
+        ? 2 + Math.floor(Math.random() * 2)   // 2-3 vị trí
+        : 4 + Math.floor(Math.random() * 3);  // 4-6 vị trí
+      const insertAt = Math.min(pos + dist, _quiz.pQueue.length);
       _quiz.pQueue.splice(insertAt, 0, qIdx);
       _quiz.answers.splice(insertAt, 0, null);
       _quiz.locked.splice(insertAt, 0, false);
@@ -348,8 +357,6 @@ function practiceAdvance() {
 
   _quiz.currentIdx++;
   if (_practiceIsDone()) { finishPractice(); return; }
-
-  // Nếu queue cạn nhưng vẫn còn câu chưa xong (không nên xảy ra nhưng để an toàn)
   if (_quiz.currentIdx >= _quiz.pQueue.length) { finishPractice(); return; }
 
   renderCurrentQuestion();
@@ -540,7 +547,7 @@ function submitQuiz(autoSubmit) {
     const isCorrect = q.answers[i] === question.correct;
     if (isCorrect) score++;
     if (q.answers[i] !== null) {
-      trackQuestionResult(question.id, isCorrect, q.answers[i], question.correct);
+      trackQuestionResult(question.id, isCorrect, q.answers[i], question.correct, q.responseTimes[i]);
     }
   });
   const answered = q.answers.filter(a => a !== null).length;

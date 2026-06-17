@@ -3,16 +3,38 @@ function getQuestionStats() {
   try { return JSON.parse(localStorage.getItem('quiz_q_stats') || '{}'); } catch { return {}; }
 }
 function saveQuestionStats(stats) { localStorage.setItem('quiz_q_stats', JSON.stringify(stats)); }
-function trackQuestionResult(questionId, isCorrect, selectedIdx, correctIdx) {
-  const stats = getQuestionStats();
-  if (!stats[questionId]) stats[questionId] = { firstSeen: new Date().toISOString().slice(0, 10), reviewCount: 0, correct: 0, wrong: 0, optionPattern: {} };
-  stats[questionId].reviewCount++;
-  if (isCorrect) stats[questionId].correct++;
-  else {
-    stats[questionId].wrong++;
-    const key = `${selectedIdx}->${correctIdx}`;
-    stats[questionId].optionPattern[key] = (stats[questionId].optionPattern[key] || 0) + 1;
+/* BKT params: PG=guess(1/4), PS=slip, PT=transit */
+function _bktUpdate(pL, isCorrect, rtMs) {
+  const PG = 0.25, PS = 0.08, PT = 0.09;
+  const pLGiven = isCorrect
+    ? (pL * (1 - PS)) / (pL * (1 - PS) + (1 - pL) * PG)
+    : (pL * PS)       / (pL * PS       + (1 - pL) * (1 - PG));
+  let pLNew = pLGiven + (1 - pLGiven) * PT;
+  if (rtMs != null) {
+    const delta = pLNew - pL;
+    const fast = rtMs < 8000, slow = rtMs > 25000;
+    // fast+correct=confident→+35%, fast+wrong=misconception→drop 30% more, slow+correct=uncertain→-30%
+    const factor = fast ? (isCorrect ? 1.35 : 1.3) : (slow && isCorrect ? 0.7 : 1.0);
+    pLNew = pL + delta * factor;
   }
+  return Math.max(0, Math.min(1, pLNew));
+}
+
+function trackQuestionResult(questionId, isCorrect, selectedIdx, correctIdx, rtMs) {
+  const stats = getQuestionStats();
+  if (!stats[questionId]) stats[questionId] = {
+    firstSeen: new Date().toISOString().slice(0, 10),
+    reviewCount: 0, correct: 0, wrong: 0, optionPattern: {}, pL: 0.3
+  };
+  const s = stats[questionId];
+  s.reviewCount++;
+  if (isCorrect) s.correct++;
+  else {
+    s.wrong++;
+    const key = `${selectedIdx}->${correctIdx}`;
+    s.optionPattern[key] = (s.optionPattern[key] || 0) + 1;
+  }
+  s.pL = _bktUpdate(s.pL ?? 0.3, isCorrect, rtMs ?? null);
   saveQuestionStats(stats);
 }
 

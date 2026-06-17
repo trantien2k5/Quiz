@@ -1200,6 +1200,7 @@ textarea.form-control { resize: vertical; min-height: 72px; }
 }
 .practice-badge.mastered { background: #DCFCE7; color: #15803D; }
 .practice-badge.wrong-hint { background: #FEF2F2; color: #B91C1C; }
+.practice-badge.progress-hint { background: #FEF9C3; color: #92400E; }
 /* Two-button group in recent set card */
 .recent-set-btns { display: flex; gap: 4px; flex-shrink: 0; }
 
