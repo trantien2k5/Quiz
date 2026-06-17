@@ -3,6 +3,8 @@
    ===================================================== */
 
 /* App container — max-width centering for desktop */
+/* #app — ID kept for JS targeting */
+#app,
 .app {
   position: relative;
   height: 100%;

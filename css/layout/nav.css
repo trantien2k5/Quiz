@@ -41,6 +41,8 @@
 }
 
 /* ===== BOTTOM NAV ===== */
+/* #bottom-nav — ID kept for JS targeting */
+#bottom-nav,
 .bottom-nav {
   position: fixed;
   bottom: 0;
