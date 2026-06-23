@@ -1,4 +1,4 @@
-const APP_V = 76;
+const APP_V = 77;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -65,14 +65,6 @@ function confirmClearAllData() {
     ['quiz_sets','quiz_history','quiz_q_stats','quiz_last_set'].forEach(k => localStorage.removeItem(k));
     renderHome(); renderLibrary(); renderHistory();
     toast('Đã xoá toàn bộ dữ liệu', 'success');
-  });
-}
-
-function confirmClearHistory() {
-  confirm('Xóa lịch sử', 'Toàn bộ lịch sử làm bài sẽ bị xóa. Bạn có chắc?', () => {
-    localStorage.removeItem('quiz_history');
-    renderHistory();
-    toast('Đã xóa lịch sử', 'success');
   });
 }
 
