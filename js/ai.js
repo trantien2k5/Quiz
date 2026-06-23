@@ -30,6 +30,7 @@ function showAICreate(appendSetId) {
     renderAiChips();
     suggestionsEl.style.display = '';
   }
+  updateAiManualSectionVisibility();
   document.getElementById('modal-ai-create').classList.add('active');
 }
 function hideAICreate() {
@@ -48,6 +49,13 @@ function updateAiSuggestionsVisibility() {
   const topic = document.getElementById('ai-topic').value.trim();
   const el = document.getElementById('ai-suggestions');
   if (el) el.style.display = topic ? 'none' : '';
+}
+
+/* Đã có API key thì ẩn luôn form copy-paste thủ công — không cần nữa */
+function updateAiManualSectionVisibility() {
+  const hasKey = !!getAiConfig().apiKey;
+  const el = document.getElementById('ai-manual-section');
+  if (el) el.style.display = hasKey ? 'none' : '';
 }
 
 function buildPromptText({ topic, desc, level, count }) {
@@ -311,6 +319,7 @@ function saveAiConfigForm() {
   saveAiConfig({ ...getAiConfig(), apiKey, model, fxRate });
   toast('✅ Đã lưu cấu hình AI', 'success');
   hideAiConfig();
+  updateAiManualSectionVisibility();
 }
 async function refreshFxRate() {
   const btn = document.getElementById('ai-cfg-fx-btn');
