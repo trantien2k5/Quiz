@@ -180,6 +180,11 @@
 .qnav-prev,
 .qnav-next { flex: 1; }
 
+/* Sidebar desktop (.quiz-side-map) đã thay chức năng nút này — ẩn để tránh trùng UI */
+@media (min-width: 80rem) {
+  .qnav-map-btn { display: none; }
+}
+
 .qnav-map-btn {
   display: flex;
   flex: 0 0 auto;
