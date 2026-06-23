@@ -44,11 +44,13 @@ function parseImportText() {
   _showImportStep('preview');
 }
 
-/* Tách văn bản thô thành từng block câu hỏi theo dòng "Câu N:" hoặc "N." */
+/* Tách văn bản thô thành từng block câu hỏi.
+   Hỗ trợ cả 2 kiểu: "Câu 1: ..." thuần (Azota) và markdown ("### Câu 1",
+   ngăn cách bằng dòng "---", *Đáp án:** in đậm...) — vd xuất ra từ AI/ChatGPT. */
 function parseAzotaText(raw) {
   const text = raw.replace(/\r\n/g, '\n').trim();
   const blocks = text
-    .split(/\n(?=\s*(?:(?:Câu|Cau)\s*\d+|\d+)\s*[:.\)])/i)
+    .split(/\n[ \t]*-{3,}[ \t]*\n|\n(?=[ \t]*#{0,6}[ \t]*(?:Câu|Cau|Question)\s*\d+)/i)
     .map(b => b.trim())
     .filter(Boolean);
   return blocks.map(parseOneQuestionBlock);
@@ -58,10 +60,15 @@ const _OPT_RE = /^([A-Da-d])[.):\-]\s*(.+)$/;
 const _ANS_RE = /^(?:Đáp\s*án(?:\s*đúng)?|ĐA|Answer)\s*[:.\-]?\s*([A-Da-d])\b/i;
 const _ANS_TEXT_RE = /^(?:Đáp\s*án(?:\s*đúng)?|ĐA|Answer)\s*[:.\-]?\s*(.+)$/i;
 const _EXP_RE = /^(?:Giải\s*thích|Explanation)\s*[:.\-]?\s*(.*)$/i;
-const _QHEAD_RE = /^\s*(?:Câu|Cau)?\s*\d+\s*[:.\)]\s*(.*)$/i;
+const _QHEAD_RE = /^\s*(?:Câu|Cau|Question)?\s*\d+\s*[:.\)]?\s*(.*)$/i;
 
 function parseOneQuestionBlock(block) {
-  const lines = block.split('\n').map(l => l.trim()).filter(l => l !== '');
+  // Bỏ markdown bold (**text**) trước — nhãn "Đáp án"/"Giải thích" thường bị in đậm
+  const cleanedBlock = block.replace(/\*\*(.*?)\*\*/g, '$1');
+  const lines = cleanedBlock.split('\n')
+    .map(l => l.replace(/^#{1,6}\s*/, '').replace(/^>\s*/, '').trim())
+    .filter(l => l !== '');
+
   let text = '';
   const opts = {};
   let correct = null;
@@ -75,7 +82,7 @@ function parseOneQuestionBlock(block) {
     const expMatch = line.match(_EXP_RE);
     if (expMatch) { explanation = expMatch[1] || ''; mode = 'explanation'; return; }
 
-    if (mode === 'explanation') { explanation += (explanation ? ' ' : '') + line; return; }
+    if (mode === 'explanation') { explanation += (explanation ? '\n' : '') + line; return; }
 
     const optMatch = line.match(_OPT_RE);
     if (optMatch) {
@@ -87,7 +94,8 @@ function parseOneQuestionBlock(block) {
 
     if (mode === 'question') {
       const headMatch = line.match(_QHEAD_RE);
-      text += (text ? ' ' : '') + (headMatch ? headMatch[1] : line);
+      if (headMatch) { if (headMatch[1]) text += (text ? ' ' : '') + headMatch[1]; }
+      else { text += (text ? ' ' : '') + line; }
     }
   });
 
