@@ -28,6 +28,7 @@ function showAICreate(appendSetId) {
     topicEl.value = '';
     descEl.value  = '';
     renderAiChips();
+    suggestionsEl.style.display = '';
   }
   document.getElementById('modal-ai-create').classList.add('active');
 }
@@ -40,6 +41,13 @@ function setAiTopic(text) {
   const el = document.getElementById('ai-topic');
   el.value = text;
   el.focus();
+}
+
+/* Ẩn chip gợi ý khi user đã tự gõ chủ đề — tránh bấm nhầm chip đè mất nội dung đang gõ */
+function updateAiSuggestionsVisibility() {
+  const topic = document.getElementById('ai-topic').value.trim();
+  const el = document.getElementById('ai-suggestions');
+  if (el) el.style.display = topic ? 'none' : '';
 }
 
 function buildPromptText({ topic, desc, level, count }) {
