@@ -1,4 +1,4 @@
-const APP_V = 75;
+const APP_V = 76;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;

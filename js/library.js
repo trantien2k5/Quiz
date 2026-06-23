@@ -126,20 +126,13 @@ function _buildExportJson(history, sets, qStats, skillLog, topicLog) {
     avgMasteryRate: Math.round(practH.reduce((s,h) => s+h.score/h.total*100,0)/practH.length)
   } : null;
 
-  // --- topicStats ---
-  const topicMap = {};
-  history.forEach(h => {
-    if (!topicMap[h.setName]) topicMap[h.setName] = {correct:0,wrong:0,sessions:0,totalTime:0,lastStudied:0};
-    const t = topicMap[h.setName];
-    t.correct += h.score; t.wrong += h.total-h.score;
-    t.sessions++; t.totalTime += h.timeTaken||0;
-    if (h.date > t.lastStudied) t.lastStudied = h.date;
-  });
-  const topicStats = Object.entries(topicMap).map(([topic,s]) => ({
-    topic, sessions: s.sessions, correct: s.correct, wrong: s.wrong,
-    accuracy: Math.round(s.correct/(s.correct+s.wrong)*100),
-    lastStudied: toDate(s.lastStudied)
-  })).sort((a,b) => a.accuracy-b.accuracy);
+  // --- topicStats (group theo setId — dùng chung computeSetStats() với js/history.js để số liệu đồng bộ) ---
+  const topicStats = computeSetStats(history)
+    .map(s => ({
+      topic: s.name, sessions: s.sessions, correct: s.correct, wrong: s.wrong,
+      accuracy: s.accuracy, lastStudied: toDate(s.lastDate)
+    }))
+    .sort((a,b) => a.accuracy-b.accuracy);
 
   // --- skillStats from qStats ---
   const skillMap = {};

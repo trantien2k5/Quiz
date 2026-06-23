@@ -129,18 +129,12 @@ function generateInsights(history) {
   if (periods.length >= 2 && periods[0].acc - periods[periods.length - 1].acc >= 10)
     out.push({ icon: '⏰', text: `Làm bài tốt nhất vào buổi ${periods[0].p} (TB ${periods[0].acc}%)` });
 
-  const tm = {};
-  history.forEach(h => {
-    if (!tm[h.setName]) tm[h.setName] = { c: 0, t: 0 };
-    tm[h.setName].c += h.score; tm[h.setName].t += h.total;
-  });
-  const topics = Object.entries(tm).filter(([, v]) => v.t >= 5)
-    .map(([n, v]) => ({ n, acc: Math.round(v.c / v.t * 100) }));
+  const topics = computeSetStats(history).filter(s => s.total >= 5);
   if (topics.length) {
-    const best  = [...topics].sort((a, b) => b.acc - a.acc)[0];
-    const worst = [...topics].sort((a, b) => a.acc - b.acc)[0];
-    if (best.acc >= 80) out.push({ icon: '💪', text: `Đề mạnh nhất: "${best.n}" (${best.acc}%)` });
-    if (worst.acc < 60 && worst.n !== best.n) out.push({ icon: '⚠️', text: `Cần cải thiện: "${worst.n}" (${worst.acc}%)` });
+    const best  = [...topics].sort((a, b) => b.accuracy - a.accuracy)[0];
+    const worst = [...topics].sort((a, b) => a.accuracy - b.accuracy)[0];
+    if (best.accuracy >= 80) out.push({ icon: '💪', text: `Đề mạnh nhất: "${best.name}" (${best.accuracy}%)` });
+    if (worst.accuracy < 60 && worst.setId !== best.setId) out.push({ icon: '⚠️', text: `Cần cải thiện: "${worst.name}" (${worst.accuracy}%)` });
   }
 
   const sp = calcSpeedTrend(history);
@@ -175,23 +169,46 @@ function renderCal30Html(history) {
     </div>`;
 }
 
-function renderSetBreakdownHtml(history) {
+/* Thống kê theo từng bộ đề, group theo setId (KHÔNG theo tên — set trùng tên không bị tính chung).
+   Dùng chung cho Tổng quan (insights), Tiến bộ (set breakdown) và Lỗi sai (đề yếu nhất) để số liệu nhất quán. */
+function computeSetStats(history) {
   const sm = {};
   [...history].reverse().forEach(h => {
-    if (!sm[h.setId]) sm[h.setId] = { name: h.setName, scores: [] };
-    sm[h.setId].scores.push(scorePct(h.score, h.total));
+    if (!sm[h.setId]) sm[h.setId] = { setId: h.setId, name: h.setName, correct: 0, wrong: 0, scores: [], lastDate: 0 };
+    const s = sm[h.setId];
+    s.name = h.setName; // luôn lấy tên mới nhất nếu set bị đổi tên
+    s.correct += h.score;
+    s.wrong += h.total - h.score;
+    s.scores.push(scorePct(h.score, h.total));
+    if (h.date > s.lastDate) s.lastDate = h.date;
   });
-  const rows = Object.values(sm).map(({ name, scores }) => {
-    const avg  = Math.round(scores.reduce((s, v) => s + v, 0) / scores.length);
-    const best = Math.max(...scores);
-    const diff = scores.length >= 3 ? scores[scores.length - 1] - scores[0] : null;
-    const tEl  = diff === null ? '—'
-      : diff > 0  ? `<span class="hst-trend-up">▲ +${diff}%</span>`
-      : diff < 0  ? `<span class="hst-trend-down">▼ ${diff}%</span>`
-      : '<span style="color:var(--text-muted)">→</span>';
-    const c = avg >= 80 ? 'var(--green)' : avg >= 60 ? 'var(--orange)' : 'var(--red)';
-    return { name, avg, best, n: scores.length, tEl, c };
-  }).sort((a, b) => b.n - a.n).slice(0, 10);
+  return Object.values(sm).map(s => {
+    const total = s.correct + s.wrong;
+    const sessions = s.scores.length;
+    return {
+      setId: s.setId, name: s.name,
+      correct: s.correct, wrong: s.wrong, total, sessions,
+      accuracy: total ? Math.round(s.correct / total * 100) : 0,
+      wrongRate: total ? s.wrong / total : 0,
+      avg: Math.round(s.scores.reduce((a, b) => a + b, 0) / sessions),
+      best: Math.max(...s.scores),
+      trendDiff: sessions >= 3 ? s.scores[sessions - 1] - s.scores[0] : null,
+      lastDate: s.lastDate
+    };
+  });
+}
+
+function renderSetBreakdownHtml(history) {
+  const rows = computeSetStats(history)
+    .sort((a, b) => b.sessions - a.sessions).slice(0, 10)
+    .map(s => {
+      const tEl = s.trendDiff === null ? '—'
+        : s.trendDiff > 0 ? `<span class="hst-trend-up">▲ +${s.trendDiff}%</span>`
+        : s.trendDiff < 0 ? `<span class="hst-trend-down">▼ ${s.trendDiff}%</span>`
+        : '<span style="color:var(--text-muted)">→</span>';
+      const c = s.avg >= 80 ? 'var(--green)' : s.avg >= 60 ? 'var(--orange)' : 'var(--red)';
+      return { name: s.name, avg: s.avg, best: s.best, n: s.sessions, tEl, c };
+    });
 
   if (!rows.length) return '';
   return `<div class="hst-set-breakdown">
@@ -390,17 +407,11 @@ function renderHistoryMistakes() {
     if (recentWrongs.length >= 8) break;
   }
 
-  const topicMap = {};
-  history.forEach(h => {
-    if (!topicMap[h.setName]) topicMap[h.setName] = { wrong: 0, total: 0 };
-    topicMap[h.setName].wrong += h.total - h.score;
-    topicMap[h.setName].total += h.total;
-  });
-  const weakTopics = Object.entries(topicMap)
-    .map(([n, s]) => ({ n, wrong: s.wrong, total: s.total, rate: s.wrong / (s.total || 1) }))
-    .filter(t => t.wrong > 0)
-    .sort((a, b) => b.rate - a.rate)
-    .slice(0, 5);
+  const weakTopics = computeSetStats(history)
+    .filter(s => s.wrong > 0)
+    .sort((a, b) => b.wrongRate - a.wrongRate)
+    .slice(0, 5)
+    .map(s => ({ n: s.name, wrong: s.wrong, total: s.total, rate: s.wrongRate }));
 
   const wrongHtml = recentWrongs.length
     ? recentWrongs.map(({ q, setName }) => `
