@@ -82,6 +82,10 @@ CHỈ trả về JSON thuần, không markdown, không giải thích thêm:
 
 == YÊU CẦU CHẤT LƯỢNG ==
 
+NGÔN NGỮ (RẤT QUAN TRỌNG):
+- "name" và "explanation" PHẢI viết bằng tiếng Việt, KHÔNG dùng tiếng Anh, dù chủ đề là gì
+- "text"/"options" dùng tiếng Việt, TRỪ khi chủ đề yêu cầu nội dung tiếng Anh (ví dụ từ vựng/ngữ pháp/TOEIC...) thì phần đó giữ tiếng Anh — nhưng "explanation" giải thích về nó vẫn PHẢI viết bằng tiếng Việt
+
 TÊN BỘ ĐỀ (name):
 - Ngắn gọn, chuyên nghiệp, ≤ 50 ký tự
 - Mô tả đúng nội dung: ví dụ "Từ loại TOEIC cơ bản", "Giới từ thời gian tiếng Anh", "Toán THPT — Đạo hàm"
@@ -491,19 +495,79 @@ function renderAiUsage() {
 }
 
 /* ===== PHÂN TÍCH LỘ TRÌNH HỌC (1 lần gọi, dùng report .txt đã tóm tắt sẵn — tiết kiệm token) ===== */
-function renderAiAnalysisBody(cached) {
+let _aiAnalysisViewId = null; // id entry đang xem trong modal, null = mới nhất
+
+/* Tách dòng "HANH_DONG: ..." cuối response thành action bấm được — không tốn thêm lệnh gọi API */
+function _parseAiAction(rawText) {
+  const m = rawText.match(/HANH_DONG:\s*(REDO|CREATE):\s*(.+)/i);
+  if (!m) return { cleanText: rawText.trim(), action: null };
+  const cleanText = rawText.slice(0, m.index).trim();
+  const value = m[2].trim().replace(/^["'“”]+|["'“”]+$/g, '');
+  if (m[1].toUpperCase() === 'REDO') {
+    const vLower = value.toLowerCase();
+    const set = getSets().find(s => s.name.trim().toLowerCase() === vLower)
+      || getSets().find(s => vLower.includes(s.name.trim().toLowerCase()) || s.name.trim().toLowerCase().includes(vLower));
+    return { cleanText, action: set ? { type: 'redo', setId: set.id, label: set.name } : null };
+  }
+  return { cleanText, action: { type: 'create', topic: value, label: value } };
+}
+
+function quickCreateFromAnalysis(topic) {
+  showAICreate();
+  const el = document.getElementById('ai-request');
+  if (el) { el.value = `Tạo 20 câu về ${topic}, mức trung bình`; updateAiSuggestionsVisibility(); }
+}
+
+function viewAiAnalysisEntry(id) {
+  _aiAnalysisViewId = id;
+  renderAiAnalysisBody();
+}
+
+function renderAiAnalysisBody() {
+  const log = getAiAnalysisLog();
   const el = document.getElementById('ai-analysis-body');
-  if (!cached) {
+  if (!log.length) {
     el.innerHTML = `<div class="empty-state"><div class="empty-icon">🤖</div><h3>Chưa phân tích</h3><p>Bấm "Phân tích lộ trình học" để AI nhận xét dựa trên dữ liệu của bạn</p></div>`;
     return;
   }
+  const idx = Math.max(0, log.findIndex(e => e.id === _aiAnalysisViewId));
+  const cur = log[idx] || log[0];
+
+  const historyHtml = log.length > 1 ? `
+    <div class="hst-section-header" style="margin-top:14px"><div class="section-label">Lịch sử phân tích (${log.length})</div></div>
+    <div class="hst-set-breakdown">
+      ${log.map((e) => `
+        <div class="hst-set-brow" style="cursor:pointer${e.id === cur.id ? ';background:var(--color-brand-light)' : ''}" onclick="viewAiAnalysisEntry('${e.id}')">
+          <span class="hst-set-name">${esc(fmtDate(e.date))}</span>
+          <span class="hst-set-col" style="color:var(--text-muted)">${esc(e.model)}</span>
+        </div>`).join('')}
+    </div>` : '';
+
   el.innerHTML = `
-    <p class="form-hint" style="margin-top:0">Phân tích lúc: ${fmtDate(cached.date)} · ${esc(cached.model)} · ${(cached.promptTokens + cached.completionTokens).toLocaleString('vi-VN')} tokens · $${cached.costUSD.toFixed(4)}</p>
-    <div style="white-space:pre-wrap;line-height:1.6">${esc(cached.text)}</div>`;
+    <p class="form-hint" style="margin-top:0">Phân tích lúc: ${fmtDate(cur.date)} · ${esc(cur.model)} · ${(cur.promptTokens + cur.completionTokens).toLocaleString('vi-VN')} tokens · $${cur.costUSD.toFixed(4)}</p>
+    <div style="white-space:pre-wrap;line-height:1.6">${esc(cur.text)}</div>
+    <div id="ai-action-slot"></div>
+    ${historyHtml}`;
+
+  const slot = document.getElementById('ai-action-slot');
+  if (slot && cur.action) {
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-primary btn-full';
+    btn.style.marginTop = '10px';
+    if (cur.action.type === 'redo') {
+      btn.textContent = `▶ Luyện tập lại: ${cur.action.label}`;
+      btn.onclick = () => { hideAiAnalysisModal(); startPractice(cur.action.setId); };
+    } else {
+      btn.textContent = `✨ Tạo nhanh đề: ${cur.action.label}`;
+      btn.onclick = () => { hideAiAnalysisModal(); quickCreateFromAnalysis(cur.action.topic); };
+    }
+    slot.appendChild(btn);
+  }
 }
 
 function showAiAnalysisModal() {
-  renderAiAnalysisBody(getAiAnalysis());
+  _aiAnalysisViewId = null;
+  renderAiAnalysisBody();
   document.getElementById('modal-ai-analysis').classList.add('active');
 }
 function hideAiAnalysisModal() {
@@ -511,8 +575,7 @@ function hideAiAnalysisModal() {
 }
 
 async function analyzeStudyReport(force) {
-  const cached = getAiAnalysis();
-  if (cached && !force) {
+  if (getAiAnalysisLog().length && !force) {
     showAiAnalysisModal();
     return;
   }
@@ -548,7 +611,12 @@ Dựa vào báo cáo trên, hãy phân tích và trả lời NGẮN GỌN (tối
 1. Nhận xét tổng quan (1-2 câu)
 2. Điểm mạnh
 3. Cần cải thiện
-4. Lộ trình ôn tập gợi ý cho 1-2 tuần tới (gạch đầu dòng ngắn, cụ thể)`;
+4. Lộ trình ôn tập gợi ý cho 1-2 tuần tới (gạch đầu dòng ngắn, cụ thể)
+
+Sau khi viết xong 4 phần trên, thêm ĐÚNG 1 dòng cuối cùng (không thêm gì sau dòng này), theo đúng 1 trong 2 format:
+HANH_DONG: REDO:<copy chính xác tên 1 bộ đề trong báo cáo trên cần ôn lại nhất>
+HANH_DONG: CREATE:<chủ đề ngắn gọn nên tạo đề mới để bổ sung lỗ hổng kiến thức chưa có đề nào>
+Chọn REDO nếu báo cáo có bộ đề yếu rõ ràng, chọn CREATE nếu nên học thêm chủ đề mới. Chỉ ghi 1 dòng HANH_DONG duy nhất.`;
 
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -556,7 +624,7 @@ Dựa vào báo cáo trên, hãy phân tích và trả lời NGẮN GỌN (tối
       body: JSON.stringify({
         model,
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 500
+        max_tokens: 550
       })
     });
 
@@ -564,21 +632,22 @@ Dựa vào báo cáo trên, hãy phân tích và trả lời NGẮN GỌN (tối
       if (res.status === 401) toast('API key không hợp lệ', 'error');
       else if (res.status === 429) toast('Hết quota hoặc bị giới hạn tốc độ (429)', 'error');
       else toast(`Lỗi API (${res.status})`, 'error');
-      renderAiAnalysisBody(getAiAnalysis());
+      renderAiAnalysisBody();
       return;
     }
 
     const json = await res.json();
-    const text = json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content;
-    if (!text) { toast('AI không trả về nội dung', 'error'); renderAiAnalysisBody(getAiAnalysis()); return; }
+    const rawText = json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content;
+    if (!rawText) { toast('AI không trả về nội dung', 'error'); renderAiAnalysisBody(); return; }
 
     const usage = json.usage || {};
     const promptTokens = usage.prompt_tokens || 0;
     const completionTokens = usage.completion_tokens || 0;
     const { usd, vnd } = calcAiCost(model, promptTokens, completionTokens, cfg.fxRate);
+    const { cleanText, action } = _parseAiAction(rawText);
 
-    const result = { text: text.trim(), date: Date.now(), model, promptTokens, completionTokens, costUSD: usd, costVND: vnd };
-    saveAiAnalysis(result);
+    const entry = { id: uid(), text: cleanText, action, date: Date.now(), model, promptTokens, completionTokens, costUSD: usd, costVND: vnd };
+    addAiAnalysisLog(entry);
     logAiUsage({
       id: uid(), date: Date.now(), model, type: 'analysis',
       questionsRequested: 0, questionsGenerated: 0,
@@ -586,11 +655,12 @@ Dựa vào báo cáo trên, hãy phân tích và trả lời NGẮN GỌN (tối
       costUSD: usd, costVND: vnd
     });
 
-    renderAiAnalysisBody(result);
+    _aiAnalysisViewId = entry.id;
+    renderAiAnalysisBody();
     toast(`✅ Đã phân tích — $${usd.toFixed(4)} (~${Math.round(vnd).toLocaleString('vi-VN')}đ)`, 'success');
   } catch (err) {
     toast('Lỗi kết nối — kiểm tra mạng/API key', 'error');
-    renderAiAnalysisBody(getAiAnalysis());
+    renderAiAnalysisBody();
   } finally {
     clearInterval(timer);
     if (btn) btn.disabled = false;

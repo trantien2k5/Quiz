@@ -10,6 +10,8 @@
 
 **Khi user nói "code đi / làm đi / fix đi" → implement ngay không hỏi thêm.**
 
+**User đã yêu cầu: cứ làm theo ý chính, KHÔNG hỏi xác nhận lại — trừ khi vấn đề lớn (Mức 3 thật sự mơ hồ) hoặc câu hỏi chưa rõ ràng tới mức không thể tự quyết định hợp lý.** Áp dụng cho cả request nhiều phần/phức tạp, không chỉ riêng fix nhỏ.
+
 **Token tiết kiệm:**
 - KHÔNG đọc dạo file để "hiểu context" — Grep đúng mục tiêu, Read đúng đoạn cần
 - Sửa CSS/HTML không cần test. Sửa JS logic → mở browser kiểm tra console
@@ -152,9 +154,10 @@ Các screen overlay (ẩn bottom nav khi hiện):
   questionsRequested, questionsGenerated, promptTokens, completionTokens, totalTokens, costUSD, costVND }
 ```
 
-**`quiz_ai_last_analysis`** — cache lần phân tích lộ trình học gần nhất (object hoặc `null`):
+**`quiz_ai_analysis_log`** — array log các lần phân tích lộ trình học (giữ max 20, xem lại được):
 ```js
-{ text, date, model, promptTokens, completionTokens, costUSD, costVND }
+{ id, text, action: {type:'redo',setId,label} | {type:'create',topic,label} | null,
+  date, model, promptTokens, completionTokens, costUSD, costVND }
 ```
 
 ---
@@ -173,7 +176,7 @@ addHistoryEntry(entry)       // prepend, giữ max 500
 getBestScore(setId)          // → pct | null
 getAiConfig() / saveAiConfig(cfg)        // API key, model, tỷ giá
 getAiUsageLog() / logAiUsage(entry)      // prepend, giữ max 500
-getAiAnalysis() / saveAiAnalysis(data)   // cache phân tích lộ trình học gần nhất
+getAiAnalysisLog() / addAiAnalysisLog(entry)   // prepend, giữ max 20 — log các lần phân tích để xem lại
 ```
 
 **AI** (`js/ai.js`):
@@ -182,7 +185,9 @@ generateDirectly()           // gọi OpenAI API trực tiếp bằng key đã l
 applyAIQuestions(data, fallbackName)   // áp dụng JSON câu hỏi vào set — dùng chung cho paste-tay (importAIText) và gọi API (generateDirectly)
 calcAiCost(model, promptTokens, completionTokens, fxRate)  // → {usd, vnd}
 showAiConfig() / showAiUsage()          // mở modal cấu hình / thống kê dùng AI
-analyzeStudyReport(force)    // phân tích lộ trình học 1 lần (cache), force=true mới gọi API lại
+analyzeStudyReport(force)    // phân tích lộ trình học (xem log nếu có, force=true mới gọi API lại)
+viewAiAnalysisEntry(id)       // xem lại 1 lần phân tích cũ trong log
+quickCreateFromAnalysis(topic) // mở modal AI, điền sẵn yêu cầu theo gợi ý từ phân tích
 ```
 
 **Render** (gọi sau khi mutate data):
@@ -307,7 +312,10 @@ startQuiz(set, settings)   // bắt đầu quiz với settings {shuffleQ, shuffl
 - **AI gọi trực tiếp (`generateDirectly()`, js/ai.js)**: API key OpenAI lưu PLAIN TEXT trong `quiz_ai_config` (localStorage) — không có backend, key gửi trực tiếp tới `api.openai.com` từ browser (CORS được OpenAI hỗ trợ). Đây là rủi ro chấp nhận được cho use case cá nhân, đã cảnh báo trong UI modal cấu hình — KHÔNG thêm tính năng đồng bộ/export config có chứa key ra ngoài.
 - `OPENAI_PRICING` (js/ai.js) là bảng giá **hardcode ước tính tại thời điểm code** (gpt-4o-mini, gpt-4o) — OpenAI đổi giá thì phải sửa tay, không có cơ chế tự cập nhật. Tỷ giá VND thì tự fetch được qua `refreshFxRate()`.
 - `applyAIQuestions(data, fallbackName)` là điểm áp dụng câu hỏi AI DUY NHẤT (dùng chung cho paste-tay `importAIText()` và gọi API `generateDirectly()`) — thêm field mới vào câu hỏi AI thì sửa Ở ĐÂY, không sửa riêng từng flow
-- `analyzeStudyReport()` (js/ai.js) tái dùng `_buildExportJson()`+`_buildReportTxt()` (js/library.js) làm input cho AI — KHÔNG gửi raw history, để giữ token thấp. Gọi API có `max_tokens: 500` chặn cứng chi phí output. Có cache (`quiz_ai_last_analysis`) — mở modal không tự gọi API lại, chỉ gọi khi bấm "Phân tích lại" (`force=true`)
+- `analyzeStudyReport()` (js/ai.js) tái dùng `_buildExportJson()`+`_buildReportTxt()` (js/library.js) làm input cho AI — KHÔNG gửi raw history, để giữ token thấp. Gọi API có `max_tokens: 550` chặn cứng chi phí output. Có log (`quiz_ai_analysis_log`, xem lại được) — mở modal không tự gọi API lại, chỉ gọi khi bấm "Phân tích lại" (`force=true`)
+- AI prompt (`buildPromptText()` js/ai.js) có rule NGÔN NGỮ bắt buộc: `name`/`explanation` luôn tiếng Việt, `text`/`options` chỉ tiếng Anh nếu chủ đề yêu cầu (TOEIC...) — nếu AI vẫn trả tiếng Anh sai chỗ, sửa rule ở đây trước, đừng tự dịch lại bằng code
+- `analyzeStudyReport()` parse 1 dòng `HANH_DONG: REDO:<tên set>` hoặc `HANH_DONG: CREATE:<chủ đề>` ở cuối response AI (`_parseAiAction()`) để sinh nút hành động (luyện tập lại set / mở nhanh modal AI điền sẵn yêu cầu) — KHÔNG tốn thêm lệnh gọi API, action match theo tên set gần đúng (không match được thì không hiện nút, không báo lỗi)
+- `startPractice()` khi thoát giữa chừng (`exitQuiz()`) tự lưu tiến trình đã làm (không hỏi xác nhận) qua `_savePracticeResults()` — chỉ lưu nếu đã trả lời ít nhất 1 câu (`responseTimes` có giá trị non-null). Chế độ Thi (`startQuiz`) vẫn giữ confirm + KHÔNG lưu khi thoát giữa chừng như cũ — 2 chế độ có hành vi exit khác nhau có chủ đích
 
 ---
 

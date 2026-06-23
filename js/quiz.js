@@ -374,8 +374,8 @@ function practiceSkip() {
   renderQuizNav();
 }
 
-function finishPractice() {
-  _quizInProgress = false;
+/* Lưu kết quả luyện tập (history + skill/topic log) — dùng chung cho hoàn thành tự nhiên VÀ thoát giữa chừng */
+function _savePracticeResults() {
   const timeTaken = Math.round((Date.now() - _quiz.startTime) / 1000);
   const total    = _quiz.set.questions.length;
   const mastered = _quiz.pMastered.filter(Boolean).length;
@@ -409,6 +409,12 @@ function finishPractice() {
   });
   Object.keys(_sk).forEach(t => appendSkillLog(t, _today, _sk[t], _skW[t]));
   appendTopicLog(_quiz.set.name, _today, mastered, total - mastered - skipped);
+  return { mastered, skipped, total, timeTaken };
+}
+
+function finishPractice() {
+  _quizInProgress = false;
+  const { mastered, skipped, total, timeTaken } = _savePracticeResults();
   // Hiện kết quả practice riêng
   renderPracticeResult(mastered, skipped, total, timeTaken, _quiz.set);
   showScreen('screen-result');
@@ -596,11 +602,21 @@ function toggleQuizMode() {
 
 function exitQuiz() {
   const goBack = () => { clearInterval(_quiz && _quiz.timerInterval); _quizInProgress = false; _quiz = null; navTo('library'); };
-  if (_quizInProgress) {
-    confirm('Thoát bài thi', 'Bài thi chưa hoàn thành sẽ không được lưu. Thoát?', goBack);
-  } else {
+  if (!_quizInProgress) { goBack(); return; }
+
+  const isPractice = !!(_quiz && _quiz.pQueue);
+  if (isPractice) {
+    // Luyện tập: thoát giữa chừng vẫn tự lưu tiến trình đã làm, không hỏi xác nhận
+    const hasProgress = _quiz.responseTimes.some(rt => rt != null);
+    if (hasProgress) {
+      _savePracticeResults();
+      toast('Đã lưu tiến trình luyện tập', 'success');
+    }
     goBack();
+    return;
   }
+
+  confirm('Thoát bài thi', 'Bài thi chưa hoàn thành sẽ không được lưu. Thoát?', goBack);
 }
 
 /* ===== KEYBOARD SHORTCUTS ===== */

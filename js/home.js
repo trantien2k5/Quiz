@@ -1,5 +1,9 @@
 /* ===== HOME SCREEN ===== */
 function renderHome() {
+  const streak = calcStreak();
+  const streakEl = document.getElementById('home-streak');
+  if (streakEl) streakEl.textContent = streak > 0 ? `🔥 ${streak} ngày liên tiếp — tiếp tục phát huy!` : 'Bắt đầu học ngay hôm nay!';
+
   const sets = getSets();
   const recentSets = sets.slice().reverse().slice(0, 3);
   const recentSetsEl = document.getElementById('home-recent-sets');

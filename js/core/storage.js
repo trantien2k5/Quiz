@@ -116,10 +116,13 @@ function logAiUsage(entry) {
   if (log.length > 500) log.splice(500);
   localStorage.setItem('quiz_ai_usage_log', JSON.stringify(log));
 }
-/* ===== AI ANALYSIS (kết quả phân tích lộ trình học gần nhất, cache để khỏi gọi API lại) ===== */
-function getAiAnalysis() {
-  try { return JSON.parse(localStorage.getItem('quiz_ai_last_analysis') || 'null'); } catch { return null; }
+/* ===== AI ANALYSIS LOG (lưu lại các lần phân tích lộ trình học để xem lại, giữ max 20) ===== */
+function getAiAnalysisLog() {
+  try { return JSON.parse(localStorage.getItem('quiz_ai_analysis_log') || '[]'); } catch { return []; }
 }
-function saveAiAnalysis(data) {
-  localStorage.setItem('quiz_ai_last_analysis', JSON.stringify(data));
+function addAiAnalysisLog(entry) {
+  const log = getAiAnalysisLog();
+  log.unshift(entry);
+  if (log.length > 20) log.splice(20);
+  localStorage.setItem('quiz_ai_analysis_log', JSON.stringify(log));
 }
