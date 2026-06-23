@@ -38,3 +38,15 @@
   font-weight: var(--fw-semi);
   color: var(--color-danger);
 }
+
+/* Bấm trực tiếp vào vòng tròn chữ cái để chọn đáp án đúng — nhanh hơn radio nhỏ */
+#screen-import-text .option-letter {
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+#screen-import-text .option-letter.selected {
+  border-color: var(--color-success);
+  background: var(--color-success);
+  color: #fff;
+}

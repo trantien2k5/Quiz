@@ -159,7 +159,8 @@ function buildImportPreviewCard(q, i) {
         <div class="section-label" style="padding:0;margin-bottom:8px">Đáp án <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:12px">(☑ chọn đáp án đúng)</span></div>
         ${letters.map((letter, li) => `
           <div class="option-row">
-            <div class="option-letter">${letter}</div>
+            <div class="option-letter${correct === li ? ' selected' : ''}"
+              onclick="updateImportQuestion('${q.id}', 'correct', ${li})" title="Bấm để chọn đáp án đúng">${letter}</div>
             <input type="text" class="form-control" placeholder="Đáp án ${letter}..."
               value="${esc(q.options[li] || '')}"
               oninput="updateImportOption('${q.id}', ${li}, this.value)">
