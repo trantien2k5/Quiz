@@ -69,8 +69,8 @@ function startQuiz(setOrId, settings) {
   showScreen('screen-quiz');
 }
 
-function startPractice(setId) {
-  const set = getSet(setId);
+function startPractice(setOrId) {
+  const set = typeof setOrId === 'string' ? getSet(setOrId) : setOrId;
   if (!set || !set.questions || !set.questions.length) {
     toast('Bộ đề không có câu hỏi', 'error'); return;
   }
@@ -87,7 +87,7 @@ function startPractice(setId) {
   const pL = questions.map(q => (qStats[q.id] || {}).pL ?? 0.3);
   _quiz = {
     set: { ...set, questions },
-    originalSetId: setId,
+    originalSetId: typeof setOrId === 'string' ? setOrId : setOrId.id,
     pQueue,
     pL,
     pMastered:   new Array(n).fill(false),

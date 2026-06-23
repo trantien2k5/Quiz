@@ -469,7 +469,7 @@ function renderHistoryMistakes() {
        </div>` : '';
 
   const retryBtnHtml = recentWrongs.length
-    ? `<div style="padding:16px 0 8px"><button class="btn btn-danger btn-full" onclick="retryAllWrongQuestions()">🔁 Làm lại câu sai gần đây</button></div>`
+    ? `<div style="padding:16px 0 8px"><button class="btn btn-danger btn-full" onclick="retryAllWrongQuestions()">🔁 Luyện tập câu sai gần đây</button></div>`
     : '';
 
   el.innerHTML = `
@@ -499,8 +499,7 @@ function retryAllWrongQuestions() {
     if (questions.length >= 20) break;
   }
   if (!questions.length) { toast('Không có câu sai để luyện lại', ''); return; }
-  startQuiz({ id: 'retry-wrong', name: 'Luyện lại câu sai', questions, timeLimit: null },
-    { shuffleQ: true, shuffleOpts: true, numQ: null });
+  startPractice({ id: 'retry-wrong', name: 'Luyện lại câu sai', questions });
 }
 
 /* --- Level 2: Lịch sử --- */
