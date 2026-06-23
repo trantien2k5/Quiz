@@ -299,36 +299,38 @@ startQuiz(set, settings)   // bắt đầu quiz với settings {shuffleQ, shuffl
 
 ## GOTCHAS
 
-- `esc(str)` BẮT BUỘC khi render bất kỳ string nào từ user/data vào HTML
-- Sau mỗi mutate data → gọi `renderXxx()` tương ứng để UI sync
-- `navTo()` tự gọi `renderXxx()` — nếu đang ở đúng screen thì không cần gọi thêm
-- `confirm()` là custom function (override `window.confirm`) — nhận callback không phải return boolean
-- CSS cache: bump `?v=N` trong index.html (tất cả 24 css file + tất cả js) và sw.js STATIC array
-- Dùng `node scripts/bump.js` để tự động bump tất cả cùng lúc
-- `hst-home` là flex item của `screen-history` — KHÔNG dùng z-index < 20 cho `.hst-sub` (sẽ bị top-bar che)
-- Quiz mode default là `'all'` (hiện tất cả câu) — `'one-by-one'` là chế độ thứ 2
-- `shuffleOptions(q)` trả về câu hỏi mới với options đảo và `correct` đã cập nhật
-- `renderHistoryMistakes()` dùng `el.innerHTML = ...` → overwrite toàn bộ `hst-mistakes-body` — KHÔNG đặt HTML tĩnh trong container này ở index.html, sẽ bị xóa mất (nút "Làm lại câu sai" phải sinh trong JS, xem `retryBtnHtml`)
-- `RECENT_MISTAKES_WINDOW` (js/history.js) — cửa sổ "X lượt gần nhất" dùng chung bởi `renderHistoryMistakes()` (hiện câu sai gần đây) và `retryAllWrongQuestions()` (luyện lại) — PHẢI cùng 1 giá trị, nếu lệch nhau sẽ bị mâu thuẫn (hiện "không có câu sai" nhưng nút retry vẫn tìm thấy câu, hoặc ngược lại)
-- Mỗi dòng "Đề yếu nhất" (renderHistoryMistakes) có nút 🎯 gọi `startPractice(setId)` trực tiếp — `weakTopics` map từ `computeSetStats()` PHẢI giữ lại `setId`, đừng chỉ lấy tên (mất khả năng link hành động)
-- **Service Worker chỉ chạy khi deploy thật** (không phải `localhost`/`127.0.0.1`) — dev local tự huỷ SW + xoá cache cũ (`index.html` cuối file) để code trên đĩa luôn = code hiển thị, không cần hard-refresh/clear cache tay khi sửa JS/CSS
-- **An toàn data model khi thêm field mới**: data cũ của user trong `localStorage` KHÔNG có field mới → đọc field mới phải có fallback (`q.field ?? default`), KHÔNG assume field luôn tồn tại. `getSets()`/`getHistory()` đã có try/catch parse JSON lỗi → trả `[]`, không cần thêm
-- `exportPersonalizationData()` (js/library.js) — xuất báo cáo học tập dạng **.txt** (không phải JSON) cho nhẹ + dễ đọc cho người và AI. Logic: `_buildExportJson()` tính toán đầy đủ số liệu (overview, skill/topic stats, weak questions, confusion pairs, recommendations...) → `_buildReportTxt()` format thành text gọn. Thêm field thống kê mới thì sửa cả 2 hàm này.
-- `computeSetStats(history)` (js/history.js) — **nguồn tính duy nhất** cho thống kê theo bộ đề (accuracy, wrongRate, avg, best, trend, lastDate), group theo `setId` (KHÔNG theo tên — set trùng tên không bị tính chung). Dùng chung bởi: `generateInsights()` (Tổng quan), `renderSetBreakdownHtml()` (Tiến bộ), `renderHistoryMistakes()` đề yếu nhất (Lỗi sai), và `_buildExportJson()` topicStats (export report) — sửa số liệu theo set thì sửa Ở ĐÂY, không tự tính lại riêng ở từng nơi
-- **AI gọi trực tiếp (`generateDirectly()`, js/ai.js)**: API key OpenAI lưu PLAIN TEXT trong `quiz_ai_config` (localStorage) — không có backend, key gửi trực tiếp tới `api.openai.com` từ browser (CORS được OpenAI hỗ trợ). Đây là rủi ro chấp nhận được cho use case cá nhân, đã cảnh báo trong UI modal cấu hình — KHÔNG thêm tính năng đồng bộ/export config có chứa key ra ngoài.
-- `OPENAI_PRICING` (js/ai.js) là bảng giá **hardcode ước tính tại thời điểm code** (gpt-4o-mini, gpt-4o) — OpenAI đổi giá thì phải sửa tay, không có cơ chế tự cập nhật. Tỷ giá VND thì tự fetch được qua `refreshFxRate()`.
-- `applyAIQuestions(data, fallbackName)` là điểm áp dụng câu hỏi AI DUY NHẤT (dùng chung cho paste-tay `importAIText()` và gọi API `generateDirectly()`) — thêm field mới vào câu hỏi AI thì sửa Ở ĐÂY, không sửa riêng từng flow. Mỗi câu được parse trong `try/catch` riêng — 1 câu lỗi format (vd `skillTags` không phải array) sẽ bị bỏ qua, KHÔNG làm crash mất cả batch các câu hợp lệ khác. `correct` phải nằm trong [0,3], ngoài khoảng thì loại câu đó
-- `generateDirectly()` (js/ai.js) dùng `_estimateMaxTokens(request)` để chặn `max_tokens` theo số câu user xin (regex tìm số trong câu, fallback 20, clamp 5-60, ~220 token/câu + buffer, trần tuyệt đối 16000) — tránh chi phí không kiểm soát nếu AI lan man hoặc user xin quá nhiều câu. Xin nhiều hơn mức trần sẽ bị cắt JSON giữa chừng (chấp nhận được, ưu tiên an toàn chi phí hơn)
-- `generateDirectly()` gọi OpenAI với `stream: true` + `stream_options: { include_usage: true }` để hiện tiến độ thật (đếm số lần xuất hiện `"skillTags"` trong content đã stream — field cuối mỗi câu hỏi — ra "Đã tạo X/~Y câu (Ns)" trên nút, thay vì chỉ đếm giây thô). Có fallback `res.json()` non-streaming nếu môi trường không hỗ trợ `res.body.getReader` (hiếm). `usage` (token) lấy từ chunk cuối cùng của stream, không phải response chính như trước
-- `quiz_last_set` (localStorage) vốn dùng để pin "set đang chơi" lên đầu danh sách Luyện đề (`renderLibrary()`) — `applyAIQuestions()` giờ CŨNG set key này mỗi khi tạo/thêm câu bằng AI, để bộ vừa tạo tự hiện lên đầu mà không cần sửa logic sort. Set card cũng hiện `📅 ${fmtDateShort(set.createdAt)}` (fallback `—` nếu thiếu field)
-- `analyzeStudyReport()` (js/ai.js) tái dùng `_buildExportJson()`+`_buildReportTxt()` (js/library.js) làm input cho AI — KHÔNG gửi raw history, để giữ token thấp. Gọi API có `max_tokens: 550` chặn cứng chi phí output. Có log (`quiz_ai_analysis_log`, xem lại được) — mở modal không tự gọi API lại, chỉ gọi khi bấm "Phân tích lại" (`force=true`)
-- AI prompt (`buildPromptText()` js/ai.js) có rule NGÔN NGỮ bắt buộc: `name`/`explanation` luôn tiếng Việt, `text`/`options` chỉ tiếng Anh nếu chủ đề yêu cầu (TOEIC...) — nếu AI vẫn trả tiếng Anh sai chỗ, sửa rule ở đây trước, đừng tự dịch lại bằng code
-- `explanation` do AI sinh ra PHẢI theo format có cấu trúc cố định (chốt sau khi user duyệt mẫu cụ thể): `✅ Đáp án` → `🔍 Nhìn cấu trúc` (kèm `➡` lý do) → `✔ <đáp án> (phân loại)` → `📖 Ghi nhớ` (1-2 dòng). KHÔNG giải thích vì sao các đáp án sai — chỉ dạy cách suy luận ra đáp án đúng. Xem ví dụ mẫu trong `buildPromptText()`. Trong source code, mọi `\n` dùng để dạy AI escape JSON PHẢI viết `\\n` (double-escape) — vì đang ở trong template literal JS, `\n` thường sẽ bị JS hiểu thành newline thật trước khi gửi đi, làm sai ví dụ. CSS hiển thị (`review-explanation`, `practice-feedback-exp`) đã có `white-space: pre-wrap` để giữ xuống dòng — thêm chỗ hiển thị explanation mới thì nhớ thêm thuộc tính này
-- `analyzeStudyReport()` parse 1 dòng `HANH_DONG: REDO:<tên set>` hoặc `HANH_DONG: CREATE:<chủ đề>` ở cuối response AI (`_parseAiAction()`) để sinh nút hành động (luyện tập lại set / mở nhanh modal AI điền sẵn yêu cầu) — KHÔNG tốn thêm lệnh gọi API, action match theo tên set gần đúng (không match được thì không hiện nút, không báo lỗi)
-- `startPractice()` khi thoát giữa chừng (`exitQuiz()`) tự lưu tiến trình đã làm (không hỏi xác nhận) qua `_savePracticeResults()` — chỉ lưu nếu đã trả lời ít nhất 1 câu (`responseTimes` có giá trị non-null). Chế độ Thi (`startQuiz`) vẫn giữ confirm + KHÔNG lưu khi thoát giữa chừng như cũ — 2 chế độ có hành vi exit khác nhau có chủ đích
-- `startActivityTracking()` (js/core/activity-tracker.js) — đo thời gian học chủ động (loại trừ idle >60s không tương tác + lúc tab ẩn qua `visibilitychange`), dùng CHUNG cho cả `startQuiz()` và `startPractice()` (gắn vào `_quiz.activityTracker`). `handle.stop()` **idempotent** (gọi nhiều lần an toàn, trả lại giá trị đã chốt) — vì bị gọi tới 2 lần trong luồng thoát giữa chừng practice (`_savePracticeResults()` rồi `goBack()`). Nhắc tập trung (rời ≥2 phút) + nhắc nghỉ Pomodoro (25 phút active liên tục) qua `toast()` có sẵn, KHÔNG cần UI mới. Mọi điểm kết thúc quiz (`submitQuiz`, `_savePracticeResults`, `exitQuiz.goBack`) PHẢI gọi `stop()` để tránh leak listener/interval — thêm điểm kết thúc mới thì nhớ gọi theo
-- **Tab Cài đặt (`screen-settings`)** gom các chức năng cấu hình/quản lý dữ liệu từ nhiều nơi rải rác về 1 chỗ: Cấu hình AI + Thống kê AI (trước ở icon góc Luyện đề), Nhập/Xuất bộ đề JSON, Xoá toàn bộ dữ liệu (trước ở Thống kê). Các modal/hàm gốc (`showAiConfig()`, `showImportModal()`, `confirmClearAllData()`...) GIỮ NGUYÊN không đổi — tab Settings chỉ là entry point mới, không duplicate logic. "Phân tích lộ trình AI" và "Xuất báo cáo học tập" CỐ Ý giữ ở tab Thống kê (gắn với dữ liệu học tập, không phải cấu hình app)
-- `.settings-row` (css/components/settings-row.css) giờ dùng được cả dạng `<div>` (cũ, có toggle, trong quiz settings modal) VÀ `<button>` (mới, dòng điều hướng có chevron, trong tab Cài đặt) — selector `button.settings-row` reset style nút + thêm `.settings-row-chevron`. Thêm dòng settings mới thì copy pattern `<button class="settings-row" onclick="...">...<svg class="settings-row-chevron">`
+**Render/data chung:**
+- `esc(str)` BẮT BUỘC khi render string từ user/data vào HTML
+- Sau mutate data → gọi `renderXxx()` tương ứng. `navTo()` tự gọi rồi, không cần gọi lại nếu đang đúng screen
+- `confirm()` là custom (override `window.confirm`) — nhận callback, không return boolean
+- Field mới trong data model: data cũ KHÔNG có field này → đọc phải fallback (`q.field ?? default`). `getSets()`/`getHistory()` đã try/catch parse lỗi → `[]`
+- Cache: bump `?v=N` (index.html + sw.js STATIC) bằng `node scripts/bump.js`, không sửa tay
+- Service Worker chỉ chạy khi deploy thật, KHÔNG chạy ở `localhost`/`127.0.0.1` — dev tự huỷ SW + xoá cache cũ, sửa code là thấy ngay không cần hard-refresh
+
+**Quiz/History:**
+- Quiz mode default `'all'`, `'one-by-one'` là chế độ 2. `shuffleOptions(q)` trả câu hỏi mới với options đảo + `correct` cập nhật
+- `renderHistoryMistakes()` overwrite toàn bộ `hst-mistakes-body` bằng `innerHTML` — không đặt HTML tĩnh trong container này (mất), nút retry phải sinh trong JS (`retryBtnHtml`)
+- `RECENT_MISTAKES_WINDOW` (js/history.js) dùng chung bởi `renderHistoryMistakes()` và `retryAllWrongQuestions()` — phải cùng giá trị, lệch nhau sẽ mâu thuẫn giữa hiển thị và hành động
+- Dòng "Đề yếu nhất" có nút 🎯 `startPractice(setId)` — `weakTopics` map từ `computeSetStats()` phải giữ `setId`, không chỉ lấy tên
+- `computeSetStats(history)` (js/history.js) là **nguồn tính duy nhất** cho thống kê theo set (group theo `setId`, không theo tên) — dùng chung bởi Tổng quan/Tiến bộ/Lỗi sai/export report, sửa số liệu thì sửa Ở ĐÂY
+- `exportPersonalizationData()` (js/library.js) xuất **.txt** (không JSON) — `_buildExportJson()` tính số liệu → `_buildReportTxt()` format text. Thêm field thống kê thì sửa cả 2 hàm
+- `startPractice()` thoát giữa chừng (`exitQuiz()`) tự lưu tiến trình nếu đã trả lời ≥1 câu, không hỏi xác nhận. Chế độ Thi vẫn confirm + không lưu — khác biệt có chủ đích
+- `startActivityTracking()` (js/core/activity-tracker.js) đo active time (loại trừ idle >60s hoặc tab ẩn), dùng chung cho cả 2 mode qua `_quiz.activityTracker`. `handle.stop()` **idempotent** (bị gọi 2 lần khi thoát giữa chừng practice) — mọi điểm kết thúc quiz đều phải gọi `stop()` tránh leak listener/interval
+
+**AI (js/ai.js):**
+- API key OpenAI lưu **plain text** trong `quiz_ai_config`, gửi trực tiếp từ browser tới OpenAI (không backend) — rủi ro đã chấp nhận cho use case cá nhân, KHÔNG thêm sync/export config ra ngoài
+- `OPENAI_PRICING` là giá hardcode tại thời điểm code — OpenAI đổi giá phải sửa tay. Tỷ giá VND tự fetch qua `refreshFxRate()`
+- `applyAIQuestions()` là điểm áp dụng câu hỏi AI DUY NHẤT (paste-tay + gọi API) — thêm field mới sửa Ở ĐÂY. Mỗi câu parse trong `try/catch` riêng (1 câu lỗi không crash cả batch), `correct` phải trong [0,3]
+- `generateDirectly()` dùng `_estimateMaxTokens(request)` chặn `max_tokens` theo số câu xin (clamp 5-60, ~220 token/câu, trần 16000) — tránh chi phí không kiểm soát. Gọi với `stream:true` + `stream_options.include_usage` để đếm `"skillTags"` xuất hiện trong stream → hiện tiến độ thật "X/~Y câu". Có fallback `res.json()` nếu không hỗ trợ streaming
+- `quiz_last_set` vốn pin "set đang chơi" lên đầu Luyện đề — `applyAIQuestions()` cũng set key này nên set vừa tạo/thêm câu tự lên đầu. Set card hiện `📅 fmtDateShort(set.createdAt)` (fallback `—`)
+- `analyzeStudyReport()` tái dùng `_buildExportJson()`+`_buildReportTxt()` làm input AI (không gửi raw history), `max_tokens:550`. Log ở `quiz_ai_analysis_log` (xem lại được) — mở modal không tự gọi lại API, chỉ gọi khi "Phân tích lại"
+- `buildPromptText()` rule ngôn ngữ: `name`/`explanation` luôn tiếng Việt, `text`/`options` tiếng Anh chỉ khi chủ đề cần (TOEIC...)
+- `explanation` AI sinh PHẢI theo format cố định: `✅ Đáp án` → `🔍 Nhìn cấu trúc` (+ `➡` lý do) → `✔ <đáp án> (phân loại)` → `📖 Ghi nhớ`. Không giải thích đáp án sai. Trong source, `\n` dạy AI escape JSON phải viết `\\n` (double-escape, vì đang trong template literal JS). CSS hiển thị đã có `white-space: pre-wrap`
+- `analyzeStudyReport()` parse dòng `HANH_DONG: REDO:<set>` / `CREATE:<chủ đề>` cuối response (`_parseAiAction()`) để sinh nút hành động — không tốn thêm API call, match tên gần đúng
+
+**Tab Cài đặt:**
+- `screen-settings` gom cấu hình/quản lý dữ liệu rải rác (AI config/usage, import/export, xoá data) về 1 chỗ — modal/hàm gốc giữ nguyên, chỉ là entry point mới. "Phân tích AI" + "Xuất báo cáo" CỐ Ý giữ ở tab Thống kê (gắn dữ liệu học tập)
+- `.settings-row` dùng được cả `<div>` (toggle, cũ) và `<button>` (chevron, mới) — copy pattern có sẵn khi thêm dòng settings
 
 ---
 
