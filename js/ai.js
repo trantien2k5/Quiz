@@ -340,6 +340,13 @@ async function refreshFxRate() {
   }
 }
 
+/* Đếm giây real-time trong lúc chờ API — tránh cảm giác "đứng hình" không biết đang tới đâu */
+function _startElapsedTicker(renderFn) {
+  let s = 0;
+  renderFn(s);
+  return setInterval(() => { s++; renderFn(s); }, 1000);
+}
+
 /* ===== GỌI OPENAI API TRỰC TIẾP (không qua copy-paste) ===== */
 async function generateDirectly() {
   const cfg = getAiConfig();
@@ -356,7 +363,11 @@ async function generateDirectly() {
 
   const btn = document.getElementById('ai-generate-direct-btn');
   const origHtml = btn ? btn.innerHTML : '';
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang tạo...'; }
+  let timer = null;
+  if (btn) {
+    btn.disabled = true;
+    timer = _startElapsedTicker(s => { btn.textContent = `⏳ Đang tạo... (${s}s)`; });
+  }
 
   try {
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -405,6 +416,7 @@ async function generateDirectly() {
   } catch (err) {
     toast('Lỗi kết nối — kiểm tra mạng/API key', 'error');
   } finally {
+    if (timer) clearInterval(timer);
     if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
   }
 }
@@ -520,7 +532,9 @@ async function analyzeStudyReport(force) {
   const btn = document.getElementById('ai-analysis-refresh-btn');
   if (btn) btn.disabled = true;
   showAiAnalysisModal();
-  document.getElementById('ai-analysis-body').innerHTML = `<div class="empty-state"><div class="empty-icon">⏳</div><h3>Đang phân tích...</h3></div>`;
+  const timer = _startElapsedTicker(s => {
+    document.getElementById('ai-analysis-body').innerHTML = `<div class="empty-state"><div class="empty-icon">⏳</div><h3>Đang phân tích... (${s}s)</h3></div>`;
+  });
 
   try {
     const reportJson = _buildExportJson(history, getSets(), getQuestionStats(), getSkillLog(), getTopicLog());
@@ -578,6 +592,7 @@ Dựa vào báo cáo trên, hãy phân tích và trả lời NGẮN GỌN (tối
     toast('Lỗi kết nối — kiểm tra mạng/API key', 'error');
     renderAiAnalysisBody(getAiAnalysis());
   } finally {
+    clearInterval(timer);
     if (btn) btn.disabled = false;
   }
 }
