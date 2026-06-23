@@ -226,16 +226,19 @@ function applyAIQuestions(data, fallbackName) {
 
   const questions = [];
   arr.forEach(item => {
-    if (item.text && Array.isArray(item.options) && item.options.length === 4 && typeof item.correct === 'number') {
-      questions.push({
-        id: uid(),
-        text: String(item.text).trim(),
-        options: item.options.map(o => String(o).trim()),
-        correct: item.correct,
-        explanation: (item.explanation || '').trim(),
-        skillTags: (item.skillTags || []).map(t => String(t).toLowerCase().trim())
-      });
-    }
+    try {
+      if (item.text && Array.isArray(item.options) && item.options.length === 4
+        && typeof item.correct === 'number' && item.correct >= 0 && item.correct <= 3) {
+        questions.push({
+          id: uid(),
+          text: String(item.text).trim(),
+          options: item.options.map(o => String(o).trim()),
+          correct: item.correct,
+          explanation: (item.explanation || '').trim(),
+          skillTags: Array.isArray(item.skillTags) ? item.skillTags.map(t => String(t).toLowerCase().trim()) : []
+        });
+      }
+    } catch (_) { /* câu lỗi format → bỏ qua, không làm crash cả batch */ }
   });
 
   if (!questions.length) return null;
@@ -354,6 +357,14 @@ async function refreshFxRate() {
   }
 }
 
+/* Ước lượng max_tokens theo số câu user yêu cầu — tránh tốn tiền không kiểm soát nếu AI lan man hoặc user xin quá nhiều câu */
+function _estimateMaxTokens(request) {
+  const m = request.match(/(\d+)\s*câu/);
+  const numQ = m ? parseInt(m[1], 10) : 20;
+  const clampedQ = Math.min(Math.max(numQ, 5), 60);
+  return Math.min(clampedQ * 220 + 300, 16000);
+}
+
 /* Đếm giây real-time trong lúc chờ API — tránh cảm giác "đứng hình" không biết đang tới đâu */
 function _startElapsedTicker(renderFn) {
   let s = 0;
@@ -390,7 +401,8 @@ async function generateDirectly() {
       body: JSON.stringify({
         model,
         messages: [{ role: 'user', content: promptText }],
-        response_format: { type: 'json_object' }
+        response_format: { type: 'json_object' },
+        max_tokens: _estimateMaxTokens(request)
       })
     });
 
