@@ -1,6 +1,16 @@
 /* =====================================================
-   COMPONENT: Settings row (quiz settings modal)
+   COMPONENT: Settings row (quiz settings modal) + settings card (tab Cài đặt)
    ===================================================== */
+
+.settings-card {
+  padding: 0 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
 
 .settings-row {
   display: flex;

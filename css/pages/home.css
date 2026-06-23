@@ -2,6 +2,17 @@
    PAGE: Home — stats · recent sets · recent history
    ===================================================== */
 
+/* ===== STREAK BANNER ===== */
+.home-streak-banner {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-brand-light);
+  color: var(--color-brand-dark);
+  font-size: var(--text-sm);
+  font-weight: var(--fw-semi);
+}
+
 /* ===== STATS ROW ===== */
 .stats-row {
   display: flex;

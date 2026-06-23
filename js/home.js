@@ -2,9 +2,17 @@
 function renderHome() {
   const streak = calcStreak();
   const streakEl = document.getElementById('home-streak');
-  if (streakEl) streakEl.textContent = streak > 0 ? `🔥 ${streak} ngày liên tiếp — tiếp tục phát huy!` : 'Bắt đầu học ngay hôm nay!';
+  if (streakEl) streakEl.textContent = streak > 0 ? `🔥 ${streak} ngày liên tiếp — tiếp tục phát huy!` : '👋 Bắt đầu học ngay hôm nay!';
 
   const sets = getSets();
+  const history = getHistory();
+  const avgPct = history.length ? Math.round(history.reduce((s, h) => s + scorePct(h.score, h.total), 0) / history.length) : 0;
+  const statsEl = document.getElementById('home-stats');
+  if (statsEl) statsEl.innerHTML = `
+    <div class="stat-box"><div class="stat-val">${sets.length}</div><div class="stat-lbl">Bộ đề</div></div>
+    <div class="stat-box"><div class="stat-val">${history.length}</div><div class="stat-lbl">Lượt làm bài</div></div>
+    <div class="stat-box"><div class="stat-val">${avgPct}%</div><div class="stat-lbl">Điểm TB</div></div>`;
+
   const recentSets = sets.slice().reverse().slice(0, 3);
   const recentSetsEl = document.getElementById('home-recent-sets');
   if (!recentSets.length) {
@@ -27,12 +35,12 @@ function renderHome() {
     }).join('');
   }
 
-  const history = getHistory().slice(0, 3);
+  const recentHistory = history.slice(0, 3);
   const recentHistoryEl = document.getElementById('home-recent-history');
-  if (!history.length) {
+  if (!recentHistory.length) {
     recentHistoryEl.innerHTML = `<div class="home-empty">Chưa có lịch sử làm bài.</div>`;
   } else {
-    recentHistoryEl.innerHTML = history.map(h => {
+    recentHistoryEl.innerHTML = recentHistory.map(h => {
       const pct = scorePct(h.score, h.total);
       return `<div class="recent-history-item">
         <div class="history-score-circle ${scoreClass(pct)}">${pct}%</div>

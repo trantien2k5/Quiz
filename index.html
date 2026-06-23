@@ -76,7 +76,8 @@
       <h1>🏠 Trang chủ</h1>
     </div>
     <div class="scroll-content">
-      <div id="home-streak" class="text-muted mb-3"></div>
+      <div id="home-streak" class="home-streak-banner"></div>
+      <div id="home-stats" class="stats-row"></div>
       <button class="btn btn-primary btn-full mb-4" onclick="showAICreate()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
         Tạo đề bằng AI
@@ -234,48 +235,54 @@ Giải thích: ...</pre>
     </div>
     <div class="scroll-content">
       <div class="section-label">Trí tuệ nhân tạo (AI)</div>
-      <button class="settings-row" onclick="showAiConfig()">
-        <div class="settings-row-info">
-          <div class="settings-row-label">🔑 Cấu hình AI</div>
-          <div class="settings-row-desc">API key, model, tỷ giá quy đổi</div>
-        </div>
-        <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-      <button class="settings-row" onclick="showAiUsage()">
-        <div class="settings-row-info">
-          <div class="settings-row-label">📊 Thống kê sử dụng AI</div>
-          <div class="settings-row-desc">Token đã dùng, chi phí ước tính</div>
-        </div>
-        <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
+      <div class="settings-card">
+        <button class="settings-row" onclick="showAiConfig()">
+          <div class="settings-row-info">
+            <div class="settings-row-label">🔑 Cấu hình AI</div>
+            <div class="settings-row-desc">API key, model, tỷ giá quy đổi</div>
+          </div>
+          <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button class="settings-row" onclick="showAiUsage()">
+          <div class="settings-row-info">
+            <div class="settings-row-label">📊 Thống kê sử dụng AI</div>
+            <div class="settings-row-desc">Token đã dùng, chi phí ước tính</div>
+          </div>
+          <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
 
       <div class="section-label" style="margin-top:1.25rem">Dữ liệu</div>
-      <button class="settings-row" onclick="showImportModal()">
-        <div class="settings-row-info">
-          <div class="settings-row-label">📥 Nhập đề từ JSON</div>
-          <div class="settings-row-desc">Thêm bộ đề từ file đã xuất trước đó</div>
-        </div>
-        <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-      <button class="settings-row" onclick="exportAllSets()">
-        <div class="settings-row-info">
-          <div class="settings-row-label">📤 Xuất tất cả bộ đề</div>
-          <div class="settings-row-desc">Lưu toàn bộ bộ đề ra 1 file JSON</div>
-        </div>
-        <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
+      <div class="settings-card">
+        <button class="settings-row" onclick="showImportModal()">
+          <div class="settings-row-info">
+            <div class="settings-row-label">📥 Nhập đề từ JSON</div>
+            <div class="settings-row-desc">Thêm bộ đề từ file đã xuất trước đó</div>
+          </div>
+          <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button class="settings-row" onclick="exportAllSets()">
+          <div class="settings-row-info">
+            <div class="settings-row-label">📤 Xuất tất cả bộ đề</div>
+            <div class="settings-row-desc">Lưu toàn bộ bộ đề ra 1 file JSON</div>
+          </div>
+          <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
 
       <div class="section-label" style="margin-top:1.25rem">Vùng nguy hiểm</div>
-      <div style="padding:0.5rem 0">
+      <div class="settings-card" style="padding:0.75rem 1rem">
         <button class="btn btn-danger btn-full" onclick="confirmClearAllData()">🗑 Xoá toàn bộ dữ liệu</button>
       </div>
 
       <div class="section-label" style="margin-top:1.25rem">Thông tin</div>
-      <div class="settings-row">
-        <div class="settings-row-info">
-          <div class="settings-row-label">Phiên bản</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">Phiên bản</div>
+          </div>
+          <div id="settings-version" class="text-muted"></div>
         </div>
-        <div id="settings-version" class="text-muted"></div>
       </div>
     </div>
   </section>
@@ -678,18 +685,18 @@ Giải thích: ...</pre>
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="js/core/storage.js?v=106"></script>
-<script src="js/core/utils.js?v=106"></script>
-<script src="js/core/activity-tracker.js?v=106"></script>
-<script src="js/home.js?v=106"></script>
-<script src="js/editor.js?v=106"></script>
-<script src="js/quiz.js?v=106"></script>
-<script src="js/results.js?v=106"></script>
-<script src="js/library.js?v=106"></script>
-<script src="js/history.js?v=106"></script>
-<script src="js/ai.js?v=106"></script>
-<script src="js/import-text.js?v=106"></script>
-<script src="js/core/app.js?v=106"></script>
+<script src="js/core/storage.js?v=106" defer></script>
+<script src="js/core/utils.js?v=106" defer></script>
+<script src="js/core/activity-tracker.js?v=106" defer></script>
+<script src="js/home.js?v=106" defer></script>
+<script src="js/editor.js?v=106" defer></script>
+<script src="js/quiz.js?v=106" defer></script>
+<script src="js/results.js?v=106" defer></script>
+<script src="js/library.js?v=106" defer></script>
+<script src="js/history.js?v=106" defer></script>
+<script src="js/ai.js?v=106" defer></script>
+<script src="js/import-text.js?v=106" defer></script>
+<script src="js/core/app.js?v=106" defer></script>
 <script>
   if ('serviceWorker' in navigator) {
     const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname);

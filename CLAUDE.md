@@ -268,6 +268,23 @@ startQuiz(set, settings)   // bắt đầu quiz với settings {shuffleQ, shuffl
 
 ## CSS CONVENTIONS (v71+)
 
+**Quy tắc CSS chung bổ sung (áp dụng cho code mới/sửa, không bắt buộc refactor retroactive — phần file/token/class-prefix đã có ở KIẾN TRÚC FILE + token list dưới, không lặp lại ở đây):**
+- Mobile-first (`min-width` media queries)
+- Quy ước đặt tên class nhất quán (BEM hoặc tương tự), 1 class = 1 trách nhiệm
+- Hạn chế selector lồng sâu (tối đa 2–3 cấp), giữ specificity thấp
+- Ưu tiên class hơn ID; tránh style inline (ngoại lệ thực tế: layout 1-lần/sửa nhanh trong index.html vẫn dùng `style=""` — không bắt buộc dọn lại trừ khi đang sửa đúng đoạn đó)
+- `%`, `fr`, `vw`, `clamp()` cho layout responsive; Flexbox cho layout 1 chiều, Grid cho layout 2 chiều
+- Utility class cho style lặp lại; không lặp code, trích xuất style chung
+- Tách state bằng class (`.is-active`, `.is-open`, `.is-hidden`...) — KHÔNG nhầm với `.active` đã dùng cho screen/modal/nav-item hiện tại, giữ nguyên convention cũ khi sửa code cũ
+- Luôn có style cho `:hover`, `:focus-visible`, `:disabled`
+- Hạn chế `height`/`width` cố định khi không cần; dùng `max-width` thay `width` cho container
+- Tránh margin chồng chéo, ưu tiên `gap`; dùng `aspect-ratio` khi cần giữ tỷ lệ
+- Không viết CSS phụ thuộc thứ tự DOM
+- Gom media query theo component (viết ngay trong file của component đó, không tách file riêng)
+- Animation tiết kiệm, ưu tiên `transform`/`opacity`
+- Thứ tự property trong 1 rule: Layout → Box Model → Typography → Visual → Animation
+- Comment chỉ cho logic phức tạp (lý do/constraint ẩn), không comment hiển nhiên
+
 **Design tokens** (`css/base/tokens.css`) — dùng tên semantic, KHÔNG dùng tên primitive:
 ```css
 /* Brand / semantic colors */
@@ -310,6 +327,48 @@ startQuiz(set, settings)   // bắt đầu quiz với settings {shuffleQ, shuffl
 - Button base: `.btn` + modifier `.btn-primary / -secondary / -danger / -outline / -sm / -full`
 - Ripple effect tự động qua class `.btn`
 - Breakpoint: 37.5rem = 600px (hard-code vì CSS vars không dùng được trong @media)
+
+---
+
+## HTML CONVENTIONS
+
+⚠️ **Lưu ý quan trọng trước khi áp dụng:** dự án này dùng `onclick="..."` inline trong HTML xuyên suốt làm cơ chế binding chính (xem "Global scope" ở KIẾN TRÚC FILE) — đây là lựa chọn có chủ đích cho app vanilla không build tool, KHÔNG phải lỗi cần sửa. Các quy tắc dưới áp dụng cho phần còn áp dụng được (semantic tags, heading, alt, label, ID/class...); riêng quy tắc "không dùng onclick" và "dùng data-* để JS thao tác" CHỈ áp dụng khi viết feature mới có thể dùng event delegation gọn hơn — KHÔNG đi sửa lại onclick hiện có trong index.html trừ khi user yêu cầu refactor rõ ràng (Mức 3).
+
+- Dùng HTML semantic (`header`, `main`, `section`, `article`, `nav`, `footer`...)
+- Mỗi trang chỉ một `h1`; heading theo đúng thứ bậc (`h1 → h2 → h3`)
+- Không lạm dụng `div` khi có tag semantic phù hợp hơn
+- Form luôn có `label`; ảnh luôn có `alt`
+- Dùng `button` cho hành động, `a` cho điều hướng
+- Dùng `data-*` để JS thao tác (đọc dữ liệu, không phải binding event — xem lưu ý trên)
+- ID chỉ dùng khi thật sự cần (state toggle qua JS, anchor); class chỉ phục vụ style hoặc JS hook
+- Thuộc tính HTML viết thường; tên class nhất quán
+- Không nhúng CSS/JS trực tiếp trong thẻ (style="" cho layout 1-lần là ngoại lệ thực tế đã chấp nhận, xem CSS CONVENTIONS)
+- Tách component rõ ràng (xem "4 TAB NAVIGATION" — mỗi `screen-*` đã là 1 khối độc lập)
+- HTML chỉ chứa cấu trúc, không chứa logic (logic nằm trong file JS tương ứng)
+
+## JAVASCRIPT CONVENTIONS
+
+⚠️ **Lưu ý quan trọng:** dự án dùng **global scope, không có module system** (xem KIẾN TRÚC FILE — đã là quyết định kiến trúc, không phải nợ kỹ thuật). Các quy tắc "ES Modules import/export", "tách api/storage/utils/ui/features riêng file .mjs" KHÔNG áp dụng theo nghĩa đen — thay vào đó tinh thần tương đương đã có sẵn: mỗi file JS trong `js/` đảm nhiệm 1 khu vực (`storage.js`, `utils.js`, `quiz.js`...), function global đặt tên cẩn thận tránh trùng. KHÔNG tự ý chuyển sang ES Modules/bundler — đó là thay đổi kiến trúc lớn (Mức 3), chỉ làm khi user yêu cầu rõ.
+
+- Mỗi file JS một khu vực chức năng (tinh thần "module theo tính năng" — xem KIẾN TRÚC FILE)
+- Hàm ngắn, một trách nhiệm; đặt tên rõ nghĩa
+- Ưu tiên `const`, sau đó `let`, tránh `var`
+- camelCase cho biến/hàm, UPPER_SNAKE_CASE cho hằng số (ví dụ `APP_V`, `RECENT_MISTAKES_WINDOW`)
+- Tránh thêm biến global mới ngoài những global state đã có (`_quiz`, `_editingQuestions`, `_appendToSetId`...) — nếu cần state mới, cân nhắc gắn vào object global sẵn có trước khi tạo biến rời
+- Không hardcode dữ liệu lặp lại; tách config/hằng số lên đầu file khi dùng nhiều nơi
+- Không lặp code (DRY) — xem pattern "1 điểm áp dụng duy nhất" đã có (`applyAIQuestions()`, `computeSetStats()`)
+- Dùng `async/await`, bắt lỗi bằng `try...catch` ở boundary (gọi AI API, parse JSON từ localStorage)
+- Luôn kiểm tra `null`/`undefined` khi đọc field có thể thiếu ở data cũ (xem GOTCHAS "Field mới trong data model")
+- Cache DOM thay vì query nhiều lần trong cùng hàm; không query DOM trong vòng lặp
+- Tách logic khỏi UI khi hợp lý: tính toán/state ở đầu hàm, render DOM ở cuối
+- Render từ state (`_quiz`, `_editingQuestions`...) — sửa DOM trực tiếp chỉ cho patch nhỏ cục bộ (ví dụ `selectAnswer()` toggle class), không thay cho việc cập nhật state
+- Cleanup event listener/interval khi không còn dùng (xem `activityTracker.stop()` idempotent ở GOTCHAS)
+- Dùng object thay nhiều biến rời liên quan (ví dụ `_quiz = {...}` thay vì nhiều biến quiz rời)
+- Dùng destructuring + template literals khi hợp lý
+- Comment cho "tại sao" (constraint ẩn, lý do workaround), không comment "làm gì" (tên hàm/biến đã rõ nghĩa)
+- Tránh magic number/string — đặt hằng số có tên khi giá trị lặp lại hoặc ý nghĩa không tự rõ
+- Dùng guard clause (`if (!x) return;`) để giảm lồng `if`
+- Mọi thay đổi dữ liệu đi qua hàm storage có sẵn (xem API CHEATSHEET) — không tự ý `localStorage.setItem` rải rác ngoài `js/core/storage.js`
 
 ---
 
