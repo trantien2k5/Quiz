@@ -134,6 +134,37 @@
   height: 1.125rem;
 }
 
+/* ===== ADD QUESTION CHOICE POPUP ===== */
+.aqc-tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.aqc-tab {
+  flex: 1;
+  padding: 0.625rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  font-size: var(--text-sm);
+  font-weight: var(--fw-semi);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: border-color var(--transition-base), background var(--transition-base), color var(--transition-base);
+}
+
+.aqc-tab.active {
+  border-color: var(--color-brand);
+  background: var(--color-brand-light);
+  color: var(--color-brand);
+}
+
+.aqc-page .form-hint {
+  margin-bottom: var(--space-4);
+  line-height: 1.5;
+}
+
 /* ===== SAVE BAR ===== */
 .editor-save-bar {
   flex-shrink: 0;

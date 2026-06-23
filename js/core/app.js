@@ -1,4 +1,4 @@
-const APP_V = 103;
+const APP_V = 104;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -52,7 +52,8 @@ function showScreen(id) {
 }
 
 function navTo(name) {
-  _appendToSetId = null; // tránh rò set "thêm câu vào" khi chuyển tab thẳng không qua nút Đóng
+  _appendToSetId = null;     // tránh rò set "thêm câu vào" khi chuyển tab thẳng không qua nút Đóng
+  _importTargetEditor = false; // tránh rò trạng thái "đang dán câu vào editor" tương tự
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   const btn = document.querySelector(`[data-nav="${name}"]`);
   if (btn) btn.classList.add('active');

@@ -77,6 +77,28 @@ function addQuestion() {
   }, 100);
 }
 
+/* ===== POPUP CHỌN CÁCH THÊM CÂU (nhập tay / dán văn bản) ===== */
+function showAddQuestionChoice() {
+  switchAddQuestionTab('manual');
+  document.getElementById('modal-add-question-choice').classList.add('active');
+}
+function hideAddQuestionChoice() {
+  document.getElementById('modal-add-question-choice').classList.remove('active');
+}
+function switchAddQuestionTab(tab) {
+  document.querySelectorAll('.aqc-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.getElementById('aqc-page-manual').classList.toggle('hidden', tab !== 'manual');
+  document.getElementById('aqc-page-paste').classList.toggle('hidden', tab !== 'paste');
+}
+function confirmAddManualQuestion() {
+  hideAddQuestionChoice();
+  addQuestion();
+}
+function goToImportTextFromEditor() {
+  hideAddQuestionChoice();
+  openImportTextForEditor();
+}
+
 function removeQuestion(qid) {
   confirm('Xóa câu hỏi', 'Bạn có chắc muốn xóa câu hỏi này?', () => {
     _editingQuestions = _editingQuestions.filter(q => q.id !== qid);

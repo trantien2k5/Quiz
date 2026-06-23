@@ -15,35 +15,35 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- base -->
-  <link rel="stylesheet" href="css/base/tokens.css?v=103">
-  <link rel="stylesheet" href="css/base/reset.css?v=103">
+  <link rel="stylesheet" href="css/base/tokens.css?v=104">
+  <link rel="stylesheet" href="css/base/reset.css?v=104">
   <!-- layout -->
-  <link rel="stylesheet" href="css/layout/shell.css?v=103">
-  <link rel="stylesheet" href="css/layout/nav.css?v=103">
+  <link rel="stylesheet" href="css/layout/shell.css?v=104">
+  <link rel="stylesheet" href="css/layout/nav.css?v=104">
   <!-- components -->
-  <link rel="stylesheet" href="css/components/button.css?v=103">
-  <link rel="stylesheet" href="css/components/form.css?v=103">
-  <link rel="stylesheet" href="css/components/toggle.css?v=103">
-  <link rel="stylesheet" href="css/components/badge.css?v=103">
-  <link rel="stylesheet" href="css/components/modal.css?v=103">
-  <link rel="stylesheet" href="css/components/toast.css?v=103">
-  <link rel="stylesheet" href="css/components/update-banner.css?v=103">
-  <link rel="stylesheet" href="css/components/fab.css?v=103">
-  <link rel="stylesheet" href="css/components/card.css?v=103">
-  <link rel="stylesheet" href="css/components/section-label.css?v=103">
-  <link rel="stylesheet" href="css/components/drop-zone.css?v=103">
-  <link rel="stylesheet" href="css/components/settings-row.css?v=103">
+  <link rel="stylesheet" href="css/components/button.css?v=104">
+  <link rel="stylesheet" href="css/components/form.css?v=104">
+  <link rel="stylesheet" href="css/components/toggle.css?v=104">
+  <link rel="stylesheet" href="css/components/badge.css?v=104">
+  <link rel="stylesheet" href="css/components/modal.css?v=104">
+  <link rel="stylesheet" href="css/components/toast.css?v=104">
+  <link rel="stylesheet" href="css/components/update-banner.css?v=104">
+  <link rel="stylesheet" href="css/components/fab.css?v=104">
+  <link rel="stylesheet" href="css/components/card.css?v=104">
+  <link rel="stylesheet" href="css/components/section-label.css?v=104">
+  <link rel="stylesheet" href="css/components/drop-zone.css?v=104">
+  <link rel="stylesheet" href="css/components/settings-row.css?v=104">
   <!-- pages -->
-  <link rel="stylesheet" href="css/pages/home.css?v=103">
-  <link rel="stylesheet" href="css/pages/editor.css?v=103">
-  <link rel="stylesheet" href="css/pages/quiz.css?v=103">
-  <link rel="stylesheet" href="css/pages/results.css?v=103">
-  <link rel="stylesheet" href="css/pages/history.css?v=103">
-  <link rel="stylesheet" href="css/pages/ai.css?v=103">
-  <link rel="stylesheet" href="css/pages/import.css?v=103">
+  <link rel="stylesheet" href="css/pages/home.css?v=104">
+  <link rel="stylesheet" href="css/pages/editor.css?v=104">
+  <link rel="stylesheet" href="css/pages/quiz.css?v=104">
+  <link rel="stylesheet" href="css/pages/results.css?v=104">
+  <link rel="stylesheet" href="css/pages/history.css?v=104">
+  <link rel="stylesheet" href="css/pages/ai.css?v=104">
+  <link rel="stylesheet" href="css/pages/import.css?v=104">
   <!-- utilities -->
-  <link rel="stylesheet" href="css/utilities/utilities.css?v=103">
-  <link rel="stylesheet" href="css/utilities/animations.css?v=103">
+  <link rel="stylesheet" href="css/utilities/utilities.css?v=104">
+  <link rel="stylesheet" href="css/utilities/animations.css?v=104">
 </head>
 <body>
 <div id="update-banner">
@@ -121,7 +121,7 @@
         <div class="section-label" style="margin-bottom:0">Câu hỏi (<span id="q-count-label">0</span>)</div>
       </div>
       <div id="question-list" class="question-list"></div>
-      <button class="add-question-btn" onclick="addQuestion()">
+      <button class="add-question-btn" onclick="showAddQuestionChoice()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Thêm câu hỏi
       </button>
@@ -133,6 +133,26 @@
       </button>
     </div>
   </section>
+
+  <!-- Popup chọn cách thêm câu hỏi -->
+  <div id="modal-add-question-choice" class="modal-overlay" onclick="if(event.target===this)hideAddQuestionChoice()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">➕ Thêm câu hỏi</div>
+      <div class="aqc-tabs">
+        <button class="aqc-tab active" data-tab="manual" onclick="switchAddQuestionTab('manual')">✍️ Nhập tay</button>
+        <button class="aqc-tab" data-tab="paste" onclick="switchAddQuestionTab('paste')">📋 Dán văn bản</button>
+      </div>
+      <div id="aqc-page-manual" class="aqc-page">
+        <p class="form-hint">Thêm 1 câu hỏi trống để tự điền nội dung, đáp án, giải thích.</p>
+        <button class="btn btn-primary btn-full" onclick="confirmAddManualQuestion()">Thêm câu hỏi trống</button>
+      </div>
+      <div id="aqc-page-paste" class="aqc-page hidden">
+        <p class="form-hint">Dán nhiều câu cùng lúc theo định dạng Câu N / A-D / Đáp án / Giải thích — xem trước, sửa lỗi rồi mới thêm vào bộ đề này.</p>
+        <button class="btn btn-primary btn-full" onclick="goToImportTextFromEditor()">Tiếp tục dán văn bản →</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ===== LIBRARY SCREEN ===== -->
   <section id="screen-library">
@@ -205,7 +225,7 @@ Giải thích: ...</pre>
     <div class="editor-save-bar hidden" id="import-text-save-bar">
       <input type="text" id="import-set-name" class="form-control" placeholder="Tên bộ đề (để trống sẽ tự đặt tên)..." style="margin-bottom:10px">
       <button class="btn btn-primary btn-full" id="import-commit-btn" onclick="commitImportText()">
-        Tạo đề (<span id="import-commit-count">0</span> câu hợp lệ)
+        <span id="import-commit-label">Tạo đề</span> (<span id="import-commit-count">0</span> câu hợp lệ)
       </button>
     </div>
   </section>
@@ -649,18 +669,18 @@ Giải thích: ...</pre>
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="js/core/storage.js?v=103"></script>
-<script src="js/core/utils.js?v=103"></script>
-<script src="js/core/activity-tracker.js?v=103"></script>
-<script src="js/home.js?v=103"></script>
-<script src="js/editor.js?v=103"></script>
-<script src="js/quiz.js?v=103"></script>
-<script src="js/results.js?v=103"></script>
-<script src="js/library.js?v=103"></script>
-<script src="js/history.js?v=103"></script>
-<script src="js/ai.js?v=103"></script>
-<script src="js/import-text.js?v=103"></script>
-<script src="js/core/app.js?v=103"></script>
+<script src="js/core/storage.js?v=104"></script>
+<script src="js/core/utils.js?v=104"></script>
+<script src="js/core/activity-tracker.js?v=104"></script>
+<script src="js/home.js?v=104"></script>
+<script src="js/editor.js?v=104"></script>
+<script src="js/quiz.js?v=104"></script>
+<script src="js/results.js?v=104"></script>
+<script src="js/library.js?v=104"></script>
+<script src="js/history.js?v=104"></script>
+<script src="js/ai.js?v=104"></script>
+<script src="js/import-text.js?v=104"></script>
+<script src="js/core/app.js?v=104"></script>
 <script>
   if ('serviceWorker' in navigator) {
     const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname);

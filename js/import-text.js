@@ -1,11 +1,15 @@
 /* ===== IMPORT TỪ VĂN BẢN THÔ (định dạng Azota: Câu N / A-D / Đáp án / Giải thích) ===== */
 let _importQuestions = [];
+let _importTargetEditor = false; // true = thêm trực tiếp vào _editingQuestions (screen-editor), không lưu localStorage
 
 function openImportText(appendSetId) {
   _appendToSetId = appendSetId || null;
+  _importTargetEditor = false;
   _importQuestions = [];
   document.getElementById('import-text-raw').value = '';
   document.getElementById('import-set-name').value = '';
+  document.getElementById('import-set-name').style.display = '';
+  document.getElementById('import-commit-label').textContent = 'Tạo đề';
   const titleEl = document.getElementById('import-text-title');
   if (_appendToSetId) {
     const set = getSet(_appendToSetId);
@@ -17,8 +21,23 @@ function openImportText(appendSetId) {
   showScreen('screen-import-text');
 }
 
+/* Mở từ popup "Thêm câu hỏi" trong Editor — câu hợp lệ sẽ được đẩy thẳng vào _editingQuestions, không qua saveSet() */
+function openImportTextForEditor() {
+  _appendToSetId = null;
+  _importTargetEditor = true;
+  _importQuestions = [];
+  document.getElementById('import-text-raw').value = '';
+  document.getElementById('import-set-name').value = '';
+  document.getElementById('import-set-name').style.display = 'none';
+  document.getElementById('import-commit-label').textContent = 'Thêm vào bộ đề';
+  document.getElementById('import-text-title').textContent = '📋 Dán câu hỏi vào bộ đề';
+  _showImportStep('input');
+  showScreen('screen-import-text');
+}
+
 function closeImportText() {
   _appendToSetId = null;
+  if (_importTargetEditor) { _importTargetEditor = false; showScreen('screen-editor'); return; }
   navTo('library');
 }
 
@@ -239,6 +258,18 @@ function removeImportQuestion(id) {
 function commitImportText() {
   const valid = _importQuestions.filter(q => !q._error);
   if (!valid.length) { toast('Không có câu hợp lệ để tạo đề', 'error'); return; }
+
+  if (_importTargetEditor) {
+    _importTargetEditor = false;
+    valid.forEach(q => _editingQuestions.push({
+      id: q.id, text: q.text, options: q.options, correct: q.correct, explanation: q.explanation
+    }));
+    renderEditorQuestions();
+    document.getElementById('q-count-label').textContent = _editingQuestions.length;
+    toast(`✅ Đã thêm ${valid.length} câu vào bộ đề`, 'success');
+    showScreen('screen-editor');
+    return;
+  }
 
   const name = document.getElementById('import-set-name').value.trim();
   const arr = valid.map(q => ({ text: q.text, options: q.options, correct: q.correct, explanation: q.explanation }));
