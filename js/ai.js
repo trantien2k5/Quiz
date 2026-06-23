@@ -189,16 +189,8 @@ function tryParseJSON(raw) {
   return null;
 }
 
-function importAIText() {
-  const raw = document.getElementById('ai-result-text').value.trim();
-  if (!raw) { toast('Vui lòng paste kết quả JSON từ AI', 'error'); return; }
-
-  const data = tryParseJSON(normalizeJSON(raw));
-  if (!data) {
-    toast('Không parse được JSON — thử copy lại từ AI', 'error');
-    return;
-  }
-
+/* Áp dụng data JSON (từ paste tay hoặc gọi API trực tiếp) vào set — dùng chung cho cả 2 flow */
+function applyAIQuestions(data, fallbackName) {
   // Hỗ trợ cả 2 format: array (cũ) và { name, questions } (mới)
   let arr, aiName;
   if (Array.isArray(data)) {
@@ -209,9 +201,8 @@ function importAIText() {
     arr = [data]; aiName = null;
   }
 
-  const setName = (aiName && aiName.trim()) || document.getElementById('ai-topic').value.trim() || 'Bộ đề AI';
+  const setName = (aiName && aiName.trim()) || fallbackName || 'Bộ đề AI';
 
-  // Ghép tất cả câu hỏi vào 1 bộ đề
   const questions = [];
   arr.forEach(item => {
     if (item.text && Array.isArray(item.options) && item.options.length === 4 && typeof item.correct === 'number') {
@@ -226,10 +217,7 @@ function importAIText() {
     }
   });
 
-  if (!questions.length) {
-    toast('Không tìm thấy câu hỏi hợp lệ trong JSON', 'error');
-    return;
-  }
+  if (!questions.length) return null;
 
   // Append vào set có sẵn nếu ở chế độ thêm câu
   if (_appendToSetId) {
@@ -237,14 +225,8 @@ function importAIText() {
     if (existing) {
       existing.questions = [...existing.questions, ...questions];
       saveSet(existing);
-      toast(`✅ Đã thêm ${questions.length} câu vào "${existing.name}"`, 'success');
-      ['ai-result-text', 'ai-prompt-text'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = '';
-      });
-      hideAICreate();
       renderLibrary();
-      return;
+      return { count: questions.length, setName: existing.name, appended: true };
     }
   }
 
@@ -257,12 +239,243 @@ function importAIText() {
     questions
   };
   saveSet(newSet);
-  toast(`✅ Đã nhập ${questions.length} câu hỏi vào "${setName}"`, 'success');
+  renderLibrary();
+  return { count: questions.length, setName, appended: false };
+}
 
-  ['ai-topic', 'ai-result-text', 'ai-prompt-text'].forEach(id => {
+function _clearAiModalFields(appended) {
+  const ids = appended ? ['ai-result-text', 'ai-prompt-text'] : ['ai-topic', 'ai-result-text', 'ai-prompt-text'];
+  ids.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
+}
+
+function importAIText() {
+  const raw = document.getElementById('ai-result-text').value.trim();
+  if (!raw) { toast('Vui lòng paste kết quả JSON từ AI', 'error'); return; }
+
+  const data = tryParseJSON(normalizeJSON(raw));
+  if (!data) {
+    toast('Không parse được JSON — thử copy lại từ AI', 'error');
+    return;
+  }
+
+  const topic = document.getElementById('ai-topic').value.trim();
+  const result = applyAIQuestions(data, topic);
+  if (!result) { toast('Không tìm thấy câu hỏi hợp lệ trong JSON', 'error'); return; }
+
+  toast(result.appended
+    ? `✅ Đã thêm ${result.count} câu vào "${result.setName}"`
+    : `✅ Đã nhập ${result.count} câu hỏi vào "${result.setName}"`, 'success');
+
+  _clearAiModalFields(result.appended);
   hideAICreate();
-  renderLibrary();
+}
+
+/* ===== AI CONFIG (API key, model, tỷ giá) ===== */
+const OPENAI_PRICING = {
+  'gpt-4o-mini': { input: 0.15, output: 0.60 },
+  'gpt-4o':      { input: 2.50, output: 10.00 }
+};
+const AI_FX_DEFAULT = 26000;
+
+function calcAiCost(model, promptTokens, completionTokens, fxRate) {
+  const p = OPENAI_PRICING[model] || OPENAI_PRICING['gpt-4o-mini'];
+  const usd = (promptTokens / 1e6) * p.input + (completionTokens / 1e6) * p.output;
+  const vnd = usd * (fxRate || AI_FX_DEFAULT);
+  return { usd, vnd };
+}
+
+function showAiConfig() {
+  const cfg = getAiConfig();
+  document.getElementById('ai-cfg-key').value = cfg.apiKey || '';
+  document.getElementById('ai-cfg-model').value = cfg.model || 'gpt-4o-mini';
+  document.getElementById('ai-cfg-fxrate').value = cfg.fxRate || AI_FX_DEFAULT;
+  document.getElementById('ai-cfg-fxupdated').textContent = cfg.fxUpdatedAt
+    ? 'Tỷ giá cập nhật lúc: ' + fmtDate(cfg.fxUpdatedAt)
+    : 'Chưa cập nhật tỷ giá tự động';
+  document.getElementById('modal-ai-config').classList.add('active');
+}
+function hideAiConfig() {
+  document.getElementById('modal-ai-config').classList.remove('active');
+}
+function toggleAiKeyVisibility() {
+  const el = document.getElementById('ai-cfg-key');
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+function saveAiConfigForm() {
+  const apiKey = document.getElementById('ai-cfg-key').value.trim();
+  const model  = document.getElementById('ai-cfg-model').value;
+  const fxRate = parseFloat(document.getElementById('ai-cfg-fxrate').value) || AI_FX_DEFAULT;
+  saveAiConfig({ ...getAiConfig(), apiKey, model, fxRate });
+  toast('✅ Đã lưu cấu hình AI', 'success');
+  hideAiConfig();
+}
+async function refreshFxRate() {
+  const btn = document.getElementById('ai-cfg-fx-btn');
+  if (btn) btn.disabled = true;
+  try {
+    const res = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+    const json = await res.json();
+    const rate = json.rates && json.rates.VND;
+    if (!rate) throw new Error('no rate');
+    const rounded = Math.round(rate);
+    document.getElementById('ai-cfg-fxrate').value = rounded;
+    saveAiConfig({ ...getAiConfig(), fxRate: rounded, fxUpdatedAt: Date.now() });
+    document.getElementById('ai-cfg-fxupdated').textContent = 'Tỷ giá cập nhật lúc: ' + fmtDate(Date.now());
+    toast(`✅ Tỷ giá mới: ${rounded.toLocaleString('vi-VN')}đ/$`, 'success');
+  } catch {
+    toast('Không lấy được tỷ giá — kiểm tra kết nối mạng', 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+/* ===== GỌI OPENAI API TRỰC TIẾP (không qua copy-paste) ===== */
+async function generateDirectly() {
+  const cfg = getAiConfig();
+  if (!cfg.apiKey) {
+    toast('Vui lòng nhập API key trong Cấu hình AI', 'error');
+    showAiConfig();
+    return;
+  }
+  const topic = document.getElementById('ai-topic').value.trim();
+  const desc  = document.getElementById('ai-desc').value.trim();
+  const level = document.getElementById('ai-level').value;
+  const count = parseInt(document.getElementById('ai-count').value) || 20;
+  if (!topic) { toast('Nhập chủ đề bạn muốn học!', 'error'); document.getElementById('ai-topic').focus(); return; }
+
+  const model = cfg.model || 'gpt-4o-mini';
+  const promptText = buildPromptText({ topic, desc, level, count });
+
+  const btn = document.getElementById('ai-generate-direct-btn');
+  const origHtml = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang tạo...'; }
+
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.apiKey },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: promptText }],
+        response_format: { type: 'json_object' }
+      })
+    });
+
+    if (!res.ok) {
+      if (res.status === 401) toast('API key không hợp lệ', 'error');
+      else if (res.status === 429) toast('Hết quota hoặc bị giới hạn tốc độ (429)', 'error');
+      else toast(`Lỗi API (${res.status})`, 'error');
+      return;
+    }
+
+    const json = await res.json();
+    const content = json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content;
+    if (!content) { toast('AI không trả về nội dung', 'error'); return; }
+
+    const data = tryParseJSON(normalizeJSON(content));
+    if (!data) { toast('Không parse được JSON từ AI', 'error'); return; }
+
+    const result = applyAIQuestions(data, topic);
+    if (!result) { toast('AI không trả về câu hỏi hợp lệ', 'error'); return; }
+
+    const usage = json.usage || {};
+    const promptTokens = usage.prompt_tokens || 0;
+    const completionTokens = usage.completion_tokens || 0;
+    const totalTokens = usage.total_tokens || (promptTokens + completionTokens);
+    const { usd, vnd } = calcAiCost(model, promptTokens, completionTokens, cfg.fxRate);
+
+    logAiUsage({
+      id: uid(), date: Date.now(), model, topic, setName: result.setName,
+      questionsRequested: count, questionsGenerated: result.count,
+      promptTokens, completionTokens, totalTokens,
+      costUSD: usd, costVND: vnd
+    });
+
+    toast(`✅ Đã tạo ${result.count} câu — ${totalTokens.toLocaleString('vi-VN')} tokens, $${usd.toFixed(4)} (~${Math.round(vnd).toLocaleString('vi-VN')}đ)`, 'success');
+    _clearAiModalFields(result.appended);
+    hideAICreate();
+  } catch (err) {
+    toast('Lỗi kết nối — kiểm tra mạng/API key', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+  }
+}
+
+/* ===== THỐNG KÊ SỬ DỤNG AI ===== */
+function showAiUsage() {
+  renderAiUsage();
+  document.getElementById('modal-ai-usage').classList.add('active');
+}
+function hideAiUsage() {
+  document.getElementById('modal-ai-usage').classList.remove('active');
+}
+function renderAiUsage() {
+  const log = getAiUsageLog();
+  const el = document.getElementById('ai-usage-body');
+  if (!log.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📊</div><h3>Chưa có dữ liệu</h3><p>Tạo đề bằng API key để xem thống kê</p></div>`;
+    return;
+  }
+
+  const totalCalls = log.length;
+  const totalQuestions = log.reduce((s, e) => s + (e.questionsGenerated || 0), 0);
+  const totalTokens = log.reduce((s, e) => s + (e.totalTokens || 0), 0);
+  const totalUSD = log.reduce((s, e) => s + (e.costUSD || 0), 0);
+  const totalVND = log.reduce((s, e) => s + (e.costVND || 0), 0);
+
+  const modelMap = {};
+  log.forEach(e => {
+    if (!modelMap[e.model]) modelMap[e.model] = { calls: 0, tokens: 0, usd: 0 };
+    modelMap[e.model].calls++;
+    modelMap[e.model].tokens += e.totalTokens || 0;
+    modelMap[e.model].usd += e.costUSD || 0;
+  });
+  const modelRows = Object.entries(modelMap).map(([m, s]) => `
+    <div class="hst-set-brow">
+      <span class="hst-set-name">${esc(m)}</span>
+      <span class="hst-set-col" style="color:var(--text-muted)">${s.calls}</span>
+      <span class="hst-set-col">${s.tokens.toLocaleString('vi-VN')}</span>
+      <span class="hst-set-col">$${s.usd.toFixed(3)}</span>
+    </div>`).join('');
+
+  const logRows = log.slice(0, 50).map(e => `
+    <div class="hst-set-brow">
+      <span class="hst-set-name">${esc(e.topic || e.setName || '—')}</span>
+      <span class="hst-set-col" style="color:var(--text-muted)">${e.questionsGenerated || 0}c</span>
+      <span class="hst-set-col">${(e.totalTokens || 0).toLocaleString('vi-VN')}</span>
+      <span class="hst-set-col">$${(e.costUSD || 0).toFixed(4)}</span>
+    </div>`).join('');
+
+  el.innerHTML = `
+    <div class="hst-stats-grid">
+      <div class="hst-stat-card"><div class="hst-stat-val">${totalCalls}</div><div class="hst-stat-lbl">Lượt gọi</div></div>
+      <div class="hst-stat-card"><div class="hst-stat-val">${totalQuestions}</div><div class="hst-stat-lbl">Câu đã tạo</div></div>
+      <div class="hst-stat-card" style="grid-column:1/-1"><div class="hst-stat-val">${totalTokens.toLocaleString('vi-VN')}</div><div class="hst-stat-lbl">Tổng token</div></div>
+      <div class="hst-stat-card hst-stat-accent"><div class="hst-stat-val">$${totalUSD.toFixed(3)}</div><div class="hst-stat-lbl">Chi phí (USD)</div></div>
+      <div class="hst-stat-card hst-stat-green"><div class="hst-stat-val">${Math.round(totalVND).toLocaleString('vi-VN')}đ</div><div class="hst-stat-lbl">Chi phí (VND)</div></div>
+    </div>
+    <div class="hst-section-header" style="margin-top:12px"><div class="section-label">Theo model</div></div>
+    <div class="hst-set-breakdown">
+      <div class="hst-set-brow hst-set-head">
+        <span class="hst-set-name">Model</span><span class="hst-set-col">Lượt</span><span class="hst-set-col">Token</span><span class="hst-set-col">USD</span>
+      </div>
+      ${modelRows}
+    </div>
+    <div class="hst-section-header" style="margin-top:12px"><div class="section-label">Lịch sử gần đây (${Math.min(log.length, 50)})</div></div>
+    <div class="hst-set-breakdown">
+      <div class="hst-set-brow hst-set-head">
+        <span class="hst-set-name">Chủ đề</span><span class="hst-set-col">Câu</span><span class="hst-set-col">Token</span><span class="hst-set-col">USD</span>
+      </div>
+      ${logRows}
+    </div>`;
+}
+function confirmClearAiUsage() {
+  confirm('Xoá lịch sử sử dụng AI', 'Toàn bộ log token/chi phí sẽ bị xoá. Bộ đề đã tạo KHÔNG bị ảnh hưởng.', () => {
+    clearAiUsageLog();
+    renderAiUsage();
+    toast('Đã xoá lịch sử sử dụng AI', 'success');
+  });
 }

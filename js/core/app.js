@@ -1,4 +1,4 @@
-const APP_V = 78;
+const APP_V = 79;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -62,7 +62,7 @@ function navTo(name) {
 
 function confirmClearAllData() {
   confirm('Xoá toàn bộ dữ liệu', 'Tất cả bộ đề, lịch sử và thống kê sẽ bị xoá vĩnh viễn. Không thể khôi phục!', () => {
-    ['quiz_sets','quiz_history','quiz_q_stats','quiz_last_set'].forEach(k => localStorage.removeItem(k));
+    ['quiz_sets','quiz_history','quiz_q_stats','quiz_last_set','quiz_ai_usage_log'].forEach(k => localStorage.removeItem(k));
     renderHome(); renderLibrary(); renderHistory();
     toast('Đã xoá toàn bộ dữ liệu', 'success');
   });

@@ -15,34 +15,34 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- base -->
-  <link rel="stylesheet" href="css/base/tokens.css?v=78">
-  <link rel="stylesheet" href="css/base/reset.css?v=78">
+  <link rel="stylesheet" href="css/base/tokens.css?v=79">
+  <link rel="stylesheet" href="css/base/reset.css?v=79">
   <!-- layout -->
-  <link rel="stylesheet" href="css/layout/shell.css?v=78">
-  <link rel="stylesheet" href="css/layout/nav.css?v=78">
+  <link rel="stylesheet" href="css/layout/shell.css?v=79">
+  <link rel="stylesheet" href="css/layout/nav.css?v=79">
   <!-- components -->
-  <link rel="stylesheet" href="css/components/button.css?v=78">
-  <link rel="stylesheet" href="css/components/form.css?v=78">
-  <link rel="stylesheet" href="css/components/toggle.css?v=78">
-  <link rel="stylesheet" href="css/components/badge.css?v=78">
-  <link rel="stylesheet" href="css/components/modal.css?v=78">
-  <link rel="stylesheet" href="css/components/toast.css?v=78">
-  <link rel="stylesheet" href="css/components/update-banner.css?v=78">
-  <link rel="stylesheet" href="css/components/fab.css?v=78">
-  <link rel="stylesheet" href="css/components/card.css?v=78">
-  <link rel="stylesheet" href="css/components/section-label.css?v=78">
-  <link rel="stylesheet" href="css/components/drop-zone.css?v=78">
-  <link rel="stylesheet" href="css/components/settings-row.css?v=78">
+  <link rel="stylesheet" href="css/components/button.css?v=79">
+  <link rel="stylesheet" href="css/components/form.css?v=79">
+  <link rel="stylesheet" href="css/components/toggle.css?v=79">
+  <link rel="stylesheet" href="css/components/badge.css?v=79">
+  <link rel="stylesheet" href="css/components/modal.css?v=79">
+  <link rel="stylesheet" href="css/components/toast.css?v=79">
+  <link rel="stylesheet" href="css/components/update-banner.css?v=79">
+  <link rel="stylesheet" href="css/components/fab.css?v=79">
+  <link rel="stylesheet" href="css/components/card.css?v=79">
+  <link rel="stylesheet" href="css/components/section-label.css?v=79">
+  <link rel="stylesheet" href="css/components/drop-zone.css?v=79">
+  <link rel="stylesheet" href="css/components/settings-row.css?v=79">
   <!-- pages -->
-  <link rel="stylesheet" href="css/pages/home.css?v=78">
-  <link rel="stylesheet" href="css/pages/editor.css?v=78">
-  <link rel="stylesheet" href="css/pages/quiz.css?v=78">
-  <link rel="stylesheet" href="css/pages/results.css?v=78">
-  <link rel="stylesheet" href="css/pages/history.css?v=78">
-  <link rel="stylesheet" href="css/pages/ai.css?v=78">
+  <link rel="stylesheet" href="css/pages/home.css?v=79">
+  <link rel="stylesheet" href="css/pages/editor.css?v=79">
+  <link rel="stylesheet" href="css/pages/quiz.css?v=79">
+  <link rel="stylesheet" href="css/pages/results.css?v=79">
+  <link rel="stylesheet" href="css/pages/history.css?v=79">
+  <link rel="stylesheet" href="css/pages/ai.css?v=79">
   <!-- utilities -->
-  <link rel="stylesheet" href="css/utilities/utilities.css?v=78">
-  <link rel="stylesheet" href="css/utilities/animations.css?v=78">
+  <link rel="stylesheet" href="css/utilities/utilities.css?v=79">
+  <link rel="stylesheet" href="css/utilities/animations.css?v=79">
 </head>
 <body>
 <div id="update-banner">
@@ -145,7 +145,12 @@
   <div id="modal-ai-create" class="modal-overlay" onclick="if(event.target===this)hideAICreate()">
     <div class="modal-sheet">
       <div class="modal-handle"></div>
-      <div id="ai-modal-title" class="modal-title">✨ Tạo đề AI</div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div id="ai-modal-title" class="modal-title" style="margin-bottom:0">✨ Tạo đề AI</div>
+        <button class="btn-icon" onclick="showAiConfig()" title="Cấu hình AI">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 008.91 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </button>
+      </div>
 
       <input type="text" id="ai-topic" class="form-control ai-topic-main"
         placeholder="Tên chủ đề. Ví dụ: Từ loại TOEIC, Toán THPT..."
@@ -175,7 +180,11 @@
         </select>
       </div>
 
-      <button class="btn btn-primary btn-full" onclick="generateAndCopy()">
+      <button id="ai-generate-direct-btn" class="btn btn-primary btn-full" onclick="generateDirectly()" style="margin-bottom:10px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Tạo bằng API key
+      </button>
+      <button class="btn btn-outline btn-full" onclick="generateAndCopy()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
         Tạo &amp; Copy Prompt
       </button>
@@ -188,6 +197,53 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         Nhập vào bộ đề
       </button>
+    </div>
+  </div>
+
+  <!-- ===== MODAL AI CONFIG ===== -->
+  <div id="modal-ai-config" class="modal-overlay" onclick="if(event.target===this)hideAiConfig()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">⚙️ Cấu hình AI</div>
+
+      <label class="form-label">OpenAI API key</label>
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <input type="password" id="ai-cfg-key" class="form-control" placeholder="sk-...">
+        <button class="btn-icon" onclick="toggleAiKeyVisibility()" title="Hiện/ẩn key">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <p class="form-hint" style="margin-top:-6px;margin-bottom:14px">Key chỉ lưu trên máy này (localStorage), gửi trực tiếp tới OpenAI khi tạo đề — không qua server nào khác</p>
+
+      <label class="form-label">Model</label>
+      <select id="ai-cfg-model" class="form-control" style="margin-bottom:14px">
+        <option value="gpt-4o-mini">gpt-4o-mini — rẻ, ~$0.15/$0.6 mỗi 1M token (vào/ra)</option>
+        <option value="gpt-4o">gpt-4o — chất lượng cao, ~$2.5/$10 mỗi 1M token (vào/ra)</option>
+      </select>
+
+      <label class="form-label">Tỷ giá USD → VND</label>
+      <div style="display:flex;gap:6px;margin-bottom:4px">
+        <input type="number" id="ai-cfg-fxrate" class="form-control" placeholder="26000">
+        <button id="ai-cfg-fx-btn" class="btn btn-outline" onclick="refreshFxRate()" style="white-space:nowrap">Lấy mới</button>
+      </div>
+      <p class="form-hint" id="ai-cfg-fxupdated" style="margin-top:0;margin-bottom:14px">Chưa cập nhật tỷ giá tự động</p>
+
+      <button class="btn btn-primary btn-full" onclick="saveAiConfigForm()">Lưu cấu hình</button>
+      <button class="btn btn-outline btn-full" style="margin-top:8px" onclick="hideAiConfig();showAiUsage()">📊 Thống kê sử dụng AI</button>
+    </div>
+  </div>
+
+  <!-- ===== MODAL AI USAGE ===== -->
+  <div id="modal-ai-usage" class="modal-overlay" onclick="if(event.target===this)hideAiUsage()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="modal-title" style="margin-bottom:0">📊 Thống kê sử dụng AI</div>
+        <button class="btn-icon" onclick="confirmClearAiUsage()" title="Xoá lịch sử sử dụng AI">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
+      </div>
+      <div id="ai-usage-body" style="max-height:60vh;overflow-y:auto"></div>
     </div>
   </div>
 
@@ -459,16 +515,16 @@
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="js/core/storage.js?v=78"></script>
-<script src="js/core/utils.js?v=78"></script>
-<script src="js/home.js?v=78"></script>
-<script src="js/editor.js?v=78"></script>
-<script src="js/quiz.js?v=78"></script>
-<script src="js/results.js?v=78"></script>
-<script src="js/library.js?v=78"></script>
-<script src="js/history.js?v=78"></script>
-<script src="js/ai.js?v=78"></script>
-<script src="js/core/app.js?v=78"></script>
+<script src="js/core/storage.js?v=79"></script>
+<script src="js/core/utils.js?v=79"></script>
+<script src="js/home.js?v=79"></script>
+<script src="js/editor.js?v=79"></script>
+<script src="js/quiz.js?v=79"></script>
+<script src="js/results.js?v=79"></script>
+<script src="js/library.js?v=79"></script>
+<script src="js/history.js?v=79"></script>
+<script src="js/ai.js?v=79"></script>
+<script src="js/core/app.js?v=79"></script>
 <script>
   if ('serviceWorker' in navigator) {
     const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname);

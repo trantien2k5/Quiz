@@ -97,3 +97,25 @@ function _appendDayLog(storageKey, name, date, c, w) {
 }
 function appendSkillLog(skill, date, c, w) { _appendDayLog('quiz_skill_log', skill, date, c, w); }
 function appendTopicLog(topic, date, c, w)  { _appendDayLog('quiz_topic_log', topic, date, c, w); }
+
+/* ===== AI CONFIG (API key, model, tỷ giá) ===== */
+function getAiConfig() {
+  try { return JSON.parse(localStorage.getItem('quiz_ai_config') || '{}'); } catch { return {}; }
+}
+function saveAiConfig(cfg) {
+  localStorage.setItem('quiz_ai_config', JSON.stringify(cfg));
+}
+
+/* ===== AI USAGE LOG (token, chi phí mỗi lượt gọi API) ===== */
+function getAiUsageLog() {
+  try { return JSON.parse(localStorage.getItem('quiz_ai_usage_log') || '[]'); } catch { return []; }
+}
+function logAiUsage(entry) {
+  const log = getAiUsageLog();
+  log.unshift(entry);
+  if (log.length > 500) log.splice(500);
+  localStorage.setItem('quiz_ai_usage_log', JSON.stringify(log));
+}
+function clearAiUsageLog() {
+  localStorage.removeItem('quiz_ai_usage_log');
+}
