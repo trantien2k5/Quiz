@@ -35,7 +35,7 @@ function buildQuestionCard(q, i) {
     <div class="question-card" id="qcard-${q.id}">
       <div class="question-card-header">
         <div class="q-num">${i + 1}</div>
-        <div class="q-text">${esc(q.text) || '<em style="color:var(--text-light)">Câu hỏi chưa nhập</em>'}</div>
+        <div class="q-text">${esc(q.text) || '<em style="color:var(--color-text-light)">Câu hỏi chưa nhập</em>'}</div>
         <button class="btn-icon" onclick="removeQuestion('${q.id}')" title="Xóa câu hỏi">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
         </button>
@@ -92,7 +92,7 @@ function updateQuestion(qid, field, value) {
   else q[field] = value;
   if (field === 'text') {
     const el = document.querySelector(`#qcard-${qid} .question-card-header .q-text`);
-    if (el) el.innerHTML = esc(value) || '<em style="color:var(--text-light)">Câu hỏi chưa nhập</em>';
+    if (el) el.innerHTML = esc(value) || '<em style="color:var(--color-text-light)">Câu hỏi chưa nhập</em>';
   }
 }
 

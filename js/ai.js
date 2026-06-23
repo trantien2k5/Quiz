@@ -531,7 +531,7 @@ function renderAiUsage() {
   const modelRows = Object.entries(modelMap).map(([m, s]) => `
     <div class="hst-set-brow">
       <span class="hst-set-name">${esc(m)}</span>
-      <span class="hst-set-col" style="color:var(--text-muted)">${s.calls}</span>
+      <span class="hst-set-col" style="color:var(--color-text-muted)">${s.calls}</span>
       <span class="hst-set-col">${s.tokens.toLocaleString('vi-VN')}</span>
       <span class="hst-set-col">$${s.usd.toFixed(3)}</span>
     </div>`).join('');
@@ -539,7 +539,7 @@ function renderAiUsage() {
   const logRows = log.slice(0, 50).map(e => `
     <div class="hst-set-brow">
       <span class="hst-set-name">${e.type === 'analysis' ? '🤖 Phân tích lộ trình' : esc(e.topic || e.setName || '—')}</span>
-      <span class="hst-set-col" style="color:var(--text-muted)">${e.type === 'analysis' ? '—' : (e.questionsGenerated || 0) + 'c'}</span>
+      <span class="hst-set-col" style="color:var(--color-text-muted)">${e.type === 'analysis' ? '—' : (e.questionsGenerated || 0) + 'c'}</span>
       <span class="hst-set-col">${(e.totalTokens || 0).toLocaleString('vi-VN')}</span>
       <span class="hst-set-col">$${(e.costUSD || 0).toFixed(4)}</span>
     </div>`).join('');
@@ -613,7 +613,7 @@ function renderAiAnalysisBody() {
       ${log.map((e) => `
         <div class="hst-set-brow" style="cursor:pointer${e.id === cur.id ? ';background:var(--color-brand-light)' : ''}" onclick="viewAiAnalysisEntry('${e.id}')">
           <span class="hst-set-name">${esc(fmtDate(e.date))}</span>
-          <span class="hst-set-col" style="color:var(--text-muted)">${esc(e.model)}</span>
+          <span class="hst-set-col" style="color:var(--color-text-muted)">${esc(e.model)}</span>
         </div>`).join('')}
     </div>` : '';
 

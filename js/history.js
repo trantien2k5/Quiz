@@ -15,7 +15,7 @@ function calcStreak() {
 }
 
 function svgLineChart(values, { color = '#6366F1', height = 110 } = {}) {
-  if (values.length < 2) return '<p style="text-align:center;color:var(--text-muted);font-size:13px;padding:20px 0">Chưa đủ dữ liệu</p>';
+  if (values.length < 2) return '<p style="text-align:center;color:var(--color-text-muted);font-size:13px;padding:20px 0">Chưa đủ dữ liệu</p>';
   const W = 320, H = height, pad = 20;
   const scaleX = i => pad + (i / (values.length - 1)) * (W - pad * 2);
   const scaleY = v => pad + ((100 - v) / 100) * (H - pad * 2);
@@ -84,10 +84,10 @@ function calcSpeedTrend(history) {
 }
 
 function trendHtml(diff, unit = '%') {
-  if (diff === null) return '<span style="color:var(--text-muted)">—</span>';
+  if (diff === null) return '<span style="color:var(--color-text-muted)">—</span>';
   if (diff > 0) return `<span class="hst-trend-up">▲ +${diff}${unit}</span>`;
   if (diff < 0) return `<span class="hst-trend-down">▼ ${diff}${unit}</span>`;
-  return '<span style="color:var(--text-muted)">→ Không đổi</span>';
+  return '<span style="color:var(--color-text-muted)">→ Không đổi</span>';
 }
 
 function getLevelInfo(totalQ) {
@@ -205,8 +205,8 @@ function renderSetBreakdownHtml(history) {
       const tEl = s.trendDiff === null ? '—'
         : s.trendDiff > 0 ? `<span class="hst-trend-up">▲ +${s.trendDiff}%</span>`
         : s.trendDiff < 0 ? `<span class="hst-trend-down">▼ ${s.trendDiff}%</span>`
-        : '<span style="color:var(--text-muted)">→</span>';
-      const c = s.avg >= 80 ? 'var(--green)' : s.avg >= 60 ? 'var(--orange)' : 'var(--red)';
+        : '<span style="color:var(--color-text-muted)">→</span>';
+      const c = s.avg >= 80 ? 'var(--color-success)' : s.avg >= 60 ? 'var(--color-warning)' : 'var(--color-danger)';
       return { name: s.name, avg: s.avg, best: s.best, n: s.sessions, tEl, c };
     });
 
@@ -221,9 +221,9 @@ function renderSetBreakdownHtml(history) {
     </div>
     ${rows.map(r => `<div class="hst-set-brow">
       <span class="hst-set-name">${esc(r.name)}</span>
-      <span class="hst-set-col" style="color:var(--text-muted)">${r.n}</span>
+      <span class="hst-set-col" style="color:var(--color-text-muted)">${r.n}</span>
       <span class="hst-set-col" style="color:${r.c};font-weight:700">${r.avg}%</span>
-      <span class="hst-set-col" style="color:var(--green)">${r.best}%</span>
+      <span class="hst-set-col" style="color:var(--color-success)">${r.best}%</span>
       <span class="hst-set-col">${r.tEl}</span>
     </div>`).join('')}
   </div>`;
@@ -241,9 +241,9 @@ function renderHistory() {
 
   const strip = document.getElementById('hst-quick-strip');
   strip.innerHTML = streak > 0
-    ? `<div class="hst-quick-chip" style="background:var(--orange)">🔥 ${streak} ngày</div>
-       <div class="hst-quick-chip" style="background:var(--green)">⏱ ${fmtStudyTime(totalTime)}</div>
-       <div class="hst-quick-chip" style="background:var(--purple)">${history.length} lần làm</div>`
+    ? `<div class="hst-quick-chip" style="background:var(--color-warning)">🔥 ${streak} ngày</div>
+       <div class="hst-quick-chip" style="background:var(--color-success)">⏱ ${fmtStudyTime(totalTime)}</div>
+       <div class="hst-quick-chip" style="background:var(--color-brand)">${history.length} lần làm</div>`
     : '';
 
   document.getElementById('hst-nav-grid').innerHTML = `
@@ -355,7 +355,7 @@ function renderHistoryProgress() {
   const speedTrendHtml = speedDiff === null ? '—'
     : speedDiff < -2 ? '<span class="hst-trend-up">▲ Nhanh hơn</span>'
     : speedDiff > 2 ? '<span class="hst-trend-down">▼ Chậm hơn</span>'
-    : '<span style="color:var(--text-muted)">→ Tương đương</span>';
+    : '<span style="color:var(--color-text-muted)">→ Tương đương</span>';
 
   const setBreakdown = renderSetBreakdownHtml(history);
   el.innerHTML = `
@@ -371,7 +371,7 @@ function renderHistoryProgress() {
       <div class="hst-metric-card">
         <div class="hst-metric-title">Điểm TB gần đây</div>
         <div class="hst-metric-val">${trendHtml(scoreTrend ? scoreTrend.diff : null)}</div>
-        ${scoreTrend ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px">${scoreTrend.rAvg}% vs ${scoreTrend.pAvg}% trước</div>` : ''}
+        ${scoreTrend ? `<div style="font-size:11px;color:var(--color-text-muted);margin-top:4px">${scoreTrend.rAvg}% vs ${scoreTrend.pAvg}% trước</div>` : ''}
       </div>
       <div class="hst-metric-card">
         <div class="hst-metric-title">Tốc độ làm bài</div>
@@ -422,7 +422,7 @@ function renderHistoryMistakes() {
           <div class="hst-mistake-q">${esc(q.text)}</div>
           <div class="hst-mistake-correct">✅ ${esc(q.options[q.correct])}</div>
         </div>`).join('')
-    : '<p style="text-align:center;padding:20px;color:var(--text-muted)">Không có câu sai gần đây 🎉</p>';
+    : '<p style="text-align:center;padding:20px;color:var(--color-text-muted)">Không có câu sai gần đây 🎉</p>';
 
   const topicsHtml = weakTopics.length
     ? weakTopics.map(t => `
@@ -468,8 +468,8 @@ function renderHistoryMistakes() {
          ${skills.slice(0, 5).map(s => `
            <div class="hst-weak-topic">
              <div class="hst-weak-topic-name">${esc(s.skill)}</div>
-             <div class="hst-weak-topic-bar"><div class="hst-weak-topic-fill" style="width:${100 - s.accuracy}%;background:var(--orange)"></div></div>
-             <div class="hst-weak-topic-pct" style="color:var(--orange)">${s.accuracy}% đúng</div>
+             <div class="hst-weak-topic-bar"><div class="hst-weak-topic-fill" style="width:${100 - s.accuracy}%;background:var(--color-warning)"></div></div>
+             <div class="hst-weak-topic-pct" style="color:var(--color-warning)">${s.accuracy}% đúng</div>
            </div>`).join('')}
        </div>` : '';
 

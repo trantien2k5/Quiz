@@ -300,21 +300,11 @@ function selectAnswer(qIdx, optIdx) {
     renderQuizNav();
     return;
   }
-  // exam mode: cập nhật UI inline
+  // exam mode: cập nhật UI inline — màu do CSS class .selected .opt-letter xử lý (css/pages/quiz.css)
   const block = document.getElementById('quiz-q-' + qIdx);
   if (!block) return;
   block.querySelectorAll('.option-btn').forEach((btn, i) => {
     btn.classList.toggle('selected', i === optIdx);
-    const letter = btn.querySelector('.opt-letter');
-    if (i === optIdx) {
-      letter.style.background = 'var(--purple)';
-      letter.style.borderColor = 'var(--purple)';
-      letter.style.color = '#fff';
-    } else {
-      letter.style.background = '';
-      letter.style.borderColor = '';
-      letter.style.color = '';
-    }
   });
   updateQuizCounterDisplay();
   renderQuizNav();
@@ -486,7 +476,7 @@ function renderPracticeResult(mastered, skipped, total, timeTaken, set, activeTi
           </div>`;
         }).join('')}
         ${expHTML}
-        <div style="margin-top:8px;font-size:13px;color:var(--text-muted)">${statusLabel}</div>
+        <div style="margin-top:8px;font-size:13px;color:var(--color-text-muted)">${statusLabel}</div>
       </div>
     </div>`;
   }).join('');
