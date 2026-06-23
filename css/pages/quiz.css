@@ -113,7 +113,12 @@
 }
 
 .option-btn:hover    { border-color: var(--color-brand); background: var(--color-brand-light); }
-.option-btn.selected { border-color: var(--color-brand); background: var(--color-brand-light); }
+.option-btn.selected {
+  border-width: 2.5px;
+  border-color: var(--color-brand);
+  background: var(--color-brand-light);
+  box-shadow: 0 1px 6px rgba(99,102,241,0.18);
+}
 
 .opt-letter {
   display: flex;
@@ -129,6 +134,13 @@
   font-weight: var(--fw-bold);
   color: var(--color-text-muted);
   transition: all var(--transition-base);
+}
+
+/* Vòng tròn chữ tô đậm khi đáp án đã được chọn — tín hiệu rõ hơn nền tím nhạt */
+.option-btn.selected .opt-letter {
+  border-color: var(--color-brand);
+  background: var(--color-brand);
+  color: #fff;
 }
 
 /* ===== FLAG BUTTON ===== */
