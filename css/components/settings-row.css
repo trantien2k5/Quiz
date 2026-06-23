@@ -30,3 +30,24 @@
   font-size: var(--text-xs);
   color: var(--color-text-muted);
 }
+
+button.settings-row {
+  width: 100%;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+button.settings-row:active {
+  background: var(--color-bg);
+}
+
+.settings-row-chevron {
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  color: var(--color-text-light);
+}

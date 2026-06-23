@@ -1,4 +1,4 @@
-const APP_V = 88;
+const APP_V = 89;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -35,7 +35,7 @@ function reloadApp() {
 }
 
 /* ===== NAVIGATION ===== */
-const screens = ['screen-home', 'screen-library', 'screen-editor', 'screen-quiz', 'screen-result', 'screen-history'];
+const screens = ['screen-home', 'screen-library', 'screen-editor', 'screen-quiz', 'screen-result', 'screen-history', 'screen-settings'];
 
 function showScreen(id) {
   screens.forEach(s => {
@@ -58,6 +58,12 @@ function navTo(name) {
   if (name === 'home') { showScreen('screen-home'); renderHome(); }
   else if (name === 'library') { showScreen('screen-library'); renderLibrary(); }
   else if (name === 'history') { showScreen('screen-history'); renderHistory(); }
+  else if (name === 'settings') { showScreen('screen-settings'); renderSettings(); }
+}
+
+function renderSettings() {
+  const el = document.getElementById('settings-version');
+  if (el) el.textContent = 'v' + APP_V;
 }
 
 function confirmClearAllData() {

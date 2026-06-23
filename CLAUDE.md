@@ -102,12 +102,13 @@ scripts/
 
 ---
 
-## 3 TAB NAVIGATION
+## 4 TAB NAVIGATION
 
 ```
 navTo('home')     → screen-home     (Trang chủ — dashboard)
 navTo('library')  → screen-library  (Luyện đề — AI + kho đề)
 navTo('history')  → screen-history  (Kết quả — stats + lịch sử)
+navTo('settings') → screen-settings (Cài đặt — AI config/usage, import/export, xoá dữ liệu, version)
 ```
 
 Các screen overlay (ẩn bottom nav khi hiện):
@@ -322,10 +323,11 @@ startQuiz(set, settings)   // bắt đầu quiz với settings {shuffleQ, shuffl
 - `analyzeStudyReport()` parse 1 dòng `HANH_DONG: REDO:<tên set>` hoặc `HANH_DONG: CREATE:<chủ đề>` ở cuối response AI (`_parseAiAction()`) để sinh nút hành động (luyện tập lại set / mở nhanh modal AI điền sẵn yêu cầu) — KHÔNG tốn thêm lệnh gọi API, action match theo tên set gần đúng (không match được thì không hiện nút, không báo lỗi)
 - `startPractice()` khi thoát giữa chừng (`exitQuiz()`) tự lưu tiến trình đã làm (không hỏi xác nhận) qua `_savePracticeResults()` — chỉ lưu nếu đã trả lời ít nhất 1 câu (`responseTimes` có giá trị non-null). Chế độ Thi (`startQuiz`) vẫn giữ confirm + KHÔNG lưu khi thoát giữa chừng như cũ — 2 chế độ có hành vi exit khác nhau có chủ đích
 - `startActivityTracking()` (js/core/activity-tracker.js) — đo thời gian học chủ động (loại trừ idle >60s không tương tác + lúc tab ẩn qua `visibilitychange`), dùng CHUNG cho cả `startQuiz()` và `startPractice()` (gắn vào `_quiz.activityTracker`). `handle.stop()` **idempotent** (gọi nhiều lần an toàn, trả lại giá trị đã chốt) — vì bị gọi tới 2 lần trong luồng thoát giữa chừng practice (`_savePracticeResults()` rồi `goBack()`). Nhắc tập trung (rời ≥2 phút) + nhắc nghỉ Pomodoro (25 phút active liên tục) qua `toast()` có sẵn, KHÔNG cần UI mới. Mọi điểm kết thúc quiz (`submitQuiz`, `_savePracticeResults`, `exitQuiz.goBack`) PHẢI gọi `stop()` để tránh leak listener/interval — thêm điểm kết thúc mới thì nhớ gọi theo
+- **Tab Cài đặt (`screen-settings`)** gom các chức năng cấu hình/quản lý dữ liệu từ nhiều nơi rải rác về 1 chỗ: Cấu hình AI + Thống kê AI (trước ở icon góc Luyện đề), Nhập/Xuất bộ đề JSON, Xoá toàn bộ dữ liệu (trước ở Thống kê). Các modal/hàm gốc (`showAiConfig()`, `showImportModal()`, `confirmClearAllData()`...) GIỮ NGUYÊN không đổi — tab Settings chỉ là entry point mới, không duplicate logic. "Phân tích lộ trình AI" và "Xuất báo cáo học tập" CỐ Ý giữ ở tab Thống kê (gắn với dữ liệu học tập, không phải cấu hình app)
+- `.settings-row` (css/components/settings-row.css) giờ dùng được cả dạng `<div>` (cũ, có toggle, trong quiz settings modal) VÀ `<button>` (mới, dòng điều hướng có chevron, trong tab Cài đặt) — selector `button.settings-row` reset style nút + thêm `.settings-row-chevron`. Thêm dòng settings mới thì copy pattern `<button class="settings-row" onclick="...">...<svg class="settings-row-chevron">`
 
 ---
 
 ## ROADMAP (chưa làm)
 
 - Xem lại lịch sử chi tiết — click vào history entry → xem lại đáp án
-- Export toàn bộ — nút xuất tất cả sets ra 1 file JSON

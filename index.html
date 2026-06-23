@@ -15,34 +15,34 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- base -->
-  <link rel="stylesheet" href="css/base/tokens.css?v=88">
-  <link rel="stylesheet" href="css/base/reset.css?v=88">
+  <link rel="stylesheet" href="css/base/tokens.css?v=89">
+  <link rel="stylesheet" href="css/base/reset.css?v=89">
   <!-- layout -->
-  <link rel="stylesheet" href="css/layout/shell.css?v=88">
-  <link rel="stylesheet" href="css/layout/nav.css?v=88">
+  <link rel="stylesheet" href="css/layout/shell.css?v=89">
+  <link rel="stylesheet" href="css/layout/nav.css?v=89">
   <!-- components -->
-  <link rel="stylesheet" href="css/components/button.css?v=88">
-  <link rel="stylesheet" href="css/components/form.css?v=88">
-  <link rel="stylesheet" href="css/components/toggle.css?v=88">
-  <link rel="stylesheet" href="css/components/badge.css?v=88">
-  <link rel="stylesheet" href="css/components/modal.css?v=88">
-  <link rel="stylesheet" href="css/components/toast.css?v=88">
-  <link rel="stylesheet" href="css/components/update-banner.css?v=88">
-  <link rel="stylesheet" href="css/components/fab.css?v=88">
-  <link rel="stylesheet" href="css/components/card.css?v=88">
-  <link rel="stylesheet" href="css/components/section-label.css?v=88">
-  <link rel="stylesheet" href="css/components/drop-zone.css?v=88">
-  <link rel="stylesheet" href="css/components/settings-row.css?v=88">
+  <link rel="stylesheet" href="css/components/button.css?v=89">
+  <link rel="stylesheet" href="css/components/form.css?v=89">
+  <link rel="stylesheet" href="css/components/toggle.css?v=89">
+  <link rel="stylesheet" href="css/components/badge.css?v=89">
+  <link rel="stylesheet" href="css/components/modal.css?v=89">
+  <link rel="stylesheet" href="css/components/toast.css?v=89">
+  <link rel="stylesheet" href="css/components/update-banner.css?v=89">
+  <link rel="stylesheet" href="css/components/fab.css?v=89">
+  <link rel="stylesheet" href="css/components/card.css?v=89">
+  <link rel="stylesheet" href="css/components/section-label.css?v=89">
+  <link rel="stylesheet" href="css/components/drop-zone.css?v=89">
+  <link rel="stylesheet" href="css/components/settings-row.css?v=89">
   <!-- pages -->
-  <link rel="stylesheet" href="css/pages/home.css?v=88">
-  <link rel="stylesheet" href="css/pages/editor.css?v=88">
-  <link rel="stylesheet" href="css/pages/quiz.css?v=88">
-  <link rel="stylesheet" href="css/pages/results.css?v=88">
-  <link rel="stylesheet" href="css/pages/history.css?v=88">
-  <link rel="stylesheet" href="css/pages/ai.css?v=88">
+  <link rel="stylesheet" href="css/pages/home.css?v=89">
+  <link rel="stylesheet" href="css/pages/editor.css?v=89">
+  <link rel="stylesheet" href="css/pages/quiz.css?v=89">
+  <link rel="stylesheet" href="css/pages/results.css?v=89">
+  <link rel="stylesheet" href="css/pages/history.css?v=89">
+  <link rel="stylesheet" href="css/pages/ai.css?v=89">
   <!-- utilities -->
-  <link rel="stylesheet" href="css/utilities/utilities.css?v=88">
-  <link rel="stylesheet" href="css/utilities/animations.css?v=88">
+  <link rel="stylesheet" href="css/utilities/utilities.css?v=89">
+  <link rel="stylesheet" href="css/utilities/animations.css?v=89">
 </head>
 <body>
 <div id="update-banner">
@@ -61,6 +61,10 @@
   <button class="nav-item" data-nav="history" onclick="navTo('history')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
     Thống kê
+  </button>
+  <button class="nav-item" data-nav="settings" onclick="navTo('settings')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 008.91 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    Cài đặt
   </button>
 </nav>
 <div id="app">
@@ -133,14 +137,6 @@
   <section id="screen-library">
     <div class="top-bar">
       <h1>📝 Luyện đề</h1>
-      <div style="display:flex;gap:4px">
-        <button class="btn-icon" onclick="showAiConfig()" title="Cấu hình AI">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 008.91 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-        </button>
-        <button class="btn-icon" onclick="showImportModal()" title="Nhập đề từ JSON">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        </button>
-      </div>
     </div>
     <div class="scroll-content">
       <div id="library-set-list" class="set-list"></div>
@@ -149,6 +145,59 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
     <textarea id="ai-prompt-text" style="position:absolute;left:-9999px;top:-9999px" readonly></textarea>
+  </section>
+
+  <!-- ===== SETTINGS SCREEN ===== -->
+  <section id="screen-settings">
+    <div class="top-bar">
+      <h1>⚙️ Cài đặt</h1>
+    </div>
+    <div class="scroll-content">
+      <div class="section-label">Trí tuệ nhân tạo (AI)</div>
+      <button class="settings-row" onclick="showAiConfig()">
+        <div class="settings-row-info">
+          <div class="settings-row-label">🔑 Cấu hình AI</div>
+          <div class="settings-row-desc">API key, model, tỷ giá quy đổi</div>
+        </div>
+        <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button class="settings-row" onclick="showAiUsage()">
+        <div class="settings-row-info">
+          <div class="settings-row-label">📊 Thống kê sử dụng AI</div>
+          <div class="settings-row-desc">Token đã dùng, chi phí ước tính</div>
+        </div>
+        <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+
+      <div class="section-label" style="margin-top:1.25rem">Dữ liệu</div>
+      <button class="settings-row" onclick="showImportModal()">
+        <div class="settings-row-info">
+          <div class="settings-row-label">📥 Nhập đề từ JSON</div>
+          <div class="settings-row-desc">Thêm bộ đề từ file đã xuất trước đó</div>
+        </div>
+        <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button class="settings-row" onclick="exportAllSets()">
+        <div class="settings-row-info">
+          <div class="settings-row-label">📤 Xuất tất cả bộ đề</div>
+          <div class="settings-row-desc">Lưu toàn bộ bộ đề ra 1 file JSON</div>
+        </div>
+        <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+
+      <div class="section-label" style="margin-top:1.25rem">Vùng nguy hiểm</div>
+      <div style="padding:0.5rem 0">
+        <button class="btn btn-danger btn-full" onclick="confirmClearAllData()">🗑 Xoá toàn bộ dữ liệu</button>
+      </div>
+
+      <div class="section-label" style="margin-top:1.25rem">Thông tin</div>
+      <div class="settings-row">
+        <div class="settings-row-info">
+          <div class="settings-row-label">Phiên bản</div>
+        </div>
+        <div id="settings-version" class="text-muted"></div>
+      </div>
+    </div>
   </section>
 
   <!-- ===== MODAL AI CREATE ===== -->
@@ -360,9 +409,6 @@
       <div class="scroll-content">
         <div id="hst-quick-strip" class="hst-quick-strip"></div>
         <div id="hst-nav-grid" class="hst-nav-grid"></div>
-        <div style="padding:16px 0 8px">
-          <button class="btn btn-danger btn-full" onclick="confirmClearAllData()">🗑 Xoá toàn bộ dữ liệu</button>
-        </div>
       </div>
     </div>
 
@@ -515,17 +561,17 @@
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="js/core/storage.js?v=88"></script>
-<script src="js/core/utils.js?v=88"></script>
-<script src="js/core/activity-tracker.js?v=88"></script>
-<script src="js/home.js?v=88"></script>
-<script src="js/editor.js?v=88"></script>
-<script src="js/quiz.js?v=88"></script>
-<script src="js/results.js?v=88"></script>
-<script src="js/library.js?v=88"></script>
-<script src="js/history.js?v=88"></script>
-<script src="js/ai.js?v=88"></script>
-<script src="js/core/app.js?v=88"></script>
+<script src="js/core/storage.js?v=89"></script>
+<script src="js/core/utils.js?v=89"></script>
+<script src="js/core/activity-tracker.js?v=89"></script>
+<script src="js/home.js?v=89"></script>
+<script src="js/editor.js?v=89"></script>
+<script src="js/quiz.js?v=89"></script>
+<script src="js/results.js?v=89"></script>
+<script src="js/library.js?v=89"></script>
+<script src="js/history.js?v=89"></script>
+<script src="js/ai.js?v=89"></script>
+<script src="js/core/app.js?v=89"></script>
 <script>
   if ('serviceWorker' in navigator) {
     const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname);
