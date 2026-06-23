@@ -5,7 +5,7 @@ let _appendToSetId = null;
 
 function renderAiChips() {
   document.getElementById('ai-suggestions').innerHTML = AI_DEFAULTS.map(t =>
-    `<button class="ai-chip" onclick="setAiTopic('${t.replace(/'/g,"&#39;")}')">
+    `<button class="ai-chip" onclick="setAiRequest('${t.replace(/'/g,"&#39;")}')">
       ${esc(t)}
     </button>`
   ).join('');
@@ -13,20 +13,17 @@ function renderAiChips() {
 
 function showAICreate(appendSetId) {
   _appendToSetId = appendSetId || null;
-  const topicEl = document.getElementById('ai-topic');
-  const descEl  = document.getElementById('ai-desc');
+  const requestEl = document.getElementById('ai-request');
   const titleEl = document.getElementById('ai-modal-title');
   const suggestionsEl = document.getElementById('ai-suggestions');
   if (_appendToSetId) {
     const set = getSet(_appendToSetId);
     titleEl.textContent = set ? `✨ Thêm câu vào "${set.name}"` : '✨ Tạo đề AI';
-    topicEl.value = set ? set.name : '';
-    descEl.value  = (set && set.description) ? set.description : '';
+    requestEl.value = set ? `Thêm câu hỏi vào bộ đề "${set.name}"${set.description ? ' (' + set.description + ')' : ''}, mức trung bình` : '';
     suggestionsEl.innerHTML = '';
   } else {
     titleEl.textContent = '✨ Tạo đề AI';
-    topicEl.value = '';
-    descEl.value  = '';
+    requestEl.value = '';
     renderAiChips();
     suggestionsEl.style.display = '';
   }
@@ -38,17 +35,18 @@ function hideAICreate() {
   document.getElementById('modal-ai-create').classList.remove('active');
 }
 
-function setAiTopic(text) {
-  const el = document.getElementById('ai-topic');
-  el.value = text;
+/* Chip gợi ý → điền sẵn 1 câu yêu cầu tự nhiên vào ô chat, user có thể sửa thêm */
+function setAiRequest(topic) {
+  const el = document.getElementById('ai-request');
+  el.value = `Tạo 20 câu về ${topic}, mức trung bình`;
   el.focus();
 }
 
-/* Ẩn chip gợi ý khi user đã tự gõ chủ đề — tránh bấm nhầm chip đè mất nội dung đang gõ */
+/* Ẩn chip gợi ý khi user đã tự gõ yêu cầu — tránh bấm nhầm chip đè mất nội dung đang gõ */
 function updateAiSuggestionsVisibility() {
-  const topic = document.getElementById('ai-topic').value.trim();
+  const request = document.getElementById('ai-request').value.trim();
   const el = document.getElementById('ai-suggestions');
-  if (el) el.style.display = topic ? 'none' : '';
+  if (el) el.style.display = request ? 'none' : '';
 }
 
 /* Đã có API key thì ẩn luôn form copy-paste thủ công — không cần nữa */
@@ -58,10 +56,14 @@ function updateAiManualSectionVisibility() {
   if (el) el.style.display = hasKey ? 'none' : '';
 }
 
-function buildPromptText({ topic, desc, level, count }) {
-  const descLine  = desc  ? `\nMô tả thêm: ${desc}`  : '';
-  const levelLine = level ? `\nCấp độ: ${level}` : '';
-  return `Tạo ${count} câu hỏi trắc nghiệm chất lượng cao về: "${topic}"${descLine}${levelLine}
+function buildPromptText(request) {
+  return `Yêu cầu của người dùng: "${request}"
+
+Phân tích yêu cầu trên để xác định chủ đề, phạm vi, đối tượng học, và:
+- Số câu hỏi: theo đúng số người dùng nói; nếu không nói rõ thì tạo 20 câu
+- Cấp độ khó: theo đúng mức người dùng nói; nếu không nói rõ thì mức trung bình
+
+Tạo câu hỏi trắc nghiệm chất lượng cao theo yêu cầu trên.
 
 CHỈ trả về JSON thuần, không markdown, không giải thích thêm:
 
@@ -119,16 +121,13 @@ GIẢI THÍCH (explanation) — ngắn gọn, đúng trọng tâm:
 - KHÔNG lặp lại nội dung câu hỏi
 - QUAN TRỌNG: chỉ dùng dấu nháy đơn (') không dùng dấu nháy kép (") để tránh lỗi JSON
 
-Tạo đúng ${count} câu, không thiếu, không thừa.`;
+Tạo đúng số câu đã xác định ở trên, không thiếu, không thừa.`;
 }
 
 function generateAndCopy() {
-  const topic = document.getElementById('ai-topic').value.trim();
-  const desc  = document.getElementById('ai-desc').value.trim();
-  const level = document.getElementById('ai-level').value;
-  const count = parseInt(document.getElementById('ai-count').value) || 20;
-  if (!topic) { toast('Nhập chủ đề bạn muốn học!', 'error'); document.getElementById('ai-topic').focus(); return; }
-  const text = buildPromptText({ topic, desc, level, count });
+  const request = document.getElementById('ai-request').value.trim();
+  if (!request) { toast('Nhập mô tả bộ đề bạn muốn tạo!', 'error'); document.getElementById('ai-request').focus(); return; }
+  const text = buildPromptText(request);
 
   const ta = document.getElementById('ai-prompt-text');
   ta.value = text;
@@ -252,7 +251,7 @@ function applyAIQuestions(data, fallbackName) {
 }
 
 function _clearAiModalFields(appended) {
-  const ids = appended ? ['ai-result-text', 'ai-prompt-text'] : ['ai-topic', 'ai-result-text', 'ai-prompt-text'];
+  const ids = appended ? ['ai-result-text', 'ai-prompt-text'] : ['ai-request', 'ai-result-text', 'ai-prompt-text'];
   ids.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
@@ -269,8 +268,8 @@ function importAIText() {
     return;
   }
 
-  const topic = document.getElementById('ai-topic').value.trim();
-  const result = applyAIQuestions(data, topic);
+  const request = document.getElementById('ai-request').value.trim();
+  const result = applyAIQuestions(data, request.slice(0, 50));
   if (!result) { toast('Không tìm thấy câu hỏi hợp lệ trong JSON', 'error'); return; }
 
   toast(result.appended
@@ -349,14 +348,11 @@ async function generateDirectly() {
     showAiConfig();
     return;
   }
-  const topic = document.getElementById('ai-topic').value.trim();
-  const desc  = document.getElementById('ai-desc').value.trim();
-  const level = document.getElementById('ai-level').value;
-  const count = parseInt(document.getElementById('ai-count').value) || 20;
-  if (!topic) { toast('Nhập chủ đề bạn muốn học!', 'error'); document.getElementById('ai-topic').focus(); return; }
+  const request = document.getElementById('ai-request').value.trim();
+  if (!request) { toast('Nhập mô tả bộ đề bạn muốn tạo!', 'error'); document.getElementById('ai-request').focus(); return; }
 
   const model = cfg.model || 'gpt-4o-mini';
-  const promptText = buildPromptText({ topic, desc, level, count });
+  const promptText = buildPromptText(request);
 
   const btn = document.getElementById('ai-generate-direct-btn');
   const origHtml = btn ? btn.innerHTML : '';
@@ -387,7 +383,7 @@ async function generateDirectly() {
     const data = tryParseJSON(normalizeJSON(content));
     if (!data) { toast('Không parse được JSON từ AI', 'error'); return; }
 
-    const result = applyAIQuestions(data, topic);
+    const result = applyAIQuestions(data, request.slice(0, 50));
     if (!result) { toast('AI không trả về câu hỏi hợp lệ', 'error'); return; }
 
     const usage = json.usage || {};
@@ -397,8 +393,8 @@ async function generateDirectly() {
     const { usd, vnd } = calcAiCost(model, promptTokens, completionTokens, cfg.fxRate);
 
     logAiUsage({
-      id: uid(), date: Date.now(), model, topic, setName: result.setName,
-      questionsRequested: count, questionsGenerated: result.count,
+      id: uid(), date: Date.now(), model, topic: request.slice(0, 80), setName: result.setName,
+      questionsRequested: result.count, questionsGenerated: result.count,
       promptTokens, completionTokens, totalTokens,
       costUSD: usd, costVND: vnd
     });

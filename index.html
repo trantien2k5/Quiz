@@ -15,34 +15,34 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- base -->
-  <link rel="stylesheet" href="css/base/tokens.css?v=80">
-  <link rel="stylesheet" href="css/base/reset.css?v=80">
+  <link rel="stylesheet" href="css/base/tokens.css?v=81">
+  <link rel="stylesheet" href="css/base/reset.css?v=81">
   <!-- layout -->
-  <link rel="stylesheet" href="css/layout/shell.css?v=80">
-  <link rel="stylesheet" href="css/layout/nav.css?v=80">
+  <link rel="stylesheet" href="css/layout/shell.css?v=81">
+  <link rel="stylesheet" href="css/layout/nav.css?v=81">
   <!-- components -->
-  <link rel="stylesheet" href="css/components/button.css?v=80">
-  <link rel="stylesheet" href="css/components/form.css?v=80">
-  <link rel="stylesheet" href="css/components/toggle.css?v=80">
-  <link rel="stylesheet" href="css/components/badge.css?v=80">
-  <link rel="stylesheet" href="css/components/modal.css?v=80">
-  <link rel="stylesheet" href="css/components/toast.css?v=80">
-  <link rel="stylesheet" href="css/components/update-banner.css?v=80">
-  <link rel="stylesheet" href="css/components/fab.css?v=80">
-  <link rel="stylesheet" href="css/components/card.css?v=80">
-  <link rel="stylesheet" href="css/components/section-label.css?v=80">
-  <link rel="stylesheet" href="css/components/drop-zone.css?v=80">
-  <link rel="stylesheet" href="css/components/settings-row.css?v=80">
+  <link rel="stylesheet" href="css/components/button.css?v=81">
+  <link rel="stylesheet" href="css/components/form.css?v=81">
+  <link rel="stylesheet" href="css/components/toggle.css?v=81">
+  <link rel="stylesheet" href="css/components/badge.css?v=81">
+  <link rel="stylesheet" href="css/components/modal.css?v=81">
+  <link rel="stylesheet" href="css/components/toast.css?v=81">
+  <link rel="stylesheet" href="css/components/update-banner.css?v=81">
+  <link rel="stylesheet" href="css/components/fab.css?v=81">
+  <link rel="stylesheet" href="css/components/card.css?v=81">
+  <link rel="stylesheet" href="css/components/section-label.css?v=81">
+  <link rel="stylesheet" href="css/components/drop-zone.css?v=81">
+  <link rel="stylesheet" href="css/components/settings-row.css?v=81">
   <!-- pages -->
-  <link rel="stylesheet" href="css/pages/home.css?v=80">
-  <link rel="stylesheet" href="css/pages/editor.css?v=80">
-  <link rel="stylesheet" href="css/pages/quiz.css?v=80">
-  <link rel="stylesheet" href="css/pages/results.css?v=80">
-  <link rel="stylesheet" href="css/pages/history.css?v=80">
-  <link rel="stylesheet" href="css/pages/ai.css?v=80">
+  <link rel="stylesheet" href="css/pages/home.css?v=81">
+  <link rel="stylesheet" href="css/pages/editor.css?v=81">
+  <link rel="stylesheet" href="css/pages/quiz.css?v=81">
+  <link rel="stylesheet" href="css/pages/results.css?v=81">
+  <link rel="stylesheet" href="css/pages/history.css?v=81">
+  <link rel="stylesheet" href="css/pages/ai.css?v=81">
   <!-- utilities -->
-  <link rel="stylesheet" href="css/utilities/utilities.css?v=80">
-  <link rel="stylesheet" href="css/utilities/animations.css?v=80">
+  <link rel="stylesheet" href="css/utilities/utilities.css?v=81">
+  <link rel="stylesheet" href="css/utilities/animations.css?v=81">
 </head>
 <body>
 <div id="update-banner">
@@ -152,35 +152,14 @@
       <div class="modal-handle"></div>
       <div id="ai-modal-title" class="modal-title">✨ Tạo đề AI</div>
 
-      <input type="text" id="ai-topic" class="form-control ai-topic-main"
-        placeholder="Tên chủ đề. Ví dụ: Từ loại TOEIC, Toán THPT..."
+      <textarea id="ai-request" class="form-control ai-topic-main" rows="3"
+        placeholder="Mô tả bộ đề bạn muốn tạo. Ví dụ: Tạo 20 câu giới từ TOEIC mức trung bình, có giải thích chi tiết"
         oninput="updateAiSuggestionsVisibility()"
-        style="margin-bottom:10px">
-
-      <input type="text" id="ai-desc" class="form-control"
-        placeholder="Mô tả thêm (không bắt buộc): phạm vi, đối tượng, yêu cầu..."
-        style="margin-bottom:10px">
+        style="margin-bottom:10px;resize:vertical"></textarea>
 
       <div id="ai-suggestions" class="ai-suggestions"></div>
 
-      <div class="ai-row" style="margin:14px 0">
-        <select id="ai-level" class="form-control">
-          <option value="">Mọi cấp độ</option>
-          <option value="cơ bản">Cơ bản</option>
-          <option value="trung bình" selected>Trung bình</option>
-          <option value="nâng cao">Nâng cao</option>
-        </select>
-        <select id="ai-count" class="form-control ai-count-select">
-          <option value="5">5 câu</option>
-          <option value="10">10 câu</option>
-          <option value="15">15 câu</option>
-          <option value="20" selected>20 câu</option>
-          <option value="30">30 câu</option>
-          <option value="50">50 câu</option>
-        </select>
-      </div>
-
-      <button id="ai-generate-direct-btn" class="btn btn-primary btn-full" onclick="generateDirectly()" style="margin-bottom:10px">
+      <button id="ai-generate-direct-btn" class="btn btn-primary btn-full" onclick="generateDirectly()" style="margin-bottom:10px;margin-top:14px">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
         Tạo bằng API key
       </button>
@@ -517,16 +496,16 @@
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="js/core/storage.js?v=80"></script>
-<script src="js/core/utils.js?v=80"></script>
-<script src="js/home.js?v=80"></script>
-<script src="js/editor.js?v=80"></script>
-<script src="js/quiz.js?v=80"></script>
-<script src="js/results.js?v=80"></script>
-<script src="js/library.js?v=80"></script>
-<script src="js/history.js?v=80"></script>
-<script src="js/ai.js?v=80"></script>
-<script src="js/core/app.js?v=80"></script>
+<script src="js/core/storage.js?v=81"></script>
+<script src="js/core/utils.js?v=81"></script>
+<script src="js/home.js?v=81"></script>
+<script src="js/editor.js?v=81"></script>
+<script src="js/quiz.js?v=81"></script>
+<script src="js/results.js?v=81"></script>
+<script src="js/library.js?v=81"></script>
+<script src="js/history.js?v=81"></script>
+<script src="js/ai.js?v=81"></script>
+<script src="js/core/app.js?v=81"></script>
 <script>
   if ('serviceWorker' in navigator) {
     const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname);
