@@ -112,7 +112,8 @@
     background var(--transition-base);
 }
 
-.option-btn:hover    { border-color: var(--color-brand); background: var(--color-brand-light); }
+/* Hover dùng xám đậm trung tính — tránh trùng màu tím với trạng thái đã chọn (selected) gây mờ/nhầm lẫn */
+.option-btn:hover { border-color: var(--color-text-light); background: var(--color-surface); }
 .option-btn.selected {
   border-width: 2.5px;
   border-color: var(--color-brand);
