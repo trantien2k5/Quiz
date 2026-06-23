@@ -15,34 +15,35 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- base -->
-  <link rel="stylesheet" href="css/base/tokens.css?v=93">
-  <link rel="stylesheet" href="css/base/reset.css?v=93">
+  <link rel="stylesheet" href="css/base/tokens.css?v=94">
+  <link rel="stylesheet" href="css/base/reset.css?v=94">
   <!-- layout -->
-  <link rel="stylesheet" href="css/layout/shell.css?v=93">
-  <link rel="stylesheet" href="css/layout/nav.css?v=93">
+  <link rel="stylesheet" href="css/layout/shell.css?v=94">
+  <link rel="stylesheet" href="css/layout/nav.css?v=94">
   <!-- components -->
-  <link rel="stylesheet" href="css/components/button.css?v=93">
-  <link rel="stylesheet" href="css/components/form.css?v=93">
-  <link rel="stylesheet" href="css/components/toggle.css?v=93">
-  <link rel="stylesheet" href="css/components/badge.css?v=93">
-  <link rel="stylesheet" href="css/components/modal.css?v=93">
-  <link rel="stylesheet" href="css/components/toast.css?v=93">
-  <link rel="stylesheet" href="css/components/update-banner.css?v=93">
-  <link rel="stylesheet" href="css/components/fab.css?v=93">
-  <link rel="stylesheet" href="css/components/card.css?v=93">
-  <link rel="stylesheet" href="css/components/section-label.css?v=93">
-  <link rel="stylesheet" href="css/components/drop-zone.css?v=93">
-  <link rel="stylesheet" href="css/components/settings-row.css?v=93">
+  <link rel="stylesheet" href="css/components/button.css?v=94">
+  <link rel="stylesheet" href="css/components/form.css?v=94">
+  <link rel="stylesheet" href="css/components/toggle.css?v=94">
+  <link rel="stylesheet" href="css/components/badge.css?v=94">
+  <link rel="stylesheet" href="css/components/modal.css?v=94">
+  <link rel="stylesheet" href="css/components/toast.css?v=94">
+  <link rel="stylesheet" href="css/components/update-banner.css?v=94">
+  <link rel="stylesheet" href="css/components/fab.css?v=94">
+  <link rel="stylesheet" href="css/components/card.css?v=94">
+  <link rel="stylesheet" href="css/components/section-label.css?v=94">
+  <link rel="stylesheet" href="css/components/drop-zone.css?v=94">
+  <link rel="stylesheet" href="css/components/settings-row.css?v=94">
   <!-- pages -->
-  <link rel="stylesheet" href="css/pages/home.css?v=93">
-  <link rel="stylesheet" href="css/pages/editor.css?v=93">
-  <link rel="stylesheet" href="css/pages/quiz.css?v=93">
-  <link rel="stylesheet" href="css/pages/results.css?v=93">
-  <link rel="stylesheet" href="css/pages/history.css?v=93">
-  <link rel="stylesheet" href="css/pages/ai.css?v=93">
+  <link rel="stylesheet" href="css/pages/home.css?v=94">
+  <link rel="stylesheet" href="css/pages/editor.css?v=94">
+  <link rel="stylesheet" href="css/pages/quiz.css?v=94">
+  <link rel="stylesheet" href="css/pages/results.css?v=94">
+  <link rel="stylesheet" href="css/pages/history.css?v=94">
+  <link rel="stylesheet" href="css/pages/ai.css?v=94">
+  <link rel="stylesheet" href="css/pages/import.css?v=94">
   <!-- utilities -->
-  <link rel="stylesheet" href="css/utilities/utilities.css?v=93">
-  <link rel="stylesheet" href="css/utilities/animations.css?v=93">
+  <link rel="stylesheet" href="css/utilities/utilities.css?v=94">
+  <link rel="stylesheet" href="css/utilities/animations.css?v=94">
 </head>
 <body>
 <div id="update-banner">
@@ -141,10 +142,61 @@
     <div class="scroll-content">
       <div id="library-set-list" class="set-list"></div>
     </div>
+    <button class="fab fab-secondary" onclick="openImportText()" title="Dán đề có sẵn (văn bản)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+    </button>
     <button class="fab" onclick="showAICreate()" title="Tạo đề AI">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
     <textarea id="ai-prompt-text" style="position:absolute;left:-9999px;top:-9999px" readonly></textarea>
+  </section>
+
+  <!-- ===== IMPORT TEXT SCREEN ===== -->
+  <section id="screen-import-text">
+    <div class="top-bar">
+      <button class="btn-icon" onclick="closeImportText()" title="Đóng">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <h1 id="import-text-title" class="import-text-title">📋 Tạo đề từ văn bản</h1>
+    </div>
+    <div class="scroll-content">
+      <div id="import-text-input-step">
+        <div class="import-format-hint">Định dạng:
+Câu 1: Nội dung câu hỏi?
+A. Đáp án A
+B. Đáp án B
+C. Đáp án C
+D. Đáp án D
+Đáp án: B
+Giải thích: ...</div>
+        <div class="form-group">
+          <label>Dán văn bản đề vào đây</label>
+          <textarea id="import-text-raw" class="form-control" rows="12"
+            placeholder="Câu 1: ...&#10;A. ...&#10;B. ...&#10;C. ...&#10;D. ...&#10;Đáp án: B&#10;Giải thích: ..."
+            style="resize:vertical;font-size:13px;line-height:1.6"></textarea>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="parseImportText()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          Nhận diện câu hỏi
+        </button>
+      </div>
+
+      <div id="import-text-preview-step" class="hidden">
+        <div class="section-row">
+          <div class="section-label" style="margin-bottom:0">
+            <span id="import-preview-count">0</span> câu nhận diện được · <span id="import-preview-error-count">0</span> lỗi
+          </div>
+          <button class="link-btn" onclick="backToImportInput()">← Dán lại</button>
+        </div>
+        <div id="import-preview-list"></div>
+      </div>
+    </div>
+    <div class="editor-save-bar hidden" id="import-text-save-bar">
+      <input type="text" id="import-set-name" class="form-control" placeholder="Tên bộ đề (để trống sẽ tự đặt tên)..." style="margin-bottom:10px">
+      <button class="btn btn-primary btn-full" id="import-commit-btn" onclick="commitImportText()">
+        Tạo đề (<span id="import-commit-count">0</span> câu hợp lệ)
+      </button>
+    </div>
   </section>
 
   <!-- ===== SETTINGS SCREEN ===== -->
@@ -561,17 +613,18 @@
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="js/core/storage.js?v=93"></script>
-<script src="js/core/utils.js?v=93"></script>
-<script src="js/core/activity-tracker.js?v=93"></script>
-<script src="js/home.js?v=93"></script>
-<script src="js/editor.js?v=93"></script>
-<script src="js/quiz.js?v=93"></script>
-<script src="js/results.js?v=93"></script>
-<script src="js/library.js?v=93"></script>
-<script src="js/history.js?v=93"></script>
-<script src="js/ai.js?v=93"></script>
-<script src="js/core/app.js?v=93"></script>
+<script src="js/core/storage.js?v=94"></script>
+<script src="js/core/utils.js?v=94"></script>
+<script src="js/core/activity-tracker.js?v=94"></script>
+<script src="js/home.js?v=94"></script>
+<script src="js/editor.js?v=94"></script>
+<script src="js/quiz.js?v=94"></script>
+<script src="js/results.js?v=94"></script>
+<script src="js/library.js?v=94"></script>
+<script src="js/history.js?v=94"></script>
+<script src="js/ai.js?v=94"></script>
+<script src="js/import-text.js?v=94"></script>
+<script src="js/core/app.js?v=94"></script>
 <script>
   if ('serviceWorker' in navigator) {
     const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname);

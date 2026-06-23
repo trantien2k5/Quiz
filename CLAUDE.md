@@ -32,7 +32,7 @@
 **Quiz App** — SPA trắc nghiệm chạy trên browser, không cần server.
 - Vanilla HTML + CSS + JS, không framework, không build tool
 - Lưu trữ: `localStorage` (`quiz_sets`, `quiz_history`)
-- Deploy: Cloudflare Pages — version hiện tại: **v71**
+- Deploy: Cloudflare Pages — version hiện tại: **v94**
 
 ---
 
@@ -72,6 +72,7 @@ css/
     results.css         ← .result-hero, .review-card, .review-option
     history.css         ← .hst-*, .cal-*, .hst-log-*, .history-score-circle
     ai.css              ← .ai-card, .ai-chip, .ai-suggestions
+    import.css          ← .question-card.has-error, .import-error-banner, .import-format-hint
   utilities/
     utilities.css       ← .hidden, .text-center, .mt-*, .flex, .truncate
     animations.css      ← @keyframes (ripple-expand, toast-in, fadeIn...)
@@ -89,6 +90,7 @@ js/
   editor.js             ← editor screen (tạo/sửa bộ đề)
   results.js            ← results screen, review chi tiết
   ai.js                 ← AI integration (generate questions)
+  import-text.js        ← parse văn bản thô (định dạng Azota) → preview/sửa lỗi → tạo đề
 
 assets/
   icon-192.svg
@@ -112,9 +114,10 @@ navTo('settings') → screen-settings (Cài đặt — AI config/usage, import/e
 ```
 
 Các screen overlay (ẩn bottom nav khi hiện):
-- `screen-editor` — tạo/sửa bộ đề
-- `screen-quiz`   — đang làm bài
-- `screen-result` — xem kết quả
+- `screen-editor`      — tạo/sửa bộ đề
+- `screen-import-text` — dán văn bản thô (Azota) → preview/sửa lỗi → tạo đề
+- `screen-quiz`        — đang làm bài
+- `screen-result`      — xem kết quả
 
 `showScreen(id)` trong `screens[]` array (`js/core/app.js`) — thêm screen mới phải thêm vào array này.
 
@@ -192,6 +195,13 @@ showAiConfig() / showAiUsage()          // mở modal cấu hình / thống kê 
 analyzeStudyReport(force)    // phân tích lộ trình học (xem log nếu có, force=true mới gọi API lại)
 viewAiAnalysisEntry(id)       // xem lại 1 lần phân tích cũ trong log
 quickCreateFromAnalysis(topic) // mở modal AI, điền sẵn yêu cầu theo gợi ý từ phân tích
+```
+
+**Import text** (`js/import-text.js`):
+```js
+openImportText(appendSetId)  // mở screen-import-text, set _appendToSetId (dùng chung biến với ai.js)
+parseAzotaText(raw)          // text thô → array câu hỏi {text,options,correct,explanation,_error}
+commitImportText()           // lọc câu hợp lệ (!q._error) → applyAIQuestions() tạo/thêm vào set
 ```
 
 **Render** (gọi sau khi mutate data):
@@ -327,6 +337,12 @@ startQuiz(set, settings)   // bắt đầu quiz với settings {shuffleQ, shuffl
 - `buildPromptText()` rule ngôn ngữ: `name`/`explanation` luôn tiếng Việt, `text`/`options` tiếng Anh chỉ khi chủ đề cần (TOEIC...)
 - `explanation` AI sinh PHẢI theo format cố định: `✅ Đáp án` → `🔍 Nhìn cấu trúc` (+ `➡` lý do) → `✔ <đáp án> (phân loại)` → `📖 Ghi nhớ`. Không giải thích đáp án sai. Trong source, `\n` dạy AI escape JSON phải viết `\\n` (double-escape, vì đang trong template literal JS). CSS hiển thị đã có `white-space: pre-wrap`
 - `analyzeStudyReport()` parse dòng `HANH_DONG: REDO:<set>` / `CREATE:<chủ đề>` cuối response (`_parseAiAction()`) để sinh nút hành động — không tốn thêm API call, match tên gần đúng
+
+**Import text (js/import-text.js):**
+- `parseAzotaText()` tách block theo dòng đầu `Câu N:`/`N.`, nhận diện đáp án A-D bằng chữ cái HOẶC đối chiếu full-text nếu AI/người dùng ghi "Đáp án: <nội dung>" thay vì chữ cái
+- Mỗi câu parse ra đều có `_error` (null nếu hợp lệ) — set tự validate lại mỗi lần user sửa trực tiếp trong preview card (`updateImportQuestion`/`updateImportOption`), không cần parse lại từ đầu
+- Dùng chung `_appendToSetId` (global khai báo ở `ai.js`) và `applyAIQuestions()` để tạo/thêm set — KHÔNG viết lại logic tạo set riêng
+- Preview card tái dùng `.question-card`/`.option-row` từ `css/pages/editor.css`, chỉ thêm class `.has-error` (viền đỏ) — style mới nằm ở `css/pages/import.css`
 
 **Tab Cài đặt:**
 - `screen-settings` gom cấu hình/quản lý dữ liệu rải rác (AI config/usage, import/export, xoá data) về 1 chỗ — modal/hàm gốc giữ nguyên, chỉ là entry point mới. "Phân tích AI" + "Xuất báo cáo" CỐ Ý giữ ở tab Thống kê (gắn dữ liệu học tập)

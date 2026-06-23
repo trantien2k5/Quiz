@@ -1,4 +1,4 @@
-const APP_V = 93;
+const APP_V = 94;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -35,7 +35,7 @@ function reloadApp() {
 }
 
 /* ===== NAVIGATION ===== */
-const screens = ['screen-home', 'screen-library', 'screen-editor', 'screen-quiz', 'screen-result', 'screen-history', 'screen-settings'];
+const screens = ['screen-home', 'screen-library', 'screen-editor', 'screen-import-text', 'screen-quiz', 'screen-result', 'screen-history', 'screen-settings'];
 
 function showScreen(id) {
   screens.forEach(s => {
@@ -46,7 +46,7 @@ function showScreen(id) {
   if (!el) return;
   el.classList.add('active');
 
-  const noNav = ['screen-quiz', 'screen-editor', 'screen-result'];
+  const noNav = ['screen-quiz', 'screen-editor', 'screen-import-text', 'screen-result'];
   const nav = document.getElementById('bottom-nav');
   nav.style.display = noNav.includes(id) ? 'none' : 'flex';
 }
