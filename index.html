@@ -15,35 +15,35 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- base -->
-  <link rel="stylesheet" href="css/base/tokens.css?v=104">
-  <link rel="stylesheet" href="css/base/reset.css?v=104">
+  <link rel="stylesheet" href="css/base/tokens.css?v=106">
+  <link rel="stylesheet" href="css/base/reset.css?v=106">
   <!-- layout -->
-  <link rel="stylesheet" href="css/layout/shell.css?v=104">
-  <link rel="stylesheet" href="css/layout/nav.css?v=104">
+  <link rel="stylesheet" href="css/layout/shell.css?v=106">
+  <link rel="stylesheet" href="css/layout/nav.css?v=106">
   <!-- components -->
-  <link rel="stylesheet" href="css/components/button.css?v=104">
-  <link rel="stylesheet" href="css/components/form.css?v=104">
-  <link rel="stylesheet" href="css/components/toggle.css?v=104">
-  <link rel="stylesheet" href="css/components/badge.css?v=104">
-  <link rel="stylesheet" href="css/components/modal.css?v=104">
-  <link rel="stylesheet" href="css/components/toast.css?v=104">
-  <link rel="stylesheet" href="css/components/update-banner.css?v=104">
-  <link rel="stylesheet" href="css/components/fab.css?v=104">
-  <link rel="stylesheet" href="css/components/card.css?v=104">
-  <link rel="stylesheet" href="css/components/section-label.css?v=104">
-  <link rel="stylesheet" href="css/components/drop-zone.css?v=104">
-  <link rel="stylesheet" href="css/components/settings-row.css?v=104">
+  <link rel="stylesheet" href="css/components/button.css?v=106">
+  <link rel="stylesheet" href="css/components/form.css?v=106">
+  <link rel="stylesheet" href="css/components/toggle.css?v=106">
+  <link rel="stylesheet" href="css/components/badge.css?v=106">
+  <link rel="stylesheet" href="css/components/modal.css?v=106">
+  <link rel="stylesheet" href="css/components/toast.css?v=106">
+  <link rel="stylesheet" href="css/components/update-banner.css?v=106">
+  <link rel="stylesheet" href="css/components/fab.css?v=106">
+  <link rel="stylesheet" href="css/components/card.css?v=106">
+  <link rel="stylesheet" href="css/components/section-label.css?v=106">
+  <link rel="stylesheet" href="css/components/drop-zone.css?v=106">
+  <link rel="stylesheet" href="css/components/settings-row.css?v=106">
   <!-- pages -->
-  <link rel="stylesheet" href="css/pages/home.css?v=104">
-  <link rel="stylesheet" href="css/pages/editor.css?v=104">
-  <link rel="stylesheet" href="css/pages/quiz.css?v=104">
-  <link rel="stylesheet" href="css/pages/results.css?v=104">
-  <link rel="stylesheet" href="css/pages/history.css?v=104">
-  <link rel="stylesheet" href="css/pages/ai.css?v=104">
-  <link rel="stylesheet" href="css/pages/import.css?v=104">
+  <link rel="stylesheet" href="css/pages/home.css?v=106">
+  <link rel="stylesheet" href="css/pages/editor.css?v=106">
+  <link rel="stylesheet" href="css/pages/quiz.css?v=106">
+  <link rel="stylesheet" href="css/pages/results.css?v=106">
+  <link rel="stylesheet" href="css/pages/history.css?v=106">
+  <link rel="stylesheet" href="css/pages/ai.css?v=106">
+  <link rel="stylesheet" href="css/pages/import.css?v=106">
   <!-- utilities -->
-  <link rel="stylesheet" href="css/utilities/utilities.css?v=104">
-  <link rel="stylesheet" href="css/utilities/animations.css?v=104">
+  <link rel="stylesheet" href="css/utilities/utilities.css?v=106">
+  <link rel="stylesheet" href="css/utilities/animations.css?v=106">
 </head>
 <body>
 <div id="update-banner">
@@ -162,10 +162,7 @@
     <div class="scroll-content">
       <div id="library-set-list" class="set-list"></div>
     </div>
-    <button class="fab fab-secondary" onclick="openImportText()" title="Dán đề có sẵn (văn bản)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
-    </button>
-    <button class="fab" onclick="showAICreate()" title="Tạo đề AI">
+    <button class="fab" onclick="showAICreate()" title="Tạo đề mới">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
     <textarea id="ai-prompt-text" style="position:absolute;left:-9999px;top:-9999px" readonly></textarea>
@@ -289,31 +286,43 @@ Giải thích: ...</pre>
       <div class="modal-handle"></div>
       <div id="ai-modal-title" class="modal-title">✨ Tạo đề AI</div>
 
-      <textarea id="ai-request" class="form-control ai-topic-main" rows="3"
-        placeholder="Mô tả bộ đề bạn muốn tạo. Ví dụ: Tạo 20 câu giới từ TOEIC mức trung bình, có giải thích chi tiết"
-        oninput="updateAiSuggestionsVisibility()"
-        style="margin-bottom:10px;resize:vertical"></textarea>
+      <div class="aqc-tabs">
+        <button class="aqc-tab aic-tab active" data-tab="ai" onclick="switchAiCreateTab('ai')">✨ Bằng AI</button>
+        <button class="aqc-tab aic-tab" data-tab="paste" onclick="switchAiCreateTab('paste')">📋 Dán văn bản</button>
+      </div>
 
-      <div id="ai-suggestions" class="ai-suggestions"></div>
+      <div id="aic-page-ai" class="aqc-page">
+        <textarea id="ai-request" class="form-control ai-topic-main" rows="3"
+          placeholder="Mô tả bộ đề bạn muốn tạo. Ví dụ: Tạo 20 câu giới từ TOEIC mức trung bình, có giải thích chi tiết"
+          oninput="updateAiSuggestionsVisibility()"
+          style="margin-bottom:10px;resize:vertical"></textarea>
 
-      <button id="ai-generate-direct-btn" class="btn btn-primary btn-full" onclick="generateDirectly()" style="margin-bottom:10px;margin-top:14px">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-        Tạo bằng API key
-      </button>
-      <div id="ai-manual-section">
-        <button class="btn btn-outline btn-full" onclick="generateAndCopy()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-          Tạo &amp; Copy Prompt
+        <div id="ai-suggestions" class="ai-suggestions"></div>
+
+        <button id="ai-generate-direct-btn" class="btn btn-primary btn-full" onclick="generateDirectly()" style="margin-bottom:10px;margin-top:14px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Tạo bằng API key
         </button>
-        <p class="ai-hint">Paste vào ChatGPT / Claude → copy kết quả JSON → dán vào ô bên dưới</p>
-        <label class="form-label" style="margin-top:14px">Kết quả JSON</label>
-        <textarea id="ai-result-text" class="form-control" rows="5"
-          placeholder="Paste JSON từ AI vào đây..."
-          style="resize:vertical;font-size:13px;line-height:1.5;margin-bottom:10px"></textarea>
-        <button class="btn btn-primary btn-full" onclick="importAIText()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Nhập vào bộ đề
-        </button>
+        <div id="ai-manual-section">
+          <button class="btn btn-outline btn-full" onclick="generateAndCopy()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Tạo &amp; Copy Prompt
+          </button>
+          <p class="ai-hint">Paste vào ChatGPT / Claude → copy kết quả JSON → dán vào ô bên dưới</p>
+          <label class="form-label" style="margin-top:14px">Kết quả JSON</label>
+          <textarea id="ai-result-text" class="form-control" rows="5"
+            placeholder="Paste JSON từ AI vào đây..."
+            style="resize:vertical;font-size:13px;line-height:1.5;margin-bottom:10px"></textarea>
+          <button class="btn btn-primary btn-full" onclick="importAIText()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Nhập vào bộ đề
+          </button>
+        </div>
+      </div>
+
+      <div id="aic-page-paste" class="aqc-page hidden">
+        <p class="form-hint">Dán nhiều câu cùng lúc theo định dạng Câu N / A-D / Đáp án / Giải thích — xem trước, sửa lỗi rồi mới tạo đề.</p>
+        <button class="btn btn-primary btn-full" onclick="goToImportTextFromAiCreate()">Tiếp tục dán văn bản →</button>
       </div>
     </div>
   </div>
@@ -669,18 +678,18 @@ Giải thích: ...</pre>
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="js/core/storage.js?v=104"></script>
-<script src="js/core/utils.js?v=104"></script>
-<script src="js/core/activity-tracker.js?v=104"></script>
-<script src="js/home.js?v=104"></script>
-<script src="js/editor.js?v=104"></script>
-<script src="js/quiz.js?v=104"></script>
-<script src="js/results.js?v=104"></script>
-<script src="js/library.js?v=104"></script>
-<script src="js/history.js?v=104"></script>
-<script src="js/ai.js?v=104"></script>
-<script src="js/import-text.js?v=104"></script>
-<script src="js/core/app.js?v=104"></script>
+<script src="js/core/storage.js?v=106"></script>
+<script src="js/core/utils.js?v=106"></script>
+<script src="js/core/activity-tracker.js?v=106"></script>
+<script src="js/home.js?v=106"></script>
+<script src="js/editor.js?v=106"></script>
+<script src="js/quiz.js?v=106"></script>
+<script src="js/results.js?v=106"></script>
+<script src="js/library.js?v=106"></script>
+<script src="js/history.js?v=106"></script>
+<script src="js/ai.js?v=106"></script>
+<script src="js/import-text.js?v=106"></script>
+<script src="js/core/app.js?v=106"></script>
 <script>
   if ('serviceWorker' in navigator) {
     const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname);

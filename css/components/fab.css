@@ -28,19 +28,3 @@
   width: 1.5rem;
   height: 1.5rem;
 }
-
-/* Secondary FAB — stacked above primary, smaller, outline style */
-.fab-secondary {
-  bottom: calc(var(--nav-h) + var(--space-4) + 3.75rem);
-  width: 2.75rem;
-  height: 2.75rem;
-  border: 1.5px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-brand);
-  box-shadow: var(--shadow-sm);
-}
-
-.fab-secondary svg {
-  width: 1.25rem;
-  height: 1.25rem;
-}

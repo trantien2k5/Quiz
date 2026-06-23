@@ -28,11 +28,24 @@ function showAICreate(appendSetId) {
     suggestionsEl.style.display = '';
   }
   updateAiManualSectionVisibility();
+  switchAiCreateTab('ai');
   document.getElementById('modal-ai-create').classList.add('active');
 }
 function hideAICreate() {
   _appendToSetId = null;
   document.getElementById('modal-ai-create').classList.remove('active');
+}
+
+/* ===== TAB: tạo bằng AI / dán văn bản (gộp từ FAB riêng trước đây) ===== */
+function switchAiCreateTab(tab) {
+  document.querySelectorAll('.aic-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.getElementById('aic-page-ai').classList.toggle('hidden', tab !== 'ai');
+  document.getElementById('aic-page-paste').classList.toggle('hidden', tab !== 'paste');
+}
+function goToImportTextFromAiCreate() {
+  const setId = _appendToSetId;
+  hideAICreate();
+  openImportText(setId);
 }
 
 /* Chip gợi ý → điền sẵn 1 câu yêu cầu tự nhiên vào ô chat, user có thể sửa thêm */
