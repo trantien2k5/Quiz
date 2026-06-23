@@ -457,7 +457,12 @@ function renderHistoryMistakes() {
            </div>`).join('')}
        </div>` : '';
 
+  const retryBtnHtml = recentWrongs.length
+    ? `<div style="padding:16px 0 8px"><button class="btn btn-danger btn-full" onclick="retryAllWrongQuestions()">🔁 Làm lại câu sai gần đây</button></div>`
+    : '';
+
   el.innerHTML = `
+    ${retryBtnHtml}
     ${hotspotsHtml ? `<div class="hst-section-header"><div class="section-label">🔥 Câu hay sai nhất</div></div>${hotspotsHtml}` : ''}
     <div class="hst-section-header" style="margin-top:4px"><div class="section-label">Câu sai gần đây</div></div>
     ${wrongHtml}
