@@ -63,14 +63,15 @@ function exportPersonalizationData() {
   const history = getHistory();
   if (!history.length) { toast('Chưa có dữ liệu để xuất', 'error'); return; }
   const json = _buildExportJson(history, getSets(), getQuestionStats(), getSkillLog(), getTopicLog());
-  const blob = new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' });
+  const txt = _buildReportTxt(json);
+  const blob = new Blob(['﻿' + txt], { type: 'text/plain;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `quiz-ai-data-${_nowStamp()}.json`;
+  a.download = `quiz-report-${_nowStamp()}.txt`;
   a.click();
   URL.revokeObjectURL(url);
-  toast('Đã xuất dữ liệu AI (' + history.length + ' phiên)', 'success');
+  toast('Đã xuất báo cáo học tập (' + history.length + ' phiên)', 'success');
 }
 
 function _buildExportJson(history, sets, qStats, skillLog, topicLog) {
@@ -284,194 +285,71 @@ function _buildExportJson(history, sets, qStats, skillLog, topicLog) {
   };
 }
 
-function _buildReportTxt_DELETED() { // removed — export is now JSON
-
-  /* topic stats */
-  const topicMap = {};
-  history.forEach(h => {
-    if (!topicMap[h.setName]) topicMap[h.setName] = { correct: 0, wrong: 0, sessions: 0, totalTime: 0 };
-    topicMap[h.setName].correct   += h.score;
-    topicMap[h.setName].wrong     += h.total - h.score;
-    topicMap[h.setName].sessions  ++;
-    topicMap[h.setName].totalTime += h.timeTaken || 0;
-  });
-  const topicStats = {};
-  Object.entries(topicMap).forEach(([n, s]) => {
-    topicStats[n] = {
-      correct: s.correct, wrong: s.wrong,
-      accuracy: Math.round(s.correct / (s.correct + s.wrong) * 100),
-      sessions: s.sessions,
-      avgTimeSec: Math.round(s.totalTime / s.sessions)
-    };
-  });
-  const topWeakTopics = Object.entries(topicStats)
-    .filter(([, s]) => s.wrong > 0)
-    .sort((a, b) => a[1].accuracy - b[1].accuracy)
-    .slice(0, 5).map(([topic, s]) => ({ topic, accuracy: s.accuracy, sessions: s.sessions }));
-
-  /* weak questions (wrong ≥ 2 times) */
-  const wqMap = {};
-  history.forEach(h => {
-    const set = getSet(h.setId);
-    if (!set) return;
-    h.answers.forEach((ans, i) => {
-      const q = set.questions[i];
-      if (!q || ans === null || ans === q.correct) return;
-      const key = h.setId + ':' + (q.id || i);
-      if (!wqMap[key]) wqMap[key] = { question: q.text, correctAnswer: q.options[q.correct], topic: h.setName, count: 0, lastDate: h.date };
-      wqMap[key].count++;
-      if (h.date > wqMap[key].lastDate) wqMap[key].lastDate = h.date;
-    });
-  });
-  const weakQuestions = Object.values(wqMap)
-    .filter(w => w.count >= 2)
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 20)
-    .map(w => ({ question: w.question, correctAnswer: w.correctAnswer, topic: w.topic, wrongCount: w.count,
-      lastWrong: new Date(w.lastDate).toLocaleDateString('vi-VN') }));
-
-  /* weekly breakdown */
-  const weekMap = {};
-  history.forEach(h => {
-    const wk = getISOWeek(h.date);
-    if (!weekMap[wk]) weekMap[wk] = { sessions: 0, correct: 0, total: 0, topics: new Set() };
-    weekMap[wk].sessions++; weekMap[wk].correct += h.score; weekMap[wk].total += h.total;
-    weekMap[wk].topics.add(h.setName);
-  });
-  const weeklyBreakdown = Object.entries(weekMap)
-    .sort(([a], [b]) => b.localeCompare(a)).slice(0, 8)
-    .map(([week, s]) => ({ week, sessions: s.sessions, questions: s.total,
-      accuracy: Math.round(s.correct / s.total * 100), topics: [...s.topics] }));
-
-  /* practice vs exam stats */
-  const examHistory     = history.filter(h => h.mode === 'exam' || !h.mode);
-  const practiceHistory = history.filter(h => h.mode === 'practice');
-  const examStats = examHistory.length ? {
-    sessions: examHistory.length,
-    avgAccuracy: Math.round(examHistory.reduce((s, h) => s + scorePct(h.score, h.total), 0) / examHistory.length),
-    best: Math.max(...examHistory.map(h => scorePct(h.score, h.total)))
-  } : null;
-  const masteredInPractice = practiceHistory.reduce((s, h) => s + h.score, 0);
-  const practiceStats = practiceHistory.length ? {
-    sessions: practiceHistory.length,
-    totalMastered: masteredInPractice
-  } : null;
-
-  /* weak skills */
-  const sets = getSets();
-  const weakSkillsAll = computeWeakSkills(history, sets);
-  const weakSkills = weakSkillsAll.filter(s => s.accuracy < 70);
-  const goodSkills = weakSkillsAll.filter(s => s.accuracy >= 70).reverse();
-
-  const data = {
-    exportDate: new Date().toISOString().slice(0, 10),
-    overview: {
-      totalSessions: history.length,
-      totalQuestions: totalQ,
-      totalCorrect,
-      accuracy: Math.round(totalCorrect / totalQ * 100),
-      avgTimePerSession: fmtTime(Math.round(totalTime / history.length)),
-      studyDays: daySet.size,
-      currentStreak: calcStreak()
-    },
-    examStats,
-    practiceStats,
-    weeklyBreakdown,
-    topicStats,
-    topWeakTopics,
-    weakSkills,
-    goodSkills,
-    weakQuestions,
-    questionStats: getQuestionStats(),
-    recentSessions: history.slice(0, 30).map(h => ({
-      date: new Date(h.date).toLocaleDateString('vi-VN'),
-      topic: h.setName,
-      score: h.score, total: h.total,
-      accuracy: scorePct(h.score, h.total),
-      duration: fmtTime(h.timeTaken),
-      mode: h.mode || 'exam'
-    }))
-  };
-
-  const txt = _buildReportTxt(data);
-  const blob = new Blob(['﻿' + txt], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `quiz-report-${_nowStamp()}.txt`;
-  a.click();
-  URL.revokeObjectURL(url);
-  toast('Đã xuất báo cáo học tập', 'success');
-}
-
+/* Format object từ _buildExportJson() thành text gọn, dễ đọc cho người + AI */
 function _buildReportTxt(d) {
   const o = d.overview;
   const bar = pct => '█'.repeat(Math.round(pct / 10)) + '░'.repeat(10 - Math.round(pct / 10));
-  let t = `╔══════════════════════════════════════╗
-║   BÁO CÁO HỌC TẬP CÁ NHÂN HOÁ      ║
-╚══════════════════════════════════════╝
-Xuất ngày : ${d.exportDate}
-Mục đích  : Gửi AI/chuyên gia đánh giá và đề xuất lộ trình học
+  let t = `=== BÁO CÁO HỌC TẬP CÁ NHÂN HOÁ ===
+Xuất ngày : ${d.meta.exportedAt.slice(0, 10)}
+Mục đích  : Theo dõi cá nhân / gửi AI phân tích lộ trình học
 
 ▌TỔNG QUAN
-  Buổi học     : ${o.totalSessions}
-  Câu đã làm   : ${o.totalQuestions}
-  Câu đúng     : ${o.totalCorrect} (${o.accuracy}%)
-  TB mỗi buổi  : ${o.avgTimePerSession}
-  Ngày có học  : ${o.studyDays} ngày
-  Chuỗi hiện tại: ${o.currentStreak} ngày\n`;
+  Buổi học     : ${o.totalSessions} (Thi: ${o.examSessions} | Luyện tập: ${o.practiceSessions})
+  Câu đã làm   : ${o.totalQuestions} | Đúng: ${o.totalCorrect} (${o.overallAccuracy}%)
+  Thời gian học: ${o.totalStudyMinutes} phút | Ngày có học: ${o.activeDays}
+  Hoạt động    : ${o.firstActivity} → ${o.lastActivity} | Chuỗi hiện tại: ${o.currentStreak} ngày\n`;
 
   if (d.examStats) {
-    t += `\n=== THI THỬ ===\n  Số lần thi   : ${d.examStats.sessions} | Điểm TB: ${d.examStats.avgAccuracy}% | Cao nhất: ${d.examStats.best}%\n`;
+    t += `\n▌THI THỬ\n  Số lần: ${d.examStats.sessions} | Điểm TB: ${d.examStats.avgAccuracy}% | Cao nhất: ${d.examStats.bestScore}% | Thấp nhất: ${d.examStats.worstScore}% | TB ${d.examStats.avgSecondsPerQuestion}s/câu\n`;
   }
   if (d.practiceStats) {
-    t += `\n=== LUYỆN TẬP ===\n  Số phiên     : ${d.practiceStats.sessions} | Câu đã thuộc: ${d.practiceStats.totalMastered}\n`;
+    t += `\n▌LUYỆN TẬP\n  Số phiên: ${d.practiceStats.sessions} | Câu đã thuộc: ${d.practiceStats.totalMastered} | Tỉ lệ thuộc TB: ${d.practiceStats.avgMasteryRate}%\n`;
   }
 
-  t += `\n▌THỐNG KÊ THEO CHỦ ĐỀ\n`;
-  Object.entries(d.topicStats)
-    .sort(([,a],[,b]) => a.accuracy - b.accuracy)
-    .forEach(([n, s]) => {
-      t += `  ${n.padEnd(28)} ${String(s.accuracy).padStart(3)}% [${bar(s.accuracy)}] (${s.sessions} buổi, ${s.correct}/${s.correct+s.wrong} đúng)\n`;
-    });
-
-  t += `\n▌CHỦ ĐỀ YẾU NHẤT\n`;
-  d.topWeakTopics.forEach((w, i) => {
-    t += `  ${i+1}. ${w.topic} — ${w.accuracy}% (${w.sessions} buổi)\n`;
-  });
-
-  if (d.weakSkills && d.weakSkills.length) {
-    t += `\n=== KỸ NĂNG YẾU ===\n`;
-    d.weakSkills.forEach(s => {
-      t += `  ${s.skill.padEnd(30)} ${String(s.accuracy).padStart(3)}% (${s.total} lần)\n`;
+  if (d.topicStats.length) {
+    t += `\n▌CHỦ ĐỀ (yếu → mạnh)\n`;
+    d.topicStats.forEach(s => {
+      t += `  ${s.topic.padEnd(28)} ${String(s.accuracy).padStart(3)}% [${bar(s.accuracy)}] ${s.correct}/${s.correct + s.wrong} đúng, ${s.sessions} buổi, gần nhất ${s.lastStudied}\n`;
     });
   }
-  if (d.goodSkills && d.goodSkills.length) {
-    t += `\n=== KỸ NĂNG TỐT ===\n`;
-    d.goodSkills.forEach(s => {
-      t += `  ${s.skill.padEnd(30)} ${String(s.accuracy).padStart(3)}% (${s.total} lần)\n`;
-    });
+
+  if (d.skillStats.length) {
+    const weakSkills = d.skillStats.slice(0, 5);
+    const strongSkills = [...d.skillStats].reverse().slice(0, 5);
+    t += `\n▌KỸ NĂNG YẾU NHẤT (top 5)\n`;
+    weakSkills.forEach(s => { t += `  ${s.skill.padEnd(28)} ${String(s.accuracy).padStart(3)}% (${s.total} lần)\n`; });
+    t += `\n▌KỸ NĂNG MẠNH NHẤT (top 5)\n`;
+    strongSkills.forEach(s => { t += `  ${s.skill.padEnd(28)} ${String(s.accuracy).padStart(3)}% (${s.total} lần)\n`; });
   }
 
   if (d.weakQuestions.length) {
-    t += `\n▌CÂU HỎI SAI NHIỀU LẦN (top ${Math.min(d.weakQuestions.length, 10)})\n`;
+    t += `\n▌CÂU SAI NHIỀU NHẤT (top ${Math.min(d.weakQuestions.length, 10)})\n`;
     d.weakQuestions.slice(0, 10).forEach((w, i) => {
-      t += `  ${i+1}. [Sai ${w.wrongCount}x | ${w.topic}]\n     Câu: ${w.question}\n     ✅  ${w.correctAnswer}\n`;
+      t += `  ${i + 1}. [${w.setName}] ${w.text}\n     Sai ${w.wrong} lần, đúng ${w.correct} lần (${w.accuracy}%)\n`;
     });
   }
 
-  t += `\n▌LỊCH SỬ THEO TUẦN\n`;
-  d.weeklyBreakdown.forEach(w => {
-    t += `  ${w.week}  ${String(w.accuracy).padStart(3)}% | ${w.questions} câu | ${w.sessions} buổi | ${w.topics.join(', ')}\n`;
-  });
+  const cp = d.learningPatterns.confusionPairs;
+  if (cp && cp.length) {
+    t += `\n▌NHẦM LẪN PHỔ BIẾN (top ${Math.min(cp.length, 5)})\n`;
+    cp.slice(0, 5).forEach(c => { t += `  Chọn "${c.selected}" thay vì "${c.correct}" — ${c.count} lần\n`; });
+  }
 
-  t += `\n▌30 BUỔI GẦN NHẤT\n`;
-  d.recentSessions.forEach(s => {
-    const modeTag = s.mode === 'practice' ? '[Luyện]' : '[Thi]  ';
-    t += `  ${s.date.padEnd(12)} ${modeTag} ${String(s.accuracy).padStart(3)}% (${s.score}/${s.total}) ${s.duration.padStart(6)}  ${s.topic}\n`;
-  });
+  const lp = d.learningPatterns;
+  t += `\n▌THÓI QUEN LÀM BÀI\n  Trả lời nhanh-đúng: ${lp.fastCorrect} | chậm-đúng: ${lp.slowCorrect} | nhanh-sai (đoán): ${lp.fastWrong} | chậm-sai (chưa hiểu): ${lp.slowWrong}\n  Chuỗi sai liên tiếp dài nhất: ${lp.maxWrongStreak} câu\n`;
 
-  return '';
+  const sb = d.studyBehavior;
+  t += `\n▌THÓI QUEN HỌC TẬP\n  TB ${sb.avgSessionMinutes} phút/buổi, ${sb.avgQuestionsPerSession} câu/buổi | ${sb.avgDaysPerWeek} ngày học/tuần${sb.bestStudyHour != null ? ` | Giờ học tốt nhất: ${sb.bestStudyHour}h` : ''}\n`;
+
+  const r = d.recommendations;
+  if (r.weakestSkills.length || r.weakestTopics.length || r.priorityQuestions.length) {
+    t += `\n▌GỢI Ý ƯU TIÊN ÔN TẬP\n`;
+    if (r.weakestSkills.length) t += `  Kỹ năng  : ${r.weakestSkills.map(s => `${s.skill} (${s.accuracy}%)`).join(', ')}\n`;
+    if (r.weakestTopics.length) t += `  Chủ đề   : ${r.weakestTopics.map(s => `${s.topic} (${s.accuracy}%)`).join(', ')}\n`;
+    if (r.priorityQuestions.length) t += `  Câu hỏi  : ${r.priorityQuestions.length} câu cần ôn lại (xem mục "Câu sai nhiều nhất")\n`;
+  }
+
+  return t;
 }
 
 function exportSet(setId) {

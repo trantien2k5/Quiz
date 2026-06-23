@@ -274,6 +274,7 @@ startQuiz(set, settings)   // bắt đầu quiz với settings {shuffleQ, shuffl
 - `renderHistoryMistakes()` dùng `el.innerHTML = ...` → overwrite toàn bộ `hst-mistakes-body` — KHÔNG đặt HTML tĩnh trong container này ở index.html, sẽ bị xóa mất (nút "Làm lại câu sai" phải sinh trong JS, xem `retryBtnHtml`)
 - **Service Worker chỉ chạy khi deploy thật** (không phải `localhost`/`127.0.0.1`) — dev local tự huỷ SW + xoá cache cũ (`index.html` cuối file) để code trên đĩa luôn = code hiển thị, không cần hard-refresh/clear cache tay khi sửa JS/CSS
 - **An toàn data model khi thêm field mới**: data cũ của user trong `localStorage` KHÔNG có field mới → đọc field mới phải có fallback (`q.field ?? default`), KHÔNG assume field luôn tồn tại. `getSets()`/`getHistory()` đã có try/catch parse JSON lỗi → trả `[]`, không cần thêm
+- `exportPersonalizationData()` (js/library.js) — xuất báo cáo học tập dạng **.txt** (không phải JSON) cho nhẹ + dễ đọc cho người và AI. Logic: `_buildExportJson()` tính toán đầy đủ số liệu (overview, skill/topic stats, weak questions, confusion pairs, recommendations...) → `_buildReportTxt()` format thành text gọn. Thêm field thống kê mới thì sửa cả 2 hàm này.
 
 ---
 
