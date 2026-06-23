@@ -19,9 +19,10 @@
 - Sau mỗi thay đổi lớn → cập nhật CLAUDE.md ngay
 
 **Git (BẮT BUỘC):**
-- Sau mỗi thay đổi: commit + push lên CÙNG LÚC cả `claude/vietnamese-greeting-q0n2ab` VÀ `main`
+- KHÔNG commit/push sau mỗi thay đổi nhỏ riêng lẻ — gộp nhiều việc nhỏ trong cùng phiên làm việc, chỉ commit + push khi user dừng lại / chuyển sang yêu cầu khác hẳn / chủ động bảo "push đi"
+- Khi push: lên CÙNG LÚC cả `claude/vietnamese-greeting-q0n2ab` VÀ `main`
 - `main` auto-deploy Cloudflare Pages — push là deploy
-- Bump cache version `?v=N` trong index.html + sw.js mỗi lần sửa JS hoặc CSS
+- Bump cache version `?v=N` trong index.html + sw.js — chỉ cần bump 1 LẦN trước khi commit (không bump mỗi sửa nhỏ giữa session)
 - Script tự động: `node scripts/bump.js` (bump version.json, sw.js, index.html, js/core/app.js)
 - KHÔNG tạo PR, KHÔNG subscribe PR activity
 
