@@ -26,6 +26,31 @@ function backToImportInput() {
   _showImportStep('input');
 }
 
+/* Copy mẫu định dạng để user paste làm khung tham khảo (vd nhờ ChatGPT điền theo) */
+function copyImportFormatTemplate() {
+  const text = document.getElementById('import-format-sample').textContent;
+  const ok = () => toast('✅ Đã copy mẫu định dạng', 'success');
+  const fail = () => toast('❌ Không copy được — thử lại', 'error');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(ok).catch(() => _fallbackCopyText(text, ok, fail));
+  } else {
+    _fallbackCopyText(text, ok, fail);
+  }
+}
+
+function _fallbackCopyText(text, ok, fail) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  ta.setSelectionRange(0, 99999);
+  const success = document.execCommand('copy');
+  document.body.removeChild(ta);
+  if (success) ok(); else fail();
+}
+
 function _showImportStep(step) {
   document.getElementById('import-text-input-step').classList.toggle('hidden', step !== 'input');
   document.getElementById('import-text-preview-step').classList.toggle('hidden', step !== 'preview');
