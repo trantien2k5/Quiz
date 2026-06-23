@@ -167,6 +167,11 @@ Các screen overlay (ẩn bottom nav khi hiện):
   date, model, promptTokens, completionTokens, costUSD, costVND }
 ```
 
+**`quiz_skill_log`** / **`quiz_topic_log`** — object log tiến độ đúng/sai theo ngày, key = tên skill/topic (`js/core/storage.js: appendSkillLog()/appendTopicLog()`):
+```js
+{ [skillOrTopicName]: { [date]: { c: số câu đúng, w: số câu sai } } }
+```
+
 ---
 
 ## API CHEATSHEET — hàm có sẵn, KHÔNG viết lại

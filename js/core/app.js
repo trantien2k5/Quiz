@@ -1,4 +1,4 @@
-const APP_V = 100;
+const APP_V = 101;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -52,6 +52,7 @@ function showScreen(id) {
 }
 
 function navTo(name) {
+  _appendToSetId = null; // tránh rò set "thêm câu vào" khi chuyển tab thẳng không qua nút Đóng
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   const btn = document.querySelector(`[data-nav="${name}"]`);
   if (btn) btn.classList.add('active');
@@ -68,7 +69,7 @@ function renderSettings() {
 
 function confirmClearAllData() {
   confirm('Xoá toàn bộ dữ liệu', 'Tất cả bộ đề, lịch sử và thống kê sẽ bị xoá vĩnh viễn. Không thể khôi phục!', () => {
-    ['quiz_sets','quiz_history','quiz_q_stats','quiz_last_set','quiz_ai_usage_log'].forEach(k => localStorage.removeItem(k));
+    ['quiz_sets','quiz_history','quiz_q_stats','quiz_last_set','quiz_ai_usage_log','quiz_ai_analysis_log','quiz_skill_log','quiz_topic_log'].forEach(k => localStorage.removeItem(k));
     renderHome(); renderLibrary(); renderHistory();
     toast('Đã xoá toàn bộ dữ liệu', 'success');
   });

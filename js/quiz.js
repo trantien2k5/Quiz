@@ -361,17 +361,6 @@ function practiceAdvance() {
   renderQuizNav();
 }
 
-function practiceSkip() {
-  const pos  = _quiz.currentIdx;
-  const qIdx = _quiz.pQueue[pos];
-  _quiz.pSkipped[qIdx] = true;
-  _quiz.pStreaks[qIdx] = 0;
-  _quiz.currentIdx++;
-  if (_practiceIsDone() || _quiz.currentIdx >= _quiz.pQueue.length) { finishPractice(); return; }
-  renderCurrentQuestion();
-  renderQuizNav();
-}
-
 /* Lưu kết quả luyện tập (history + skill/topic log) — dùng chung cho hoàn thành tự nhiên VÀ thoát giữa chừng */
 function _savePracticeResults() {
   const timeTaken = Math.round((Date.now() - _quiz.startTime) / 1000);
