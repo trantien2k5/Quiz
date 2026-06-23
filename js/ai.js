@@ -249,6 +249,7 @@ function applyAIQuestions(data, fallbackName) {
     if (existing) {
       existing.questions = [...existing.questions, ...questions];
       saveSet(existing);
+      localStorage.setItem('quiz_last_set', existing.id); // hiện lên đầu danh sách Luyện đề
       renderLibrary();
       return { count: questions.length, setName: existing.name, appended: true };
     }
@@ -263,6 +264,7 @@ function applyAIQuestions(data, fallbackName) {
     questions
   };
   saveSet(newSet);
+  localStorage.setItem('quiz_last_set', newSet.id); // bộ vừa tạo hiện lên đầu danh sách Luyện đề
   renderLibrary();
   return { count: questions.length, setName, appended: false };
 }
@@ -357,10 +359,15 @@ async function refreshFxRate() {
   }
 }
 
+/* Tìm số câu user xin trong text yêu cầu (vd "Tạo 20 câu về...") — dùng cho cả ước lượng max_tokens và hiện tiến độ */
+function _extractRequestedCount(request) {
+  const m = request.match(/(\d+)\s*câu/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
 /* Ước lượng max_tokens theo số câu user yêu cầu — tránh tốn tiền không kiểm soát nếu AI lan man hoặc user xin quá nhiều câu */
 function _estimateMaxTokens(request) {
-  const m = request.match(/(\d+)\s*câu/);
-  const numQ = m ? parseInt(m[1], 10) : 20;
+  const numQ = _extractRequestedCount(request) || 20;
   const clampedQ = Math.min(Math.max(numQ, 5), 60);
   return Math.min(clampedQ * 220 + 300, 16000);
 }
@@ -385,13 +392,18 @@ async function generateDirectly() {
 
   const model = cfg.model || 'gpt-4o-mini';
   const promptText = buildPromptText(request);
+  const targetCount = _extractRequestedCount(request);
 
   const btn = document.getElementById('ai-generate-direct-btn');
   const origHtml = btn ? btn.innerHTML : '';
   let timer = null;
+  let questionsSoFar = 0;
   if (btn) {
     btn.disabled = true;
-    timer = _startElapsedTicker(s => { btn.textContent = `⏳ Đang tạo... (${s}s)`; });
+    timer = _startElapsedTicker(s => {
+      const progress = targetCount ? `${questionsSoFar}/~${targetCount}` : `${questionsSoFar}`;
+      btn.textContent = `⏳ Đang tạo... ${progress} câu (${s}s)`;
+    });
   }
 
   try {
@@ -402,7 +414,9 @@ async function generateDirectly() {
         model,
         messages: [{ role: 'user', content: promptText }],
         response_format: { type: 'json_object' },
-        max_tokens: _estimateMaxTokens(request)
+        max_tokens: _estimateMaxTokens(request),
+        stream: true,
+        stream_options: { include_usage: true }
       })
     });
 
@@ -413,8 +427,43 @@ async function generateDirectly() {
       return;
     }
 
-    const json = await res.json();
-    const content = json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content;
+    let content = '', usage = null;
+
+    if (res.body && res.body.getReader) {
+      // Đọc stream SSE — đếm "skillTags" (field cuối mỗi câu hỏi) để biết đã tạo được bao nhiêu câu
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data:')) continue;
+          const dataStr = trimmed.slice(5).trim();
+          if (dataStr === '[DONE]') continue;
+          try {
+            const chunk = JSON.parse(dataStr);
+            const delta = chunk.choices && chunk.choices[0] && chunk.choices[0].delta && chunk.choices[0].delta.content;
+            if (delta) {
+              content += delta;
+              const matches = content.match(/"skillTags"/g);
+              questionsSoFar = matches ? matches.length : 0;
+            }
+            if (chunk.usage) usage = chunk.usage;
+          } catch (_) { /* chunk lỗi/không đầy đủ — bỏ qua, không crash stream */ }
+        }
+      }
+    } else {
+      // Fallback cho môi trường không hỗ trợ streaming body
+      const json = await res.json();
+      content = (json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content) || '';
+      usage = json.usage || null;
+    }
+
     if (!content) { toast('AI không trả về nội dung', 'error'); return; }
 
     const data = tryParseJSON(normalizeJSON(content));
@@ -423,7 +472,7 @@ async function generateDirectly() {
     const result = applyAIQuestions(data, request.slice(0, 50));
     if (!result) { toast('AI không trả về câu hỏi hợp lệ', 'error'); return; }
 
-    const usage = json.usage || {};
+    usage = usage || {};
     const promptTokens = usage.prompt_tokens || 0;
     const completionTokens = usage.completion_tokens || 0;
     const totalTokens = usage.total_tokens || (promptTokens + completionTokens);

@@ -21,6 +21,7 @@ function buildSetCard(set) {
       <span class="badge badge-purple">${qCount} câu</span>
       ${bestBadge}
       ${timeBadge}
+      <span class="text-muted" style="font-size:var(--text-xs)">📅 ${set.createdAt ? fmtDateShort(set.createdAt) : '—'}</span>
     </div>
     <div class="set-card-actions">
       <button class="btn btn-primary btn-sm" onclick="startPractice('${set.id}')" ${qCount === 0 ? 'disabled' : ''}>🎯 Luyện tập</button>
