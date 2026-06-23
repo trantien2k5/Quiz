@@ -119,3 +119,11 @@ function logAiUsage(entry) {
 function clearAiUsageLog() {
   localStorage.removeItem('quiz_ai_usage_log');
 }
+
+/* ===== AI ANALYSIS (kết quả phân tích lộ trình học gần nhất, cache để khỏi gọi API lại) ===== */
+function getAiAnalysis() {
+  try { return JSON.parse(localStorage.getItem('quiz_ai_last_analysis') || 'null'); } catch { return null; }
+}
+function saveAiAnalysis(data) {
+  localStorage.setItem('quiz_ai_last_analysis', JSON.stringify(data));
+}

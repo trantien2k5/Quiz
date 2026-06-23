@@ -448,8 +448,8 @@ function renderAiUsage() {
 
   const logRows = log.slice(0, 50).map(e => `
     <div class="hst-set-brow">
-      <span class="hst-set-name">${esc(e.topic || e.setName || '—')}</span>
-      <span class="hst-set-col" style="color:var(--text-muted)">${e.questionsGenerated || 0}c</span>
+      <span class="hst-set-name">${e.type === 'analysis' ? '🤖 Phân tích lộ trình' : esc(e.topic || e.setName || '—')}</span>
+      <span class="hst-set-col" style="color:var(--text-muted)">${e.type === 'analysis' ? '—' : (e.questionsGenerated || 0) + 'c'}</span>
       <span class="hst-set-col">${(e.totalTokens || 0).toLocaleString('vi-VN')}</span>
       <span class="hst-set-col">$${(e.costUSD || 0).toFixed(4)}</span>
     </div>`).join('');
@@ -483,4 +483,108 @@ function confirmClearAiUsage() {
     renderAiUsage();
     toast('Đã xoá lịch sử sử dụng AI', 'success');
   });
+}
+
+/* ===== PHÂN TÍCH LỘ TRÌNH HỌC (1 lần gọi, dùng report .txt đã tóm tắt sẵn — tiết kiệm token) ===== */
+function renderAiAnalysisBody(cached) {
+  const el = document.getElementById('ai-analysis-body');
+  if (!cached) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🤖</div><h3>Chưa phân tích</h3><p>Bấm "Phân tích lộ trình học" để AI nhận xét dựa trên dữ liệu của bạn</p></div>`;
+    return;
+  }
+  el.innerHTML = `
+    <p class="form-hint" style="margin-top:0">Phân tích lúc: ${fmtDate(cached.date)} · ${esc(cached.model)} · ${(cached.promptTokens + cached.completionTokens).toLocaleString('vi-VN')} tokens · $${cached.costUSD.toFixed(4)}</p>
+    <div style="white-space:pre-wrap;line-height:1.6">${esc(cached.text)}</div>`;
+}
+
+function showAiAnalysisModal() {
+  renderAiAnalysisBody(getAiAnalysis());
+  document.getElementById('modal-ai-analysis').classList.add('active');
+}
+function hideAiAnalysisModal() {
+  document.getElementById('modal-ai-analysis').classList.remove('active');
+}
+
+async function analyzeStudyReport(force) {
+  const cached = getAiAnalysis();
+  if (cached && !force) {
+    showAiAnalysisModal();
+    return;
+  }
+
+  const cfg = getAiConfig();
+  if (!cfg.apiKey) {
+    toast('Vui lòng nhập API key trong Cấu hình AI', 'error');
+    showAiConfig();
+    return;
+  }
+  const history = getHistory();
+  if (!history.length) {
+    toast('Chưa có dữ liệu lịch sử để phân tích', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('ai-analysis-refresh-btn');
+  if (btn) btn.disabled = true;
+  showAiAnalysisModal();
+  document.getElementById('ai-analysis-body').innerHTML = `<div class="empty-state"><div class="empty-icon">⏳</div><h3>Đang phân tích...</h3></div>`;
+
+  try {
+    const reportJson = _buildExportJson(history, getSets(), getQuestionStats(), getSkillLog(), getTopicLog());
+    const reportTxt = _buildReportTxt(reportJson);
+    const model = cfg.model || 'gpt-4o-mini';
+    const prompt = `Dưới đây là báo cáo học tập của một học viên:
+
+${reportTxt}
+
+Dựa vào báo cáo trên, hãy phân tích và trả lời NGẮN GỌN (tối đa ~300 từ), bằng tiếng Việt, không markdown, theo đúng 4 phần:
+1. Nhận xét tổng quan (1-2 câu)
+2. Điểm mạnh
+3. Cần cải thiện
+4. Lộ trình ôn tập gợi ý cho 1-2 tuần tới (gạch đầu dòng ngắn, cụ thể)`;
+
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.apiKey },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 500
+      })
+    });
+
+    if (!res.ok) {
+      if (res.status === 401) toast('API key không hợp lệ', 'error');
+      else if (res.status === 429) toast('Hết quota hoặc bị giới hạn tốc độ (429)', 'error');
+      else toast(`Lỗi API (${res.status})`, 'error');
+      renderAiAnalysisBody(getAiAnalysis());
+      return;
+    }
+
+    const json = await res.json();
+    const text = json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content;
+    if (!text) { toast('AI không trả về nội dung', 'error'); renderAiAnalysisBody(getAiAnalysis()); return; }
+
+    const usage = json.usage || {};
+    const promptTokens = usage.prompt_tokens || 0;
+    const completionTokens = usage.completion_tokens || 0;
+    const { usd, vnd } = calcAiCost(model, promptTokens, completionTokens, cfg.fxRate);
+
+    const result = { text: text.trim(), date: Date.now(), model, promptTokens, completionTokens, costUSD: usd, costVND: vnd };
+    saveAiAnalysis(result);
+    logAiUsage({
+      id: uid(), date: Date.now(), model, type: 'analysis',
+      questionsRequested: 0, questionsGenerated: 0,
+      promptTokens, completionTokens, totalTokens: promptTokens + completionTokens,
+      costUSD: usd, costVND: vnd
+    });
+
+    renderAiAnalysisBody(result);
+    toast(`✅ Đã phân tích — $${usd.toFixed(4)} (~${Math.round(vnd).toLocaleString('vi-VN')}đ)`, 'success');
+  } catch (err) {
+    toast('Lỗi kết nối — kiểm tra mạng/API key', 'error');
+    renderAiAnalysisBody(getAiAnalysis());
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }

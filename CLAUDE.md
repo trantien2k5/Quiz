@@ -148,8 +148,13 @@ Các screen overlay (ẩn bottom nav khi hiện):
 
 **`quiz_ai_usage_log`** — array log mỗi lượt gọi OpenAI API (giữ max 500):
 ```js
-{ id, date, model, topic, setName, questionsRequested, questionsGenerated,
-  promptTokens, completionTokens, totalTokens, costUSD, costVND }
+{ id, date, model, type: 'generate'|'analysis' /* thiếu field = 'generate' */, topic, setName,
+  questionsRequested, questionsGenerated, promptTokens, completionTokens, totalTokens, costUSD, costVND }
+```
+
+**`quiz_ai_last_analysis`** — cache lần phân tích lộ trình học gần nhất (object hoặc `null`):
+```js
+{ text, date, model, promptTokens, completionTokens, costUSD, costVND }
 ```
 
 ---
@@ -169,6 +174,7 @@ getBestScore(setId)          // → pct | null
 getAiConfig() / saveAiConfig(cfg)        // API key, model, tỷ giá
 getAiUsageLog() / logAiUsage(entry)      // prepend, giữ max 500
 clearAiUsageLog()
+getAiAnalysis() / saveAiAnalysis(data)   // cache phân tích lộ trình học gần nhất
 ```
 
 **AI** (`js/ai.js`):
@@ -177,6 +183,7 @@ generateDirectly()           // gọi OpenAI API trực tiếp bằng key đã l
 applyAIQuestions(data, fallbackName)   // áp dụng JSON câu hỏi vào set — dùng chung cho paste-tay (importAIText) và gọi API (generateDirectly)
 calcAiCost(model, promptTokens, completionTokens, fxRate)  // → {usd, vnd}
 showAiConfig() / showAiUsage()          // mở modal cấu hình / thống kê dùng AI
+analyzeStudyReport(force)    // phân tích lộ trình học 1 lần (cache), force=true mới gọi API lại
 ```
 
 **Render** (gọi sau khi mutate data):
@@ -301,6 +308,7 @@ startQuiz(set, settings)   // bắt đầu quiz với settings {shuffleQ, shuffl
 - **AI gọi trực tiếp (`generateDirectly()`, js/ai.js)**: API key OpenAI lưu PLAIN TEXT trong `quiz_ai_config` (localStorage) — không có backend, key gửi trực tiếp tới `api.openai.com` từ browser (CORS được OpenAI hỗ trợ). Đây là rủi ro chấp nhận được cho use case cá nhân, đã cảnh báo trong UI modal cấu hình — KHÔNG thêm tính năng đồng bộ/export config có chứa key ra ngoài.
 - `OPENAI_PRICING` (js/ai.js) là bảng giá **hardcode ước tính tại thời điểm code** (gpt-4o-mini, gpt-4o) — OpenAI đổi giá thì phải sửa tay, không có cơ chế tự cập nhật. Tỷ giá VND thì tự fetch được qua `refreshFxRate()`.
 - `applyAIQuestions(data, fallbackName)` là điểm áp dụng câu hỏi AI DUY NHẤT (dùng chung cho paste-tay `importAIText()` và gọi API `generateDirectly()`) — thêm field mới vào câu hỏi AI thì sửa Ở ĐÂY, không sửa riêng từng flow
+- `analyzeStudyReport()` (js/ai.js) tái dùng `_buildExportJson()`+`_buildReportTxt()` (js/library.js) làm input cho AI — KHÔNG gửi raw history, để giữ token thấp. Gọi API có `max_tokens: 500` chặn cứng chi phí output. Có cache (`quiz_ai_last_analysis`) — mở modal không tự gọi API lại, chỉ gọi khi bấm "Phân tích lại" (`force=true`)
 
 ---
 

@@ -15,34 +15,34 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- base -->
-  <link rel="stylesheet" href="css/base/tokens.css?v=81">
-  <link rel="stylesheet" href="css/base/reset.css?v=81">
+  <link rel="stylesheet" href="css/base/tokens.css?v=82">
+  <link rel="stylesheet" href="css/base/reset.css?v=82">
   <!-- layout -->
-  <link rel="stylesheet" href="css/layout/shell.css?v=81">
-  <link rel="stylesheet" href="css/layout/nav.css?v=81">
+  <link rel="stylesheet" href="css/layout/shell.css?v=82">
+  <link rel="stylesheet" href="css/layout/nav.css?v=82">
   <!-- components -->
-  <link rel="stylesheet" href="css/components/button.css?v=81">
-  <link rel="stylesheet" href="css/components/form.css?v=81">
-  <link rel="stylesheet" href="css/components/toggle.css?v=81">
-  <link rel="stylesheet" href="css/components/badge.css?v=81">
-  <link rel="stylesheet" href="css/components/modal.css?v=81">
-  <link rel="stylesheet" href="css/components/toast.css?v=81">
-  <link rel="stylesheet" href="css/components/update-banner.css?v=81">
-  <link rel="stylesheet" href="css/components/fab.css?v=81">
-  <link rel="stylesheet" href="css/components/card.css?v=81">
-  <link rel="stylesheet" href="css/components/section-label.css?v=81">
-  <link rel="stylesheet" href="css/components/drop-zone.css?v=81">
-  <link rel="stylesheet" href="css/components/settings-row.css?v=81">
+  <link rel="stylesheet" href="css/components/button.css?v=82">
+  <link rel="stylesheet" href="css/components/form.css?v=82">
+  <link rel="stylesheet" href="css/components/toggle.css?v=82">
+  <link rel="stylesheet" href="css/components/badge.css?v=82">
+  <link rel="stylesheet" href="css/components/modal.css?v=82">
+  <link rel="stylesheet" href="css/components/toast.css?v=82">
+  <link rel="stylesheet" href="css/components/update-banner.css?v=82">
+  <link rel="stylesheet" href="css/components/fab.css?v=82">
+  <link rel="stylesheet" href="css/components/card.css?v=82">
+  <link rel="stylesheet" href="css/components/section-label.css?v=82">
+  <link rel="stylesheet" href="css/components/drop-zone.css?v=82">
+  <link rel="stylesheet" href="css/components/settings-row.css?v=82">
   <!-- pages -->
-  <link rel="stylesheet" href="css/pages/home.css?v=81">
-  <link rel="stylesheet" href="css/pages/editor.css?v=81">
-  <link rel="stylesheet" href="css/pages/quiz.css?v=81">
-  <link rel="stylesheet" href="css/pages/results.css?v=81">
-  <link rel="stylesheet" href="css/pages/history.css?v=81">
-  <link rel="stylesheet" href="css/pages/ai.css?v=81">
+  <link rel="stylesheet" href="css/pages/home.css?v=82">
+  <link rel="stylesheet" href="css/pages/editor.css?v=82">
+  <link rel="stylesheet" href="css/pages/quiz.css?v=82">
+  <link rel="stylesheet" href="css/pages/results.css?v=82">
+  <link rel="stylesheet" href="css/pages/history.css?v=82">
+  <link rel="stylesheet" href="css/pages/ai.css?v=82">
   <!-- utilities -->
-  <link rel="stylesheet" href="css/utilities/utilities.css?v=81">
-  <link rel="stylesheet" href="css/utilities/animations.css?v=81">
+  <link rel="stylesheet" href="css/utilities/utilities.css?v=82">
+  <link rel="stylesheet" href="css/utilities/animations.css?v=82">
 </head>
 <body>
 <div id="update-banner">
@@ -228,6 +228,19 @@
     </div>
   </div>
 
+  <!-- ===== MODAL AI ANALYSIS ===== -->
+  <div id="modal-ai-analysis" class="modal-overlay" onclick="if(event.target===this)hideAiAnalysisModal()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">🤖 Phân tích lộ trình học</div>
+      <div id="ai-analysis-body" style="max-height:55vh;overflow-y:auto;margin-bottom:14px"></div>
+      <button id="ai-analysis-refresh-btn" class="btn btn-outline btn-full" onclick="analyzeStudyReport(true)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+        Phân tích lại
+      </button>
+    </div>
+  </div>
+
   <!-- ===== QUIZ SCREEN ===== -->
   <section id="screen-quiz">
     <div class="top-bar">
@@ -334,9 +347,14 @@
     <div id="hst-home">
       <div class="top-bar">
         <h1>📊 Thống kê</h1>
-        <button class="btn-icon" onclick="exportPersonalizationData()" title="Xuất báo cáo học tập">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        </button>
+        <div style="display:flex;gap:4px">
+          <button class="btn-icon" onclick="analyzeStudyReport()" title="Phân tích lộ trình học bằng AI">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
+          </button>
+          <button class="btn-icon" onclick="exportPersonalizationData()" title="Xuất báo cáo học tập">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+        </div>
       </div>
       <div class="scroll-content">
         <div id="hst-quick-strip" class="hst-quick-strip"></div>
@@ -496,16 +514,16 @@
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="js/core/storage.js?v=81"></script>
-<script src="js/core/utils.js?v=81"></script>
-<script src="js/home.js?v=81"></script>
-<script src="js/editor.js?v=81"></script>
-<script src="js/quiz.js?v=81"></script>
-<script src="js/results.js?v=81"></script>
-<script src="js/library.js?v=81"></script>
-<script src="js/history.js?v=81"></script>
-<script src="js/ai.js?v=81"></script>
-<script src="js/core/app.js?v=81"></script>
+<script src="js/core/storage.js?v=82"></script>
+<script src="js/core/utils.js?v=82"></script>
+<script src="js/home.js?v=82"></script>
+<script src="js/editor.js?v=82"></script>
+<script src="js/quiz.js?v=82"></script>
+<script src="js/results.js?v=82"></script>
+<script src="js/library.js?v=82"></script>
+<script src="js/history.js?v=82"></script>
+<script src="js/ai.js?v=82"></script>
+<script src="js/core/app.js?v=82"></script>
 <script>
   if ('serviceWorker' in navigator) {
     const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname);
