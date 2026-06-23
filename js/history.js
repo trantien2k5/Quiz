@@ -385,6 +385,8 @@ function renderHistoryProgress() {
 }
 
 /* --- Level 2: Lỗi sai --- */
+const RECENT_MISTAKES_WINDOW = 10; // số lượt gần nhất quét câu sai — PHẢI khớp với retryAllWrongQuestions()
+
 function renderHistoryMistakes() {
   const history = getHistory();
   const el = document.getElementById('hst-mistakes-body');
@@ -394,7 +396,7 @@ function renderHistoryMistakes() {
   }
 
   const recentWrongs = [];
-  for (const entry of history.slice(0, 5)) {
+  for (const entry of history.slice(0, RECENT_MISTAKES_WINDOW)) {
     const set = getSet(entry.setId);
     if (!set) continue;
     for (let i = 0; i < entry.answers.length; i++) {
@@ -411,7 +413,7 @@ function renderHistoryMistakes() {
     .filter(s => s.wrong > 0)
     .sort((a, b) => b.wrongRate - a.wrongRate)
     .slice(0, 5)
-    .map(s => ({ n: s.name, wrong: s.wrong, total: s.total, rate: s.wrongRate }));
+    .map(s => ({ setId: s.setId, n: s.name, wrong: s.wrong, total: s.total, rate: s.wrongRate }));
 
   const wrongHtml = recentWrongs.length
     ? recentWrongs.map(({ q, setName }) => `
@@ -428,6 +430,9 @@ function renderHistoryMistakes() {
           <div class="hst-weak-topic-name">${esc(t.n)}</div>
           <div class="hst-weak-topic-bar"><div class="hst-weak-topic-fill" style="width:${Math.round(t.rate * 100)}%"></div></div>
           <div class="hst-weak-topic-pct">${Math.round(t.rate * 100)}% sai</div>
+          <button class="btn-icon" title="Luyện tập đề này" onclick="startPractice('${t.setId}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          </button>
         </div>`).join('')
     : '';
 
