@@ -74,7 +74,7 @@ CHỈ trả về JSON thuần, không markdown, không giải thích thêm:
       "text": "Câu hỏi rõ ràng, hỏi đúng 1 khái niệm?",
       "options": ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
       "correct": 0,
-      "explanation": "Đáp án A đúng vì [lý do cụ thể]. B sai vì [lý do]. C sai vì [lý do]. D sai vì [lý do].",
+      "explanation": "✅ Đáp án: items\\n\\n🔍 Phân tích:\\nThese + ____ + are\\n→ Sau 'these' cần danh từ số nhiều.\\n\\n🗒 Ghi nhớ: these/those + noun số nhiều, this/that + noun số ít",
       "skillTags": ["word_form", "adverb"]
     }
   ]
@@ -117,12 +117,22 @@ SKILL TAGS:
 - Ví dụ: ["word_form", "adjective_vs_adverb"], ["preposition", "time_expression"], ["tense", "present_perfect"]
 - Tags phải cụ thể, không dùng tags chung chung như "grammar" hay "vocabulary"
 
-GIẢI THÍCH (explanation) — ngắn gọn, đúng trọng tâm:
-- Tối đa 2 câu, không dài hơn
-- Câu 1: lý do cốt lõi tại sao đáp án đúng — nêu quy tắc/dấu hiệu nhận dạng ngay trong câu hỏi
-- Câu 2 (nếu cần): mẹo nhanh để nhớ hoặc pattern hay gặp trong đề thi
-- KHÔNG giải thích tại sao đáp án sai — không cần thiết
-- KHÔNG lặp lại nội dung câu hỏi
+GIẢI THÍCH (explanation) — PHẢI theo đúng format có cấu trúc sau (xem ví dụ mẫu ở trên):
+
+✅ Đáp án: <đáp án đúng, ngắn gọn>
+
+🔍 Phân tích:
+<cấu trúc/công thức/quy tắc liên quan — nếu là ngữ pháp thì viết dạng công thức (A + ___ + B), nếu là toán/khoa học thì viết công thức hoặc bước giải ngắn>
+→ <lý do cốt lõi tại sao đáp án đúng, 1 câu>
+
+🗒 Ghi nhớ: <mẹo nhớ ngắn, 1 câu — quy tắc tổng quát hoặc pattern hay gặp>
+
+Quy định:
+- Dùng ĐÚNG các emoji ✅ 🔍 → 🗒 và xuống dòng như mẫu — KHÔNG đổi sang format khác
+- Mỗi dòng ngắn gọn, không viết đoạn văn dài
+- KHÔNG giải thích tại sao các đáp án sai — không cần thiết
+- KHÔNG lặp lại nguyên văn câu hỏi
+- Trong giá trị JSON, xuống dòng PHẢI dùng \\n (escape), KHÔNG xuống dòng thật — nếu không JSON sẽ lỗi
 - QUAN TRỌNG: chỉ dùng dấu nháy đơn (') không dùng dấu nháy kép (") để tránh lỗi JSON
 
 Tạo đúng số câu đã xác định ở trên, không thiếu, không thừa.`;

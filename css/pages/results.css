@@ -211,6 +211,7 @@
   font-size: var(--text-sm);
   line-height: 1.5;
   color: #92400E;
+  white-space: pre-wrap;
 }
 
 .review-tag {

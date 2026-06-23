@@ -368,6 +368,7 @@
   font-size: var(--text-md);
   line-height: 1.6;
   color: var(--color-text);
+  white-space: pre-wrap;
 }
 
 .practice-inline-nav {
