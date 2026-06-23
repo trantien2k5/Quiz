@@ -79,20 +79,13 @@ js/
     app.js              ← init, routing, showScreen, navTo, APP_V
     storage.js          ← localStorage CRUD (getSets, saveSet, getHistory...)
     utils.js            ← esc, toast, confirm, date helpers
-  home/
-    home.js             ← renderHome()
-  library/
-    library.js          ← renderLibrary(), set cards, import/export
-  quiz/
-    quiz.js             ← quiz state, timer, submit, scoring
-  history/
-    history.js          ← renderHistory(), showHistorySection(), stats
-  editor/
-    editor.js           ← editor screen (tạo/sửa bộ đề)
-  results/
-    results.js          ← results screen, review chi tiết
-  ai/
-    ai.js               ← AI integration (generate questions)
+  home.js               ← renderHome()
+  library.js            ← renderLibrary(), set cards, import/export
+  quiz.js               ← quiz state, timer, submit, scoring
+  history.js            ← renderHistory(), showHistorySection(), stats
+  editor.js             ← editor screen (tạo/sửa bộ đề)
+  results.js            ← results screen, review chi tiết
+  ai.js                 ← AI integration (generate questions)
 
 assets/
   icon-192.svg
@@ -166,9 +159,9 @@ getBestScore(setId)          // → pct | null
 
 **Render** (gọi sau khi mutate data):
 ```js
-renderHome()       // js/home/home.js
-renderLibrary()    // js/library/library.js
-renderHistory()    // js/history/history.js
+renderHome()       // js/home.js
+renderLibrary()    // js/library.js
+renderHistory()    // js/history.js
 ```
 
 **Navigation** (`js/core/app.js`):
@@ -186,7 +179,7 @@ confirm('title', 'msg', onOkFn)         // dialog xác nhận custom
 esc(str)                                 // escape HTML — BẮT BUỘC khi render user data
 ```
 
-**Quiz** (`js/quiz/quiz.js`):
+**Quiz** (`js/quiz.js`):
 ```js
 showQuizSettings(setId)    // mở modal cài đặt trước khi làm bài
 startQuiz(set, settings)   // bắt đầu quiz với settings {shuffleQ, shuffleOpts, numQ}
@@ -197,16 +190,16 @@ startQuiz(set, settings)   // bắt đầu quiz với settings {shuffleQ, shuffl
 ## PATTERN THÊM TÍNH NĂNG
 
 ### Thêm field mới vào câu hỏi
-1. `buildQuestionCard()` trong `js/editor/editor.js` — thêm input field
+1. `buildQuestionCard()` trong `js/editor.js` — thêm input field
 2. `addQuestion()` — thêm default value
 3. `saveEditor()` — map field khi lưu
 4. `buildSetCard()` / kết quả — hiện field nếu cần
 5. `importSetsFromData()` — parse field từ JSON import
 
 ### Thêm section vào tab
-- Home: thêm element vào `screen-home` (index.html), render trong `renderHome()` (js/home/home.js)
-- Library: thêm vào `screen-library`, render trong `renderLibrary()` (js/library/library.js)
-- History: thêm vào `screen-history`, render trong `renderHistory()` (js/history/history.js)
+- Home: thêm element vào `screen-home` (index.html), render trong `renderHome()` (js/home.js)
+- Library: thêm vào `screen-library`, render trong `renderLibrary()` (js/library.js)
+- History: thêm vào `screen-history`, render trong `renderHistory()` (js/history.js)
 
 ### Thêm tab mới
 1. Thêm `<button data-nav="name">` vào `#bottom-nav` trong index.html
