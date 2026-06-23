@@ -15,35 +15,35 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- base -->
-  <link rel="stylesheet" href="css/base/tokens.css?v=101">
-  <link rel="stylesheet" href="css/base/reset.css?v=101">
+  <link rel="stylesheet" href="css/base/tokens.css?v=102">
+  <link rel="stylesheet" href="css/base/reset.css?v=102">
   <!-- layout -->
-  <link rel="stylesheet" href="css/layout/shell.css?v=101">
-  <link rel="stylesheet" href="css/layout/nav.css?v=101">
+  <link rel="stylesheet" href="css/layout/shell.css?v=102">
+  <link rel="stylesheet" href="css/layout/nav.css?v=102">
   <!-- components -->
-  <link rel="stylesheet" href="css/components/button.css?v=101">
-  <link rel="stylesheet" href="css/components/form.css?v=101">
-  <link rel="stylesheet" href="css/components/toggle.css?v=101">
-  <link rel="stylesheet" href="css/components/badge.css?v=101">
-  <link rel="stylesheet" href="css/components/modal.css?v=101">
-  <link rel="stylesheet" href="css/components/toast.css?v=101">
-  <link rel="stylesheet" href="css/components/update-banner.css?v=101">
-  <link rel="stylesheet" href="css/components/fab.css?v=101">
-  <link rel="stylesheet" href="css/components/card.css?v=101">
-  <link rel="stylesheet" href="css/components/section-label.css?v=101">
-  <link rel="stylesheet" href="css/components/drop-zone.css?v=101">
-  <link rel="stylesheet" href="css/components/settings-row.css?v=101">
+  <link rel="stylesheet" href="css/components/button.css?v=102">
+  <link rel="stylesheet" href="css/components/form.css?v=102">
+  <link rel="stylesheet" href="css/components/toggle.css?v=102">
+  <link rel="stylesheet" href="css/components/badge.css?v=102">
+  <link rel="stylesheet" href="css/components/modal.css?v=102">
+  <link rel="stylesheet" href="css/components/toast.css?v=102">
+  <link rel="stylesheet" href="css/components/update-banner.css?v=102">
+  <link rel="stylesheet" href="css/components/fab.css?v=102">
+  <link rel="stylesheet" href="css/components/card.css?v=102">
+  <link rel="stylesheet" href="css/components/section-label.css?v=102">
+  <link rel="stylesheet" href="css/components/drop-zone.css?v=102">
+  <link rel="stylesheet" href="css/components/settings-row.css?v=102">
   <!-- pages -->
-  <link rel="stylesheet" href="css/pages/home.css?v=101">
-  <link rel="stylesheet" href="css/pages/editor.css?v=101">
-  <link rel="stylesheet" href="css/pages/quiz.css?v=101">
-  <link rel="stylesheet" href="css/pages/results.css?v=101">
-  <link rel="stylesheet" href="css/pages/history.css?v=101">
-  <link rel="stylesheet" href="css/pages/ai.css?v=101">
-  <link rel="stylesheet" href="css/pages/import.css?v=101">
+  <link rel="stylesheet" href="css/pages/home.css?v=102">
+  <link rel="stylesheet" href="css/pages/editor.css?v=102">
+  <link rel="stylesheet" href="css/pages/quiz.css?v=102">
+  <link rel="stylesheet" href="css/pages/results.css?v=102">
+  <link rel="stylesheet" href="css/pages/history.css?v=102">
+  <link rel="stylesheet" href="css/pages/ai.css?v=102">
+  <link rel="stylesheet" href="css/pages/import.css?v=102">
   <!-- utilities -->
-  <link rel="stylesheet" href="css/utilities/utilities.css?v=101">
-  <link rel="stylesheet" href="css/utilities/animations.css?v=101">
+  <link rel="stylesheet" href="css/utilities/utilities.css?v=102">
+  <link rel="stylesheet" href="css/utilities/animations.css?v=102">
 </head>
 <body>
 <div id="update-banner">
@@ -378,6 +378,19 @@ Giải thích: ...</pre>
       <div id="quiz-questions-content"></div>
     </div>
     <div id="quiz-nav" class="quiz-nav"></div>
+    <aside id="quiz-side-map" class="quiz-side-map">
+      <div class="quiz-side-map-header">
+        <div class="modal-title" style="margin:0">Bảng câu hỏi</div>
+        <span id="qmap-stats-side" class="text-muted" style="font-size:13px"></span>
+      </div>
+      <div id="qmap-grid-side" class="qmap-grid"></div>
+      <div class="qmap-legend">
+        <span><span class="qmap-dot answered"></span> Đã làm</span>
+        <span><span class="qmap-dot flagged"></span> Đánh dấu</span>
+        <span><span class="qmap-dot unanswered"></span> Chưa làm</span>
+      </div>
+      <button class="btn btn-primary btn-full" style="margin-top:4px" onclick="submitQuizConfirm()">Nộp bài ✓</button>
+    </aside>
   </section>
 
   <!-- ===== RESULT SCREEN ===== -->
@@ -575,6 +588,18 @@ Giải thích: ...</pre>
         </div>
       </div>
 
+      <div class="settings-row" style="align-items:flex-start;flex-direction:column;gap:10px">
+        <div class="settings-row-info">
+          <div class="settings-row-label">Thời gian làm bài</div>
+          <div class="settings-row-desc">Mặc định 1 phút/câu — để trống = không giới hạn</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;width:100%">
+          <input type="number" id="qs-time-limit" class="form-control" placeholder="Không giới hạn"
+            min="1" style="max-width:140px">
+          <span class="text-muted" style="font-size:13px">phút</span>
+        </div>
+      </div>
+
       <button class="btn btn-primary btn-full" style="margin-top:8px" onclick="beginQuiz()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         Bắt đầu làm bài
@@ -624,18 +649,18 @@ Giải thích: ...</pre>
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="js/core/storage.js?v=101"></script>
-<script src="js/core/utils.js?v=101"></script>
-<script src="js/core/activity-tracker.js?v=101"></script>
-<script src="js/home.js?v=101"></script>
-<script src="js/editor.js?v=101"></script>
-<script src="js/quiz.js?v=101"></script>
-<script src="js/results.js?v=101"></script>
-<script src="js/library.js?v=101"></script>
-<script src="js/history.js?v=101"></script>
-<script src="js/ai.js?v=101"></script>
-<script src="js/import-text.js?v=101"></script>
-<script src="js/core/app.js?v=101"></script>
+<script src="js/core/storage.js?v=102"></script>
+<script src="js/core/utils.js?v=102"></script>
+<script src="js/core/activity-tracker.js?v=102"></script>
+<script src="js/home.js?v=102"></script>
+<script src="js/editor.js?v=102"></script>
+<script src="js/quiz.js?v=102"></script>
+<script src="js/results.js?v=102"></script>
+<script src="js/library.js?v=102"></script>
+<script src="js/history.js?v=102"></script>
+<script src="js/ai.js?v=102"></script>
+<script src="js/import-text.js?v=102"></script>
+<script src="js/core/app.js?v=102"></script>
 <script>
   if ('serviceWorker' in navigator) {
     const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname);

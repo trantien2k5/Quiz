@@ -249,6 +249,37 @@
 .qmap-dot.flagged    { background: var(--color-warning); }
 .qmap-dot.unanswered { border: 1.5px solid var(--color-border); background: var(--color-bg); }
 
+/* ===== DESKTOP SIDE MAP ===== */
+/* Desktop sidebar breakpoint: 80rem = 1280px (đủ chỗ bên cạnh .app max-width 42.5rem mà không đè nội dung) */
+.quiz-side-map { display: none; }
+
+@media (min-width: 80rem) {
+  .quiz-side-map {
+    position: fixed;
+    top: var(--top-h);
+    bottom: 0;
+    left: calc(50% + (var(--max-w) / 2) + 1.5rem);
+    z-index: var(--z-sub);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    width: 16rem;
+    padding: var(--space-4);
+    border-left: 1px solid var(--color-border);
+    background: var(--color-surface);
+    overflow-y: auto;
+  }
+
+  .quiz-side-map .qmap-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.quiz-side-map-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-1);
+}
+
 .quiz-separator {
   height: 1px;
   margin: var(--space-4) 0;

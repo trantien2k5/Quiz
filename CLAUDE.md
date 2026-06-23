@@ -323,7 +323,11 @@ startQuiz(set, settings)   // bắt đầu quiz với settings {shuffleQ, shuffl
 - Service Worker chỉ chạy khi deploy thật, KHÔNG chạy ở `localhost`/`127.0.0.1` — dev tự huỷ SW + xoá cache cũ, sửa code là thấy ngay không cần hard-refresh
 
 **Quiz/History:**
-- Quiz mode default `'all'`, `'one-by-one'` là chế độ 2. `shuffleOptions(q)` trả câu hỏi mới với options đảo + `correct` cập nhật
+- Quiz mode default `'all'` (list — hiện hết câu, cuộn dọc), `'one-by-one'` là chế độ 2 (1 câu/màn, Trước/Tiếp). `toggleQuizMode()` chuyển qua lại, ẩn ở practice mode. `shuffleOptions(q)` trả câu hỏi mới với options đảo + `correct` cập nhật
+- `qs-time-limit` (modal-quiz-settings) mặc định = tổng số câu (1 phút/câu) khi mở `showQuizSettings()` — KHÔNG tự đổi nếu user sửa "Số câu muốn làm" sau đó, là giới hạn biết trước, không phải bug
+- `.quiz-side-map` (css/pages/quiz.css) — sidebar bảng câu hỏi cố định bên phải, CHỈ hiện ở desktop (`@media min-width: 80rem`), ẩn hẳn qua JS khi practice mode. Render bằng `renderQuizMap()` — hàm này ghi vào CẢ modal mobile (`#qmap-grid`) VÀ sidebar desktop (`#qmap-grid-side`) cùng lúc, gọi từ `renderQuizNav()` (mọi lần đổi câu/đáp án) + `toggleFlag()` (không tự kéo theo renderQuizNav)
+- `jumpToQuestion(idx)` phân biệt theo `_quiz.mode`: `'all'` → `scrollIntoView()` tới block câu đó; `'one-by-one'` → đổi `currentIdx` + render lại. Thêm mode mới phải xử lý cả 2 nhánh này
+- `toggleFlag(idx)` phải query `#quiz-q-${idx} .quiz-flag-btn` (scoped theo từng câu) — KHÔNG dùng `document.querySelector('.quiz-flag-btn')` chung, vì mode `'all'` hiện nhiều nút cờ cùng lúc trên màn hình
 - `renderHistoryMistakes()` overwrite toàn bộ `hst-mistakes-body` bằng `innerHTML` — không đặt HTML tĩnh trong container này (mất), nút retry phải sinh trong JS (`retryBtnHtml`)
 - `RECENT_MISTAKES_WINDOW` (js/history.js) dùng chung bởi `renderHistoryMistakes()` và `retryAllWrongQuestions()` — phải cùng giá trị, lệch nhau sẽ mâu thuẫn giữa hiển thị và hành động
 - Dòng "Đề yếu nhất" có nút 🎯 `startPractice(setId)` — `weakTopics` map từ `computeSetStats()` phải giữ `setId`, không chỉ lấy tên
