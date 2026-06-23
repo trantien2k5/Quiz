@@ -15,34 +15,34 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- base -->
-  <link rel="stylesheet" href="css/base/tokens.css?v=87">
-  <link rel="stylesheet" href="css/base/reset.css?v=87">
+  <link rel="stylesheet" href="css/base/tokens.css?v=88">
+  <link rel="stylesheet" href="css/base/reset.css?v=88">
   <!-- layout -->
-  <link rel="stylesheet" href="css/layout/shell.css?v=87">
-  <link rel="stylesheet" href="css/layout/nav.css?v=87">
+  <link rel="stylesheet" href="css/layout/shell.css?v=88">
+  <link rel="stylesheet" href="css/layout/nav.css?v=88">
   <!-- components -->
-  <link rel="stylesheet" href="css/components/button.css?v=87">
-  <link rel="stylesheet" href="css/components/form.css?v=87">
-  <link rel="stylesheet" href="css/components/toggle.css?v=87">
-  <link rel="stylesheet" href="css/components/badge.css?v=87">
-  <link rel="stylesheet" href="css/components/modal.css?v=87">
-  <link rel="stylesheet" href="css/components/toast.css?v=87">
-  <link rel="stylesheet" href="css/components/update-banner.css?v=87">
-  <link rel="stylesheet" href="css/components/fab.css?v=87">
-  <link rel="stylesheet" href="css/components/card.css?v=87">
-  <link rel="stylesheet" href="css/components/section-label.css?v=87">
-  <link rel="stylesheet" href="css/components/drop-zone.css?v=87">
-  <link rel="stylesheet" href="css/components/settings-row.css?v=87">
+  <link rel="stylesheet" href="css/components/button.css?v=88">
+  <link rel="stylesheet" href="css/components/form.css?v=88">
+  <link rel="stylesheet" href="css/components/toggle.css?v=88">
+  <link rel="stylesheet" href="css/components/badge.css?v=88">
+  <link rel="stylesheet" href="css/components/modal.css?v=88">
+  <link rel="stylesheet" href="css/components/toast.css?v=88">
+  <link rel="stylesheet" href="css/components/update-banner.css?v=88">
+  <link rel="stylesheet" href="css/components/fab.css?v=88">
+  <link rel="stylesheet" href="css/components/card.css?v=88">
+  <link rel="stylesheet" href="css/components/section-label.css?v=88">
+  <link rel="stylesheet" href="css/components/drop-zone.css?v=88">
+  <link rel="stylesheet" href="css/components/settings-row.css?v=88">
   <!-- pages -->
-  <link rel="stylesheet" href="css/pages/home.css?v=87">
-  <link rel="stylesheet" href="css/pages/editor.css?v=87">
-  <link rel="stylesheet" href="css/pages/quiz.css?v=87">
-  <link rel="stylesheet" href="css/pages/results.css?v=87">
-  <link rel="stylesheet" href="css/pages/history.css?v=87">
-  <link rel="stylesheet" href="css/pages/ai.css?v=87">
+  <link rel="stylesheet" href="css/pages/home.css?v=88">
+  <link rel="stylesheet" href="css/pages/editor.css?v=88">
+  <link rel="stylesheet" href="css/pages/quiz.css?v=88">
+  <link rel="stylesheet" href="css/pages/results.css?v=88">
+  <link rel="stylesheet" href="css/pages/history.css?v=88">
+  <link rel="stylesheet" href="css/pages/ai.css?v=88">
   <!-- utilities -->
-  <link rel="stylesheet" href="css/utilities/utilities.css?v=87">
-  <link rel="stylesheet" href="css/utilities/animations.css?v=87">
+  <link rel="stylesheet" href="css/utilities/utilities.css?v=88">
+  <link rel="stylesheet" href="css/utilities/animations.css?v=88">
 </head>
 <body>
 <div id="update-banner">
@@ -281,6 +281,7 @@
           <div id="result-emoji" class="result-emoji">🎉</div>
           <div id="result-title" class="result-title">Làm tốt lắm!</div>
           <div id="result-subtitle" class="result-subtitle"></div>
+          <div id="result-active-time" class="text-muted" style="text-align:center;font-size:var(--text-xs);margin-top:2px"></div>
         </div>
         <div class="result-score-card">
           <div>
@@ -514,16 +515,17 @@
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="js/core/storage.js?v=87"></script>
-<script src="js/core/utils.js?v=87"></script>
-<script src="js/home.js?v=87"></script>
-<script src="js/editor.js?v=87"></script>
-<script src="js/quiz.js?v=87"></script>
-<script src="js/results.js?v=87"></script>
-<script src="js/library.js?v=87"></script>
-<script src="js/history.js?v=87"></script>
-<script src="js/ai.js?v=87"></script>
-<script src="js/core/app.js?v=87"></script>
+<script src="js/core/storage.js?v=88"></script>
+<script src="js/core/utils.js?v=88"></script>
+<script src="js/core/activity-tracker.js?v=88"></script>
+<script src="js/home.js?v=88"></script>
+<script src="js/editor.js?v=88"></script>
+<script src="js/quiz.js?v=88"></script>
+<script src="js/results.js?v=88"></script>
+<script src="js/library.js?v=88"></script>
+<script src="js/history.js?v=88"></script>
+<script src="js/ai.js?v=88"></script>
+<script src="js/core/app.js?v=88"></script>
 <script>
   if ('serviceWorker' in navigator) {
     const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname);

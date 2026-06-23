@@ -1,9 +1,10 @@
 /* ===== RESULTS ===== */
 let _resultEntry = null, _resultSet = null;
 
-function renderResult(entry, set) {
+function renderResult(entry, set, activeTimeSec) {
   _resultEntry = entry;
   _resultSet = set;
+  if (activeTimeSec === undefined) activeTimeSec = entry.activeTimeSec;
   const pct = scorePct(entry.score, entry.total);
 
   // Reset labels/buttons có thể bị renderPracticeResult đổi
@@ -24,6 +25,9 @@ function renderResult(entry, set) {
     pct >= 60 ? 'Khá tốt!' :
     pct >= 40 ? 'Cần cố gắng thêm' : 'Hãy thử lại nhé!';
   document.getElementById('result-subtitle').textContent = `${entry.setName} · ${fmtDate(entry.date)}`;
+  const elActive = document.getElementById('result-active-time');
+  if (elActive) elActive.textContent = (activeTimeSec != null && entry.timeTaken != null && activeTimeSec < entry.timeTaken - 5)
+    ? `⏱ Học thực: ${fmtTime(activeTimeSec)}` : '';
   document.getElementById('result-score-correct').textContent = entry.score;
   document.getElementById('result-score-wrong').textContent = entry.total - entry.score;
   document.getElementById('result-score-pct').textContent = pct + '%';

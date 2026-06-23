@@ -81,6 +81,7 @@ js/
     app.js              ← init, routing, showScreen, navTo, APP_V
     storage.js          ← localStorage CRUD (getSets, saveSet, getHistory...)
     utils.js            ← esc, toast, confirm, date helpers
+    activity-tracker.js ← startActivityTracking() — đo active time, idle/Pomodoro nhắc nhở
   home.js               ← renderHome()
   library.js            ← renderLibrary(), set cards, import/export
   quiz.js               ← quiz state, timer, submit, scoring
@@ -140,7 +141,9 @@ Các screen overlay (ẩn bottom nav khi hiện):
 
 **`quiz_history`** — array lịch sử:
 ```js
-{ id, setId, setName, score, total, timeTaken, date, answers: [0|1|2|3|null] }
+{ id, setId, setName, score, total, timeTaken, activeTimeSec, date, mode: 'exam'|'practice', answers: [0|1|2|3|null], responseTimes }
+// activeTimeSec: number|null — thời gian học CHỦ ĐỘNG (loại trừ treo máy/rời tab), entry cũ không có field này → null
+// timeTaken: wall-clock giây (Date.now() - startTime lúc nộp/thoát) — giữ nguyên ý nghĩa cũ, không đổi
 ```
 
 **`quiz_ai_config`** — cấu hình gọi AI trực tiếp (js/ai.js):
@@ -318,6 +321,7 @@ startQuiz(set, settings)   // bắt đầu quiz với settings {shuffleQ, shuffl
 - AI prompt (`buildPromptText()` js/ai.js) có rule NGÔN NGỮ bắt buộc: `name`/`explanation` luôn tiếng Việt, `text`/`options` chỉ tiếng Anh nếu chủ đề yêu cầu (TOEIC...) — nếu AI vẫn trả tiếng Anh sai chỗ, sửa rule ở đây trước, đừng tự dịch lại bằng code
 - `analyzeStudyReport()` parse 1 dòng `HANH_DONG: REDO:<tên set>` hoặc `HANH_DONG: CREATE:<chủ đề>` ở cuối response AI (`_parseAiAction()`) để sinh nút hành động (luyện tập lại set / mở nhanh modal AI điền sẵn yêu cầu) — KHÔNG tốn thêm lệnh gọi API, action match theo tên set gần đúng (không match được thì không hiện nút, không báo lỗi)
 - `startPractice()` khi thoát giữa chừng (`exitQuiz()`) tự lưu tiến trình đã làm (không hỏi xác nhận) qua `_savePracticeResults()` — chỉ lưu nếu đã trả lời ít nhất 1 câu (`responseTimes` có giá trị non-null). Chế độ Thi (`startQuiz`) vẫn giữ confirm + KHÔNG lưu khi thoát giữa chừng như cũ — 2 chế độ có hành vi exit khác nhau có chủ đích
+- `startActivityTracking()` (js/core/activity-tracker.js) — đo thời gian học chủ động (loại trừ idle >60s không tương tác + lúc tab ẩn qua `visibilitychange`), dùng CHUNG cho cả `startQuiz()` và `startPractice()` (gắn vào `_quiz.activityTracker`). `handle.stop()` **idempotent** (gọi nhiều lần an toàn, trả lại giá trị đã chốt) — vì bị gọi tới 2 lần trong luồng thoát giữa chừng practice (`_savePracticeResults()` rồi `goBack()`). Nhắc tập trung (rời ≥2 phút) + nhắc nghỉ Pomodoro (25 phút active liên tục) qua `toast()` có sẵn, KHÔNG cần UI mới. Mọi điểm kết thúc quiz (`submitQuiz`, `_savePracticeResults`, `exitQuiz.goBack`) PHẢI gọi `stop()` để tránh leak listener/interval — thêm điểm kết thúc mới thì nhớ gọi theo
 
 ---
 

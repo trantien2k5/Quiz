@@ -62,6 +62,10 @@ function startQuiz(setOrId, settings) {
     timeLeft: set.timeLimit ? set.timeLimit * 60 : null,
     mode: 'one-by-one'
   };
+  _quiz.activityTracker = startActivityTracking({
+    onResumeNudge: sec => toast(`👋 Quay lại tập trung học nào! (đã rời ${fmtTime(sec)})`),
+    onPomodoroBreak: () => toast('🍅 Đã học liên tục 25 phút — nghỉ giải lao 5 phút nhé!')
+  });
   _quizInProgress = true;
   localStorage.setItem('quiz_last_set', _quiz.originalSetId);
   document.querySelector('[onclick="toggleQuizMode()"]').style.display = '';
@@ -103,6 +107,10 @@ function startPractice(setOrId) {
     timeLeft: null,
     mode: 'one-by-one'
   };
+  _quiz.activityTracker = startActivityTracking({
+    onResumeNudge: sec => toast(`👋 Quay lại tập trung học nào! (đã rời ${fmtTime(sec)})`),
+    onPomodoroBreak: () => toast('🍅 Đã học liên tục 25 phút — nghỉ giải lao 5 phút nhé!')
+  });
   _quizInProgress = true;
   localStorage.setItem('quiz_last_set', _quiz.originalSetId);
   document.querySelector('[onclick="toggleQuizMode()"]').style.display = 'none';
@@ -377,6 +385,7 @@ function practiceSkip() {
 /* Lưu kết quả luyện tập (history + skill/topic log) — dùng chung cho hoàn thành tự nhiên VÀ thoát giữa chừng */
 function _savePracticeResults() {
   const timeTaken = Math.round((Date.now() - _quiz.startTime) / 1000);
+  const activeTimeSec = _quiz.activityTracker ? _quiz.activityTracker.stop() : null;
   const total    = _quiz.set.questions.length;
   const mastered = _quiz.pMastered.filter(Boolean).length;
   const skipped  = _quiz.pSkipped.filter(Boolean).length;
@@ -390,6 +399,7 @@ function _savePracticeResults() {
     score: mastered,
     total,
     timeTaken,
+    activeTimeSec,
     date: Date.now(),
     mode: 'practice',
     answers: _quiz.set.questions.map((q, i) => _quiz.pMastered[i] ? q.correct : null),
@@ -409,18 +419,18 @@ function _savePracticeResults() {
   });
   Object.keys(_sk).forEach(t => appendSkillLog(t, _today, _sk[t], _skW[t]));
   appendTopicLog(_quiz.set.name, _today, mastered, total - mastered - skipped);
-  return { mastered, skipped, total, timeTaken };
+  return { mastered, skipped, total, timeTaken, activeTimeSec };
 }
 
 function finishPractice() {
   _quizInProgress = false;
-  const { mastered, skipped, total, timeTaken } = _savePracticeResults();
+  const { mastered, skipped, total, timeTaken, activeTimeSec } = _savePracticeResults();
   // Hiện kết quả practice riêng
-  renderPracticeResult(mastered, skipped, total, timeTaken, _quiz.set);
+  renderPracticeResult(mastered, skipped, total, timeTaken, _quiz.set, activeTimeSec);
   showScreen('screen-result');
 }
 
-function renderPracticeResult(mastered, skipped, total, timeTaken, set) {
+function renderPracticeResult(mastered, skipped, total, timeTaken, set, activeTimeSec) {
   const pct = Math.round(mastered / total * 100);
   const emoji = pct === 100 ? '🎉' : pct >= 70 ? '👍' : '💪';
 
@@ -429,6 +439,9 @@ function renderPracticeResult(mastered, skipped, total, timeTaken, set) {
     pct === 100 ? 'Xuất sắc! Thuộc hết rồi!' : `Hoàn thành luyện tập!`;
   document.getElementById('result-subtitle').textContent =
     `${set.name} · ${fmtTime(timeTaken)}`;
+  const elActive = document.getElementById('result-active-time');
+  if (elActive) elActive.textContent = (activeTimeSec != null && activeTimeSec < timeTaken - 5)
+    ? `⏱ Học thực: ${fmtTime(activeTimeSec)}` : '';
 
   document.getElementById('result-score-correct').textContent = mastered;
   document.getElementById('result-score-wrong').textContent = skipped;
@@ -547,6 +560,7 @@ function submitQuiz(autoSubmit) {
   _quiz.timerInterval = null;
   _quizInProgress = false;
   const timeTaken = Math.round((Date.now() - _quiz.startTime) / 1000);
+  const activeTimeSec = _quiz.activityTracker ? _quiz.activityTracker.stop() : null;
   const q = _quiz;
   let score = 0;
   q.set.questions.forEach((question, i) => {
@@ -564,6 +578,7 @@ function submitQuiz(autoSubmit) {
     score,
     total: q.set.questions.length,
     timeTaken,
+    activeTimeSec,
     date: Date.now(),
     mode: 'exam',
     answers: q.answers.slice(),
@@ -583,7 +598,7 @@ function submitQuiz(autoSubmit) {
   });
   Object.keys(_sk).forEach(t => appendSkillLog(t, _today, _sk[t], _skW[t]));
   if (answered > 0) appendTopicLog(q.set.name, _today, score, answered - score);
-  renderResult(entry, q.set);
+  renderResult(entry, q.set, activeTimeSec);
   showScreen('screen-result');
 }
 
@@ -601,7 +616,11 @@ function toggleQuizMode() {
 }
 
 function exitQuiz() {
-  const goBack = () => { clearInterval(_quiz && _quiz.timerInterval); _quizInProgress = false; _quiz = null; navTo('library'); };
+  const goBack = () => {
+    clearInterval(_quiz && _quiz.timerInterval);
+    if (_quiz && _quiz.activityTracker) _quiz.activityTracker.stop();
+    _quizInProgress = false; _quiz = null; navTo('library');
+  };
   if (!_quizInProgress) { goBack(); return; }
 
   const isPractice = !!(_quiz && _quiz.pQueue);
