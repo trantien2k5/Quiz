@@ -477,13 +477,6 @@ function renderAiUsage() {
       ${logRows}
     </div>`;
 }
-function confirmClearAiUsage() {
-  confirm('Xoá lịch sử sử dụng AI', 'Toàn bộ log token/chi phí sẽ bị xoá. Bộ đề đã tạo KHÔNG bị ảnh hưởng.', () => {
-    clearAiUsageLog();
-    renderAiUsage();
-    toast('Đã xoá lịch sử sử dụng AI', 'success');
-  });
-}
 
 /* ===== PHÂN TÍCH LỘ TRÌNH HỌC (1 lần gọi, dùng report .txt đã tóm tắt sẵn — tiết kiệm token) ===== */
 function renderAiAnalysisBody(cached) {

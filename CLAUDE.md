@@ -173,7 +173,6 @@ addHistoryEntry(entry)       // prepend, giữ max 500
 getBestScore(setId)          // → pct | null
 getAiConfig() / saveAiConfig(cfg)        // API key, model, tỷ giá
 getAiUsageLog() / logAiUsage(entry)      // prepend, giữ max 500
-clearAiUsageLog()
 getAiAnalysis() / saveAiAnalysis(data)   // cache phân tích lộ trình học gần nhất
 ```
 

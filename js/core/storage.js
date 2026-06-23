@@ -116,10 +116,6 @@ function logAiUsage(entry) {
   if (log.length > 500) log.splice(500);
   localStorage.setItem('quiz_ai_usage_log', JSON.stringify(log));
 }
-function clearAiUsageLog() {
-  localStorage.removeItem('quiz_ai_usage_log');
-}
-
 /* ===== AI ANALYSIS (kết quả phân tích lộ trình học gần nhất, cache để khỏi gọi API lại) ===== */
 function getAiAnalysis() {
   try { return JSON.parse(localStorage.getItem('quiz_ai_last_analysis') || 'null'); } catch { return null; }
