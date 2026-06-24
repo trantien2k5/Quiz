@@ -20,11 +20,11 @@
 /* Toast enter */
 @keyframes toast-in {
   from {
-    transform: translateY(100%) translateX(-50%);
+    transform: translateY(0.75rem) scale(0.9);
     opacity: 0;
   }
   to {
-    transform: translateY(0) translateX(-50%);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
@@ -32,7 +32,7 @@
 /* Toast exit */
 @keyframes toastOut {
   to {
-    transform: translateY(100%) translateX(-50%);
+    transform: translateY(0.5rem) scale(0.92);
     opacity: 0;
   }
 }

@@ -216,8 +216,8 @@ function buildQuizQuestion(question, i) {
   const pLPct = isPractice ? Math.round((_quiz.pL[qIdx] ?? 0.3) * 100) : 0;
   const streakDots = isPractice
     ? (isMastered
-        ? `<span class="practice-badge mastered">✅ Đã thuộc</span>`
-        : `<span class="practice-badge ${pLPct < 50 ? 'wrong-hint' : 'progress-hint'}">📊 ${pLPct}%</span>`)
+        ? `<span class="practice-badge mastered" title="Đã đạt ngưỡng thuộc bài">✅ Đã thuộc</span>`
+        : `<span class="practice-badge ${pLPct < 50 ? 'wrong-hint' : 'progress-hint'}" title="Mức độ thuộc câu này — cần đạt 90% để được tính là đã thuộc">🧠 Đã thuộc ${pLPct}%</span>`)
     : '';
 
   const numLabel = isPractice ? '' : `Câu ${i + 1}`;

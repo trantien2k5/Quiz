@@ -365,6 +365,34 @@ startQuiz(set, settings)   // bắt đầu quiz với settings {shuffleQ, shuffl
 - Button base: `.btn` + modifier `.btn-primary / -secondary / -danger / -outline / -sm / -full`
 - Ripple effect tự động qua class `.btn`
 - Breakpoint: 37.5rem = 600px (hard-code vì CSS vars không dùng được trong @media)
+- Breakpoint PC riêng: 48rem = 768px (đổi nav→sidebar, mobile-first) và 64rem = 1024px (`.quiz-side-map` lúc làm bài) — xem "PC RESPONSIVE" dưới
+
+---
+
+## PC RESPONSIVE (v107+, mobile-first — KHÔNG dùng position để căn layout, ưu tiên CSS Grid + clamp())
+
+**Kiến trúc:** `#bottom-nav` và `#app` đều là con trực tiếp của `<body>` (xem index.html) — từ `48rem` (768px), `body` trở thành **CSS Grid 2 cột** (`css/layout/shell.css`): `grid-template-columns: clamp(13rem,13vw,15rem) minmax(0,1fr)`. `#bottom-nav` tự nhiên là cột 1 (sidebar), `#app` là cột 2 (main content, co giãn `1fr` — KHÔNG width cố định). Toàn grid giới hạn `max-width:100rem` (1600px, tránh quá dãn ở 2K/4K) + `margin:0 auto` canh giữa. `gap:0`, KHÔNG có padding ngoài — edge-to-edge thật (kiểu Discord/Notion/Slack, user yêu cầu bỏ "đệm trắng khung bao ngoài cùng"), `#app`/`#bottom-nav` không bo góc/đổ bóng nữa (chạm sát viền `body` nên bo góc sẽ lộ góc trắng). Phân tách sidebar/content chỉ bằng `border-right` ở `#bottom-nav` (nav.css), không dùng shadow.
+
+`#update-banner` là `position:fixed` → tự thoát khỏi grid (không tính là 1 trong 2 cột), không ảnh hưởng layout.
+
+**Khi nav bị ẩn** (quiz/editor/dán văn bản/kết quả — mảng `noNav` trong `showScreen()`, js/core/app.js): `body:has(#screen-quiz.active)` (+ 3 screen khác) đổi `grid-template-columns: minmax(0,1fr)` để cột sidebar KHÔNG để trống (track grid vẫn chiếm chỗ dù item display:none, phải tự đổi số cột bằng `:has()`, không sửa JS).
+
+`#bottom-nav` ở breakpoint này: `position:static` (không còn fixed/calc), `flex-direction:column`, `.nav-item` đổi row, `justify-content:flex-start` (KHÔNG dùng `center` — đã thử, dồn hết item vào giữa sidebar trông trống/xấu, user phản hồi sửa lại). `.nav-item.active` có vạch nhấn trái (`::before`, kiểu Linear/Notion) + `font-weight:bold`; `.nav-item:not(.active):hover` có nền nhạt — sidebar PC cần hover state riêng (mobile không cần vì là tap).
+
+**`.quiz-side-map`** (bảng câu hỏi lúc làm bài) — KHÔNG dùng `position:fixed` nữa: từ `64rem` (1024px, đủ chỗ cho cả 2 sidebar), `#screen-quiz.active` (⚠️ phải có `.active`, không chỉ `#screen-quiz`, nếu không ID-selector sẽ đè cơ chế ẩn/hiện của `.active`) tự thành Grid riêng (`minmax(0,1fr) 16rem`), các con stack theo `grid-row` cố định 1-6 (đặt cố định, KHÔNG để auto-placement — vì `#quiz-practice-hud` có thể `display:none`, auto-placement sẽ làm các dòng sau bị lệch track `1fr` dành cho `.scroll-content`), `.quiz-side-map` span `grid-row:1/-1` cột 2.
+
+`#toast-container` ở breakpoint này dùng `bottom:var(--space-4)` (KHÔNG còn cộng thêm padding của body vì body không còn padding).
+
+**Grid nội dung** dùng `repeat(auto-fit, minmax(...))` (KHÔNG cố định số cột — tự co giãn theo độ rộng thật, ít breakpoint hơn):
+- `.stats-row` (Trang chủ — 3 thẻ thống kê), `minmax(6.25rem,1fr)`, `css/pages/home.css`
+- `#home-recent-sets` (Trang chủ — đề gần đây), `minmax(17.5rem,1fr)`, cùng file
+- `.set-list` (Luyện đề — `#library-set-list`), `minmax(17.5rem,1fr)`, `css/components/card.css`
+
+`.home-ai-cta` (nút "Tạo đề bằng AI") chỉ full-width ở mobile (`.btn-full`), từ `48rem` co về `width:auto;min-width:16rem;max-width:22rem` (1 hành động không cần chiếm cả hàng).
+
+`#screen-settings` (Cài đặt) — mỗi nhóm (label + `.settings-card`) bọc trong `.settings-group`, tất cả nằm trong `.settings-grid` (`css/components/settings-row.css`) dùng `auto-fit` giống Trang chủ/Luyện đề. Thêm nhóm settings mới: chỉ cần thêm 1 `.settings-group` trong `.settings-grid`, KHÔNG cần sửa CSS.
+
+CHƯA làm: Thống kê (History)/Editor — chưa có layout multi-column riêng cho PC như Trang chủ/Luyện đề/Quiz/Cài đặt.
 
 ---
 
@@ -453,6 +481,8 @@ startQuiz(set, settings)   // bắt đầu quiz với settings {shuffleQ, shuffl
 - Mỗi câu parse ra đều có `_error` (null nếu hợp lệ) — set tự validate lại mỗi lần user sửa trực tiếp trong preview card (`updateImportQuestion`/`updateImportOption`), không cần parse lại từ đầu
 - Dùng chung `_appendToSetId` (global khai báo ở `ai.js`) và `applyAIQuestions()` để tạo/thêm set — KHÔNG viết lại logic tạo set riêng
 - Preview card tái dùng `.question-card`/`.option-row` từ `css/pages/editor.css`, chỉ thêm class `.has-error` (viền đỏ) — style mới nằm ở `css/pages/import.css`
+- `_ICON_PREFIX_RE` lọc icon/emoji đầu dòng (✅💡📘...) CHỈ dùng để test nhãn (`_ANS_RE`/`_EXP_RE`/`_ANS_TEXT_RE`) — nội dung lưu lại (`explanation`/`text`) luôn dùng `rawLine` gốc còn icon, giữ định dạng AI-style (📘 Công thức/📝 Ví dụ/🎯 Ghi nhớ) không bị khô khan
+- `suggestImportSetName()` — nút ✨ cạnh `#import-set-name` (chỉ hiện ở bước preview), gửi tối đa 15 câu hỏi đã nhận diện cho AI, parse JSON 3 tên gợi ý → render `.ai-chip` ở `#import-name-suggestions`, bấm chip điền vào input. Log usage `type:'naming'` (thêm field mới ngoài `'generate'|'analysis'`, `renderAiUsage()` đã xử lý hiển thị riêng)
 
 **Tab Cài đặt:**
 - `screen-settings` gom cấu hình/quản lý dữ liệu rải rác (AI config/usage, import/export, xoá data) về 1 chỗ — modal/hàm gốc giữ nguyên, chỉ là entry point mới. "Phân tích AI" + "Xuất báo cáo" CỐ Ý giữ ở tab Thống kê (gắn dữ liệu học tập)

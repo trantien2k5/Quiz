@@ -7,10 +7,54 @@
 #app,
 .app {
   position: relative;
+  width: 100%;
   height: 100%;
   overflow: hidden;
   max-width: var(--max-w);
   margin: 0 auto;
+}
+
+/* Tablet/Desktop (≥48rem = 768px): layout dạng "app thật" — sidebar (#bottom-nav)
+   + main content (#app) đặt cạnh nhau bằng CSS Grid (KHÔNG dùng position để
+   căn layout). #bottom-nav/#app vốn đã là con trực tiếp của <body> nên không
+   cần đổi HTML — chỉ cần body làm grid container.
+   Main content co giãn theo `minmax(0,1fr)` (không width cố định), toàn khung
+   giới hạn 100rem (1600px) để không quá dãn trên màn 2K/4K, padding/gap dùng
+   clamp() để tự giãn theo viewport thay vì cố định 1 giá trị. */
+@media (min-width: 48rem) {
+  body {
+    display: grid;
+    grid-template-columns: clamp(11.25rem, 11vw, 13rem) minmax(0, 1fr);
+    gap: 0;
+    max-width: 100rem;
+    height: 100vh;
+    margin: 0 auto;
+  }
+
+  /* Đang ở screen ẩn nav (quiz/editor/dán văn bản/kết quả) → sidebar collapse,
+     main content chiếm full chiều ngang thay vì để trống 1 cột rỗng */
+  body:has(#screen-quiz.active),
+  body:has(#screen-editor.active),
+  body:has(#screen-import-text.active),
+  body:has(#screen-result.active) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Edge-to-edge thật (kiểu Discord/Notion/Slack) — bỏ bo góc/đổ bóng vì sidebar
+     và content giờ chạm sát viền body, không còn "nổi" như card nữa
+     (#bottom-nav tự đổi viền/bo góc ở css/layout/nav.css — tránh 2 file ghi đè nhau) */
+  #app,
+  .app {
+    max-width: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  /* Nav đã ra sidebar riêng, không còn nằm dưới đáy #app — bỏ khoảng chừa chỗ cho nav-h,
+     đồng thời tăng padding nội dung cho cân đối hơn so với mobile (16px) */
+  .scroll-content {
+    padding: clamp(1rem, 1.5vw, 1.5rem);
+  }
 }
 
 /*

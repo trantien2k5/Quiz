@@ -79,11 +79,14 @@ function toast(msg, type) {
   const container = document.getElementById('toast-container');
   const t = document.createElement('div');
   t.className = 'toast' + (type === 'success' ? ' toast-success' : type === 'error' ? ' toast-error' : '');
-  t.textContent = msg;
+  const icon = type === 'success' ? '✅' : type === 'error' ? '⚠️' : 'ℹ️';
+  t.innerHTML = '<span class="toast-icon"></span><span class="toast-msg"></span>';
+  t.querySelector('.toast-icon').textContent = icon;
+  t.querySelector('.toast-msg').textContent = msg;
   container.appendChild(t);
   setTimeout(() => {
-    t.style.animation = 'toastOut 0.3s ease forwards';
-    setTimeout(() => t.remove(), 300);
+    t.style.animation = 'toastOut 0.25s cubic-bezier(0.4, 0, 1, 1) forwards';
+    setTimeout(() => t.remove(), 250);
   }, 2800);
 }
 

@@ -40,6 +40,20 @@
   flex-shrink: 0;
 }
 
+/* Tablet/Desktop: header rộng ngang nhưng chỉ có 1 title → tăng kích thước cho cân đối,
+   tránh cảm giác trống (KHÔNG thêm search/avatar giả — app chưa có tìm kiếm/tài khoản thật) */
+@media (min-width: 48rem) {
+  .top-bar {
+    height: 4.5rem;
+    padding: 0 clamp(1rem, 1.5vw, 1.5rem);
+  }
+
+  .top-bar__title,
+  .top-bar h1 {
+    font-size: var(--text-4xl);
+  }
+}
+
 /* ===== BOTTOM NAV ===== */
 /* #bottom-nav — ID kept for JS targeting */
 #bottom-nav,
@@ -85,4 +99,102 @@
 
 .nav-item:active {
   transform: scale(0.88);
+}
+
+/* ===== Tablet/Desktop (≥48rem): sidebar trái thay cho bottom-nav =====
+   #bottom-nav vốn là con trực tiếp của <body> (xem index.html) — khi body
+   chuyển thành Grid (css/layout/shell.css) thì #bottom-nav tự nhiên trở
+   thành cột đầu, KHÔNG cần position:fixed/calc nữa (đúng yêu cầu "không
+   dùng position để căn layout"). Width co theo viewport qua clamp() ở
+   shell.css (grid-template-columns), ở đây chỉ đổi hướng layout nội dung. */
+.sidebar-brand { display: none; }
+.nav-divider { display: none; }
+
+@media (min-width: 48rem) {
+  #bottom-nav,
+  .bottom-nav {
+    position: static;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    padding: var(--space-2);
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 0.1875rem;
+    border-top: none;
+    border-right: 1px solid var(--color-border);
+    border-radius: 0;
+    box-shadow: none;
+    background: var(--color-bg);
+    transform: none;
+  }
+
+  /* Logo/tên app — điểm neo trực quan đầu sidebar, dùng tên app thật (không phải feature giả) */
+  .sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-2) var(--space-3);
+    margin-bottom: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .sidebar-brand-icon {
+    font-size: 1.375rem;
+    line-height: 1;
+  }
+
+  .sidebar-brand-text {
+    font-size: var(--text-lg);
+    font-weight: var(--fw-bold);
+    color: var(--color-text);
+  }
+
+  .nav-item {
+    flex: 0 0 auto;
+    flex-direction: row;
+    justify-content: flex-start;
+    min-height: auto;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+    font-weight: var(--fw-medium);
+    transition: background var(--transition-fast), color var(--transition-fast);
+  }
+
+  /* Hover (chỉ item chưa active — tránh đè màu nền active) */
+  .nav-item:not(.active):hover {
+    background: var(--color-surface);
+    color: var(--color-text);
+  }
+
+  /* Chia khối: "Cài đặt" (cấu hình/utility) khác nhóm với 3 tab nội dung chính
+     (Trang chủ/Luyện đề/Thống kê) — đẩy xuống đáy sidebar bằng .nav-divider,
+     pattern phổ biến ở app hiện đại (nav chính trên, settings dưới) */
+  .nav-divider {
+    display: block;
+    flex-shrink: 0;
+    margin: auto var(--space-2) var(--space-2);
+    border-top: 1px solid var(--color-border);
+  }
+
+  /* Active: nền đặc màu brand kiểu "filled pill" (Vercel/Spotify) — rõ ràng, không cần thêm vạch/viền phụ */
+  .nav-item.active {
+    background: var(--color-brand);
+    color: #fff;
+    font-weight: var(--fw-bold);
+  }
+
+  .nav-item svg {
+    width: 1.125rem;
+    height: 1.125rem;
+    flex-shrink: 0;
+  }
+
+  /* Hiệu ứng scale ở base rule dành cho tap mobile — PC dùng chuột nên bỏ */
+  .nav-item:active {
+    transform: none;
+  }
 }

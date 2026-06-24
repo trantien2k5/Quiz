@@ -551,8 +551,8 @@ function renderAiUsage() {
 
   const logRows = log.slice(0, 50).map(e => `
     <div class="hst-set-brow">
-      <span class="hst-set-name">${e.type === 'analysis' ? '🤖 Phân tích lộ trình' : esc(e.topic || e.setName || '—')}</span>
-      <span class="hst-set-col" style="color:var(--color-text-muted)">${e.type === 'analysis' ? '—' : (e.questionsGenerated || 0) + 'c'}</span>
+      <span class="hst-set-name">${e.type === 'analysis' ? '🤖 Phân tích lộ trình' : e.type === 'naming' ? '✨ Gợi ý tên đề' : esc(e.topic || e.setName || '—')}</span>
+      <span class="hst-set-col" style="color:var(--color-text-muted)">${e.type === 'analysis' || e.type === 'naming' ? '—' : (e.questionsGenerated || 0) + 'c'}</span>
       <span class="hst-set-col">${(e.totalTokens || 0).toLocaleString('vi-VN')}</span>
       <span class="hst-set-col">$${(e.costUSD || 0).toFixed(4)}</span>
     </div>`).join('');

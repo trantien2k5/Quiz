@@ -279,7 +279,7 @@
 .qnav-next { flex: 1; }
 
 /* Sidebar desktop (.quiz-side-map) đã thay chức năng nút này — ẩn để tránh trùng UI */
-@media (min-width: 80rem) {
+@media (min-width: 64rem) {
   .qnav-map-btn { display: none; }
 }
 
@@ -353,20 +353,35 @@
 .qmap-dot.unanswered { border: 1.5px solid var(--color-border); background: var(--color-bg); }
 
 /* ===== DESKTOP SIDE MAP ===== */
-/* Desktop sidebar breakpoint: 80rem = 1280px (đủ chỗ bên cạnh .app max-width 42.5rem mà không đè nội dung) */
+/* Laptop+ (64rem = 1024px, đủ rộng cho sidebar nav trái + content + map phải cùng lúc):
+   #screen-quiz tự làm Grid riêng (main content cột 1, map cột 2 span hết chiều cao) —
+   KHÔNG dùng position:fixed/calc nữa, .quiz-side-map nằm trong luồng DOM bình thường
+   của #screen-quiz nên không cần tính toán lệch theo #app/body. */
 .quiz-side-map { display: none; }
 
-@media (min-width: 80rem) {
+@media (min-width: 64rem) {
+  /* .active (không phải chỉ #screen-quiz) để không đè lên cơ chế ẩn/hiện màn hình của section.active */
+  #screen-quiz.active {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 16rem;
+    grid-template-rows: auto auto auto auto 1fr auto;
+    column-gap: var(--space-4);
+  }
+
+  #screen-quiz > .top-bar           { grid-column: 1; grid-row: 1; }
+  #screen-quiz > .quiz-progress-bar { grid-column: 1; grid-row: 2; }
+  #screen-quiz > .quiz-header       { grid-column: 1; grid-row: 3; }
+  #screen-quiz > #quiz-practice-hud { grid-column: 1; grid-row: 4; }
+  #screen-quiz > .scroll-content    { grid-column: 1; grid-row: 5; }
+  #screen-quiz > #quiz-nav          { grid-column: 1; grid-row: 6; }
+
   .quiz-side-map {
-    position: fixed;
-    top: var(--top-h);
-    bottom: 0;
-    left: calc(50% + (var(--max-w) / 2) + 1.5rem);
-    z-index: var(--z-sub);
     display: flex;
+    grid-column: 2;
+    grid-row: 1 / -1;
     flex-direction: column;
     gap: var(--space-3);
-    width: 16rem;
+    width: auto;
     padding: var(--space-4);
     border-left: 1px solid var(--color-border);
     background: var(--color-surface);

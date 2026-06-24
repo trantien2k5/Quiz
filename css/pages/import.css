@@ -96,3 +96,12 @@
   background: var(--color-success);
   color: #fff;
 }
+
+.import-name-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.import-name-row .form-control { flex: 1; }

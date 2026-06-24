@@ -61,3 +61,24 @@ button.settings-row:active {
   height: 1.125rem;
   color: var(--color-text-light);
 }
+
+/* Tablet/Desktop: mỗi nhóm cài đặt (label + card) thành 1 block độc lập.
+   Dùng CSS Multi-column (KHÔNG dùng Grid) — các khối cao/thấp khác nhau rõ (Hành trình học
+   ngắn, Trí tuệ AI dài...) nên Grid ghép hàng-cột đều sẽ cứng nhắc/lệch. Multi-column để
+   browser tự "chảy" khối theo chiều cao thật, tự nhiên hơn (kiểu macOS System Settings),
+   tự đổi số cột theo độ rộng qua column-width — không cần thêm breakpoint. */
+@media (min-width: 48rem) {
+  .settings-grid {
+    column-width: 26rem;
+    column-gap: var(--space-4);
+  }
+
+  .settings-group {
+    break-inside: avoid;
+    margin-bottom: var(--space-4);
+  }
+
+  .settings-group .settings-card {
+    margin-bottom: 0;
+  }
+}

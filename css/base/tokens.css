@@ -86,7 +86,7 @@
   /* ── Layout ── */
   --nav-h:   var(--space-16);  /* 4rem / 64px */
   --top-h:   var(--space-14);  /* 3.5rem / 56px */
-  --max-w:   42.5rem;          /* 680px */
+  --max-w:   42.5rem;          /* 680px — chiều rộng đọc tối ưu mobile, vẫn dùng cho .modal-sheet ở mobile */
 
   /* ── Z-index scale ── */
   --z-base:    0;

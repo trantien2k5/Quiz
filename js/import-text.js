@@ -105,6 +105,9 @@ const _ANS_RE = /^(?:Đáp\s*án(?:\s*đúng)?|ĐA|Answer)\s*[:.\-]?\s*([A-Da-d]
 const _ANS_TEXT_RE = /^(?:Đáp\s*án(?:\s*đúng)?|ĐA|Answer)\s*[:.\-]?\s*(.+)$/i;
 const _EXP_RE = /^(?:Giải\s*thích|Explanation)\s*[:.\-]?\s*(.*)$/i;
 const _QHEAD_RE = /^\s*(?:Câu|Cau|Question)?\s*\d+\s*[:.\)]?\s*(.*)$/i;
+/* Icon/emoji đầu dòng (✅💡📘📝🎯⚠️...) — chỉ dùng để NHẬN DIỆN nhãn, không xoá khỏi nội dung lưu lại
+   (giữ icon trong câu hỏi/giải thích cho đỡ khô khan, vd "📘 Công thức", "🎯 Ghi nhớ") */
+const _ICON_PREFIX_RE = /^[←-➿⬀-⯿\u{1F300}-\u{1FAFF}️\s]+/u;
 
 function parseOneQuestionBlock(block) {
   // Bỏ markdown bold (**text**) trước — nhãn "Đáp án"/"Giải thích" thường bị in đậm
@@ -119,14 +122,16 @@ function parseOneQuestionBlock(block) {
   let explanation = '';
   let mode = 'question'; // 'question' | 'options' | 'explanation'
 
-  lines.forEach(line => {
+  lines.forEach(rawLine => {
+    const line = rawLine.replace(_ICON_PREFIX_RE, ''); // bản bỏ icon, chỉ để test nhãn
+
     const ansMatch = line.match(_ANS_RE);
     if (ansMatch) { correct = ansMatch[1].toUpperCase().charCodeAt(0) - 65; mode = 'explanation'; return; }
 
     const expMatch = line.match(_EXP_RE);
     if (expMatch) { explanation = expMatch[1] || ''; mode = 'explanation'; return; }
 
-    if (mode === 'explanation') { explanation += (explanation ? '\n' : '') + line; return; }
+    if (mode === 'explanation') { explanation += (explanation ? '\n' : '') + rawLine; return; }
 
     const optMatch = line.match(_OPT_RE);
     if (optMatch) {
@@ -139,13 +144,14 @@ function parseOneQuestionBlock(block) {
     if (mode === 'question') {
       const headMatch = line.match(_QHEAD_RE);
       if (headMatch) { if (headMatch[1]) text += (text ? ' ' : '') + headMatch[1]; }
-      else { text += (text ? ' ' : '') + line; }
+      else { text += (text ? ' ' : '') + rawLine; }
     }
   });
 
   // Fallback: "Đáp án: <nội dung đầy đủ>" thay vì chữ cái → đối chiếu với các đáp án đã nhận diện
   if (correct === null) {
-    for (const line of lines) {
+    for (const rawLine of lines) {
+      const line = rawLine.replace(_ICON_PREFIX_RE, '');
       const m = line.match(_ANS_TEXT_RE);
       if (m) {
         const val = m[1].trim().toLowerCase();
@@ -253,6 +259,80 @@ function updateImportOption(id, idx, value) {
 function removeImportQuestion(id) {
   _importQuestions = _importQuestions.filter(q => q.id !== id);
   renderImportPreview();
+}
+
+/* AI đọc nội dung câu hỏi đã nhận diện → gợi ý 3 tên bộ đề ngắn gọn */
+async function suggestImportSetName() {
+  const valid = _importQuestions.filter(q => !q._error);
+  if (!valid.length) { toast('Chưa có câu hợp lệ để gợi ý tên', 'error'); return; }
+
+  const cfg = getAiConfig();
+  if (!cfg.apiKey) { toast('Vui lòng nhập API key trong Cấu hình AI', 'error'); showAiConfig(); return; }
+
+  const btn = document.getElementById('import-suggest-name-btn');
+  const origHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.textContent = '⏳';
+
+  try {
+    const sample = valid.slice(0, 15).map(q => q.text).join('\n');
+    const model = cfg.model || 'gpt-4o-mini';
+    const prompt = `Dưới đây là nội dung ${valid.length} câu hỏi trắc nghiệm của một bộ đề:
+
+${sample}
+
+Dựa vào nội dung trên, hãy gợi ý ĐÚNG 3 tên ngắn gọn (tối đa 6 từ, tiếng Việt, không đánh số thứ tự) phù hợp để đặt cho bộ đề này. Trả về CHÍNH XÁC theo format JSON array, không thêm chữ nào khác: ["tên 1","tên 2","tên 3"]`;
+
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.apiKey },
+      body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], max_tokens: 120 })
+    });
+
+    if (!res.ok) {
+      if (res.status === 401) toast('API key không hợp lệ', 'error');
+      else if (res.status === 429) toast('Hết quota hoặc bị giới hạn tốc độ (429)', 'error');
+      else toast(`Lỗi API (${res.status})`, 'error');
+      return;
+    }
+
+    const json = await res.json();
+    const rawText = json.choices?.[0]?.message?.content || '';
+    let names = [];
+    try { names = JSON.parse(rawText.match(/\[[\s\S]*\]/)?.[0] || '[]'); } catch { names = []; }
+    names = names.filter(n => typeof n === 'string' && n.trim()).map(n => n.trim()).slice(0, 3);
+    if (!names.length) { toast('AI không trả về gợi ý hợp lệ', 'error'); return; }
+
+    const usage = json.usage || {};
+    const promptTokens = usage.prompt_tokens || 0;
+    const completionTokens = usage.completion_tokens || 0;
+    const { usd, vnd } = calcAiCost(model, promptTokens, completionTokens, cfg.fxRate);
+    logAiUsage({
+      id: uid(), date: Date.now(), model, type: 'naming',
+      questionsRequested: 0, questionsGenerated: 0,
+      promptTokens, completionTokens, totalTokens: promptTokens + completionTokens,
+      costUSD: usd, costVND: vnd
+    });
+
+    renderImportNameSuggestions(names);
+    toast(`✅ Đã gợi ý tên — $${usd.toFixed(4)}`, 'success');
+  } catch (err) {
+    toast('Lỗi kết nối — kiểm tra mạng/API key', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = origHtml;
+  }
+}
+
+function renderImportNameSuggestions(names) {
+  const el = document.getElementById('import-name-suggestions');
+  el.innerHTML = names.map(n => `<button type="button" class="ai-chip" onclick="pickImportSetName(this)">${esc(n)}</button>`).join('');
+  el.classList.remove('hidden');
+}
+
+function pickImportSetName(btn) {
+  document.getElementById('import-set-name').value = btn.textContent;
+  document.getElementById('import-name-suggestions').classList.add('hidden');
 }
 
 function commitImportText() {

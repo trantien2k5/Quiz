@@ -1301,11 +1301,19 @@ function renderHistoryReport() {
     el.innerHTML = `<div class="empty-state"><div class="empty-icon">🧾</div><h3>Chưa có dữ liệu</h3><p>Làm bài thi để xuất báo cáo</p></div>`;
     return;
   }
+  const reportJson = _buildExportJson(history, getSets(), getQuestionStats(), getSkillLog(), getTopicLog());
+  const reportTxt = _buildReportTxt(reportJson);
+
   el.innerHTML = `
     <div class="hst-chart-card">
-      <button class="btn btn-primary btn-full" style="margin-bottom:8px" onclick="exportPersonalizationData()">📤 Xuất báo cáo học tập (.txt)</button>
+      <button class="btn btn-primary btn-full" style="margin-bottom:8px" onclick="analyzeStudyReport()">🤖 Phân tích AI</button>
+      <button class="btn btn-outline btn-full" style="margin-bottom:8px" onclick="exportPersonalizationData()">📤 Xuất báo cáo học tập (.txt)</button>
       <button class="btn btn-outline btn-full" style="margin-bottom:8px" onclick="shareHistoryReport()">📲 Chia sẻ</button>
       <button class="btn btn-outline btn-full" onclick="window.print()">🖨️ In</button>
+    </div>
+    <div class="hst-chart-card">
+      <div class="hst-chart-title">Xem nhanh báo cáo</div>
+      <div style="white-space:pre-wrap;font-size:12px;line-height:1.5;max-height:50vh;overflow-y:auto;font-family:monospace">${esc(reportTxt)}</div>
     </div>
     <div class="hst-chart-card">
       ${devRow('Báo cáo ngày')}

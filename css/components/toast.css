@@ -17,16 +17,39 @@
   transform: translateX(-50%);
 }
 
+/* Tablet/Desktop: nav đã ra sidebar (css/layout/nav.css), #app phủ full viewport
+   (body grid không còn padding — edge-to-edge) nên chỉ cần thay var(--nav-h) bằng khoảng cách thường */
+@media (min-width: 48rem) {
+  .toast-container,
+  #toast-container {
+    bottom: var(--space-4);
+  }
+}
+
 .toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   padding: 0.75rem var(--space-4);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   background: #1E293B;
   font-size: var(--text-md);
   font-weight: var(--fw-medium);
   color: #fff;
-  text-align: center;
-  box-shadow: var(--shadow-md);
-  animation: toast-in var(--transition-medium);
+  text-align: left;
+  box-shadow: 0 0.625rem 1.75rem -0.375rem rgba(0, 0, 0, 0.35), var(--shadow-md);
+  animation: toast-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: auto;
+}
+
+.toast-icon {
+  flex-shrink: 0;
+  font-size: 1.1em;
+  line-height: 1;
+}
+
+.toast-msg {
+  flex: 1;
 }
 
 .toast--success { background: var(--color-success); }

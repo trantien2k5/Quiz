@@ -53,6 +53,10 @@
   <button onclick="reloadApp()">Tải lại</button>
 </div>
 <nav id="bottom-nav">
+  <div class="sidebar-brand">
+    <span class="sidebar-brand-icon">📝</span>
+    <span class="sidebar-brand-text">Quiz App</span>
+  </div>
   <button class="nav-item active" data-nav="home" onclick="navTo('home')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     Trang chủ
@@ -65,6 +69,7 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
     Thống kê
   </button>
+  <div class="nav-divider"></div>
   <button class="nav-item" data-nav="settings" onclick="navTo('settings')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 008.91 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
     Cài đặt
@@ -80,7 +85,7 @@
     <div class="scroll-content">
       <div id="home-streak" class="home-streak-banner"></div>
       <div id="home-stats" class="stats-row"></div>
-      <button class="btn btn-primary btn-full mb-4" onclick="showAICreate()">
+      <button class="btn btn-primary btn-full home-ai-cta mb-4" onclick="showAICreate()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
         Tạo đề bằng AI
       </button>
@@ -223,7 +228,11 @@ Giải thích: ...</pre>
       </div>
     </div>
     <div class="editor-save-bar hidden" id="import-text-save-bar">
-      <input type="text" id="import-set-name" class="form-control" placeholder="Tên bộ đề (để trống sẽ tự đặt tên)..." style="margin-bottom:10px">
+      <div id="import-name-row" class="import-name-row">
+        <input type="text" id="import-set-name" class="form-control" placeholder="Tên bộ đề (để trống sẽ tự đặt tên)...">
+        <button class="btn-icon" id="import-suggest-name-btn" onclick="suggestImportSetName()" title="Nhờ AI gợi ý tên bộ đề">✨</button>
+      </div>
+      <div id="import-name-suggestions" class="ai-suggestions hidden"></div>
       <button class="btn btn-primary btn-full" id="import-commit-btn" onclick="commitImportText()">
         <span id="import-commit-label">Tạo đề</span> (<span id="import-commit-count">0</span> câu hợp lệ)
       </button>
@@ -236,79 +245,93 @@ Giải thích: ...</pre>
       <h1>⚙️ Cài đặt</h1>
     </div>
     <div class="scroll-content">
-      <div class="section-label">Hành trình học</div>
-      <div class="settings-card">
-        <button class="settings-row" onclick="showChapterManager()">
-          <div class="settings-row-info">
-            <div class="settings-row-label">🗺 Quản lý Chapter</div>
-            <div class="settings-row-desc">Nhóm bộ đề thành hành trình học có thứ tự</div>
+      <div class="settings-grid">
+        <div class="settings-group">
+          <div class="section-label">Hành trình học</div>
+          <div class="settings-card">
+            <button class="settings-row" onclick="showChapterManager()">
+              <div class="settings-row-info">
+                <div class="settings-row-label">🗺 Quản lý Chapter</div>
+                <div class="settings-row-desc">Nhóm bộ đề thành hành trình học có thứ tự</div>
+              </div>
+              <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
           </div>
-          <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-      </div>
-
-      <div class="section-label" style="margin-top:1.25rem">Trí tuệ nhân tạo (AI)</div>
-      <div class="settings-card">
-        <button class="settings-row" onclick="showAiConfig()">
-          <div class="settings-row-info">
-            <div class="settings-row-label">🔑 Cấu hình AI</div>
-            <div class="settings-row-desc">API key, model, tỷ giá quy đổi</div>
-          </div>
-          <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-        <button class="settings-row" onclick="showAiUsage()">
-          <div class="settings-row-info">
-            <div class="settings-row-label">📊 Thống kê sử dụng AI</div>
-            <div class="settings-row-desc">Token đã dùng, chi phí ước tính</div>
-          </div>
-          <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-      </div>
-
-      <div class="section-label" style="margin-top:1.25rem">Dữ liệu</div>
-      <div class="settings-card">
-        <button class="settings-row" onclick="showImportModal()">
-          <div class="settings-row-info">
-            <div class="settings-row-label">📥 Nhập đề từ JSON</div>
-            <div class="settings-row-desc">Thêm bộ đề từ file đã xuất trước đó</div>
-          </div>
-          <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-        <button class="settings-row" onclick="exportAllSets()">
-          <div class="settings-row-info">
-            <div class="settings-row-label">📤 Xuất tất cả bộ đề</div>
-            <div class="settings-row-desc">Lưu toàn bộ bộ đề ra 1 file JSON</div>
-          </div>
-          <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-      </div>
-
-      <div class="section-label" style="margin-top:1.25rem">Trải nghiệm</div>
-      <div class="settings-card">
-        <div class="settings-row">
-          <div class="settings-row-info">
-            <div class="settings-row-label">🔊 Âm thanh hiệu ứng</div>
-            <div class="settings-row-desc">Tiếng khi trả lời đúng/sai, lên Level</div>
-          </div>
-          <label class="toggle">
-            <input type="checkbox" id="settings-sound-toggle" onchange="saveSoundEnabled(this.checked)">
-            <span class="toggle-slider"></span>
-          </label>
         </div>
-      </div>
 
-      <div class="section-label" style="margin-top:1.25rem">Vùng nguy hiểm</div>
-      <div class="settings-card" style="padding:0.75rem 1rem">
-        <button class="btn btn-danger btn-full" onclick="confirmClearAllData()">🗑 Xoá toàn bộ dữ liệu</button>
-      </div>
-
-      <div class="section-label" style="margin-top:1.25rem">Thông tin</div>
-      <div class="settings-card">
-        <div class="settings-row">
-          <div class="settings-row-info">
-            <div class="settings-row-label">Phiên bản</div>
+        <div class="settings-group">
+          <div class="section-label">Trí tuệ nhân tạo (AI)</div>
+          <div class="settings-card">
+            <button class="settings-row" onclick="showAiConfig()">
+              <div class="settings-row-info">
+                <div class="settings-row-label">🔑 Cấu hình AI</div>
+                <div class="settings-row-desc">API key, model, tỷ giá quy đổi</div>
+              </div>
+              <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <button class="settings-row" onclick="showAiUsage()">
+              <div class="settings-row-info">
+                <div class="settings-row-label">📊 Thống kê sử dụng AI</div>
+                <div class="settings-row-desc">Token đã dùng, chi phí ước tính</div>
+              </div>
+              <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
           </div>
-          <div id="settings-version" class="text-muted"></div>
+        </div>
+
+        <div class="settings-group">
+          <div class="section-label">Dữ liệu</div>
+          <div class="settings-card">
+            <button class="settings-row" onclick="showImportModal()">
+              <div class="settings-row-info">
+                <div class="settings-row-label">📥 Nhập đề từ JSON</div>
+                <div class="settings-row-desc">Thêm bộ đề từ file đã xuất trước đó</div>
+              </div>
+              <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <button class="settings-row" onclick="exportAllSets()">
+              <div class="settings-row-info">
+                <div class="settings-row-label">📤 Xuất tất cả bộ đề</div>
+                <div class="settings-row-desc">Lưu toàn bộ bộ đề ra 1 file JSON</div>
+              </div>
+              <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <div class="section-label">Trải nghiệm</div>
+          <div class="settings-card">
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-label">🔊 Âm thanh hiệu ứng</div>
+                <div class="settings-row-desc">Tiếng khi trả lời đúng/sai, lên Level</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="settings-sound-toggle" onchange="saveSoundEnabled(this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <div class="section-label">Vùng nguy hiểm</div>
+          <div class="settings-card" style="padding:0.75rem 1rem">
+            <button class="btn btn-danger btn-full" onclick="confirmClearAllData()">🗑 Xoá toàn bộ dữ liệu</button>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <div class="section-label">Thông tin</div>
+          <div class="settings-card">
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-label">Phiên bản</div>
+              </div>
+              <div id="settings-version" class="text-muted"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
