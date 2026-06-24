@@ -583,23 +583,29 @@ function renderQuizMap() {
   const answered = q.answers.filter(a => a !== null).length;
   const flagged = q.flagged.filter(Boolean).length;
   const statsText = `${answered}/${total} đã làm${flagged ? ' · ' + flagged + ' đánh dấu' : ''}`;
-  const gridHtml = q.set.questions.map((_, i) => {
+  const classFor = i => {
     let cls = 'qmap-btn';
     if (i === q.currentIdx && q.mode !== 'all') cls += ' current';
     else if (q.flagged[i]) cls += ' flagged';
     else if (q.answers[i] !== null) cls += ' answered';
-    return `<button class="${cls}" onclick="jumpToQuestion(${i})">${i + 1}</button>`;
-  }).join('');
+    return cls;
+  };
 
   const statsEl = document.getElementById('qmap-stats');
   if (statsEl) statsEl.textContent = statsText;
-  const gridEl = document.getElementById('qmap-grid');
-  if (gridEl) gridEl.innerHTML = gridHtml;
-
   const statsSideEl = document.getElementById('qmap-stats-side');
   if (statsSideEl) statsSideEl.textContent = statsText;
-  const gridSideEl = document.getElementById('qmap-grid-side');
-  if (gridSideEl) gridSideEl.innerHTML = gridHtml;
+
+  // Toggle class trên nút đã có sẵn thay vì ghi lại innerHTML cả grid mỗi lần điều hướng/đánh dấu —
+  // chỉ rebuild khi số câu đổi (lần đầu hiện modal/sidebar)
+  [document.getElementById('qmap-grid'), document.getElementById('qmap-grid-side')].forEach(gridEl => {
+    if (!gridEl) return;
+    if (gridEl.children.length !== total) {
+      gridEl.innerHTML = q.set.questions.map((_, i) => `<button class="${classFor(i)}" onclick="jumpToQuestion(${i})">${i + 1}</button>`).join('');
+    } else {
+      for (let i = 0; i < total; i++) gridEl.children[i].className = classFor(i);
+    }
+  });
 }
 function jumpToQuestion(idx) {
   hideQuizMap();

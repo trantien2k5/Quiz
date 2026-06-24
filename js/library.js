@@ -37,9 +37,8 @@ function buildSetCard(set) {
 function renderLibrary() {
   const lastId = localStorage.getItem('quiz_last_set');
   const all    = getSets();
-  const sets   = lastId
-    ? [...all.filter(s => s.id === lastId), ...all.filter(s => s.id !== lastId)]
-    : all;
+  const lastIdx = lastId ? all.findIndex(s => s.id === lastId) : -1;
+  const sets    = lastIdx > 0 ? [all[lastIdx], ...all.slice(0, lastIdx), ...all.slice(lastIdx + 1)] : all;
   const container = document.getElementById('library-set-list');
   if (!sets.length) {
     container.innerHTML = `<div class="empty-state">
