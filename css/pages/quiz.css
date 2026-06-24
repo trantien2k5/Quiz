@@ -404,6 +404,57 @@
   background: var(--color-border);
 }
 
+/* ===== ĐIỆN THOẠI XOAY NGANG (KHÔNG áp dụng tablet/PC — đã có layout riêng từ 48rem) =====
+   Quay ngang khi học đỡ mỏi tay hơn (giữ máy 2 tay như chơi game) — bố cục 2 cột kiểu
+   quiz game (Kahoot...): câu hỏi bên trái, 4 đáp án dạng lưới 2x2 bên phải (luôn đúng 4
+   đáp án theo data model — xem CLAUDE.md) thay vì list dọc phải cuộn. Thu gọn header/HUD
+   để tiết kiệm chiều cao (landscape phone rất thấp). */
+@media (max-width: 47.9375rem) and (orientation: landscape) {
+  .quiz-header { padding: 0.25rem var(--space-4); }
+
+  .quiz-practice-hud { padding: 0.25rem var(--space-4); }
+  .boss-hp-row        { margin-bottom: 0.125rem; font-size: var(--text-xs); }
+  .boss-hp-bar-wrap    { height: 0.3125rem; }
+  .practice-hud-stats  { margin-top: 0.125rem; font-size: var(--text-xs); }
+  .near-finish-banner  { margin-top: 0.125rem; font-size: var(--text-xs); }
+
+  #screen-quiz .scroll-content { padding: var(--space-2) var(--space-4); }
+
+  .question-block {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: var(--space-4);
+    align-items: start;
+  }
+
+  .question-block .q-num-row { grid-column: 1; }
+  .question-block .q-text {
+    grid-column: 1;
+    margin-bottom: 0;
+    font-size: var(--text-lg);
+  }
+
+  /* feedbackHtml (đã trả lời, practice mode) thay thế options-list ở cùng vị trí — giữ cùng cột */
+  .question-block .options-list,
+  .question-block .practice-feedback {
+    grid-column: 2;
+  }
+
+  .options-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-2);
+  }
+
+  .option-btn {
+    min-height: 2.75rem;
+    padding: 0.5rem var(--space-3);
+    font-size: var(--text-md);
+  }
+
+  .quiz-nav { padding: 0.375rem var(--space-4) calc(0.375rem + env(safe-area-inset-bottom, 0)); }
+}
+
 /* ===== QUIZ SETTINGS MODAL ===== */
 .qs-mode-picker {
   display: flex;
