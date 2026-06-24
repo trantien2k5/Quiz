@@ -282,6 +282,14 @@
   background: var(--color-surface);
 }
 
+/* Practice mode không còn nội dung trong thanh nav (nút "Tiếp theo" đã nằm trong card câu hỏi) —
+   ẩn hẳn để tránh 1 dải trống + viền thừa phía dưới */
+.quiz-nav:empty {
+  display: none;
+  border-top: none;
+  padding: 0;
+}
+
 .qnav-prev,
 .qnav-next { flex: 1; }
 
@@ -459,11 +467,12 @@
     min-height: 0;
   }
 
-  /* Nút "Tiếp theo" — khối riêng hẳn, không nằm trong card feedback nữa, chiếm hàng cuối
-     full chiều ngang (chỉ xuất hiện khi đã trả lời nên không tốn chỗ lúc chưa khoá) */
+  /* Nút "Tiếp theo" nằm dưới card feedback, CHỈ trong cột phải (không tràn sang cột đáp án
+     trái) — dễ bấm ngay sau khi đọc giải thích, không che nội dung đáp án bên trái */
   .question-block .practice-inline-nav {
-    grid-column: 1 / -1;
+    grid-column: 2;
     grid-row: 3;
+    margin-top: 0;
   }
 
   .question-block .q-text {
@@ -471,6 +480,7 @@
     grid-row: 1;
     margin-bottom: 0;
     font-size: var(--text-md);
+    text-align: center;
     overflow-y: auto;
   }
 
@@ -502,9 +512,12 @@
     overflow-y: auto;
   }
 
+  /* padding-left CỐ ĐỊNH (theo %, cùng giá trị mọi nút) đẩy cụm chữ cái+text vào gần
+     giữa nút — chữ cái A/B/C/D nhờ vậy thẳng cột (cùng 1 mốc trái cố định), text
+     dính liền ngay sau chữ cái (không center riêng, không tách xa) */
   .option-btn {
     min-height: 0;
-    padding: 0.5rem var(--space-3);
+    padding: 0.5rem var(--space-3) 0.5rem 30%;
     font-size: var(--text-sm);
   }
 
@@ -574,14 +587,6 @@
 }
 
 /* ===== PRACTICE MODE ===== */
-.practice-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  width: 100%;
-}
-
 .practice-mastery-label {
   font-size: var(--text-sm);
   font-weight: var(--fw-semi);
@@ -604,14 +609,6 @@
   font-size: var(--text-sm);
 }
 
-.practice-hint-nav {
-  flex: 1;
-  padding: 0.625rem;
-  font-size: var(--text-sm);
-  text-align: center;
-  color: var(--color-text-muted);
-}
-
 .q-num-total { font-weight: var(--fw-normal); color: var(--color-text-muted); }
 
 /* BKT mastery badge */
@@ -630,7 +627,7 @@
 
 /* Practice answer feedback — !important not needed because locked disables pointer-events */
 .option-btn.locked      { cursor: default; pointer-events: none; }
-.option-btn.correct-ans { border-color: var(--color-success); background: #DCFCE7; animation: option-pop 0.4s ease; }
+.option-btn.correct-ans { border-color: var(--color-success); background: #DCFCE7; }
 .option-btn.correct-ans .opt-letter { border-color: var(--color-success); background: var(--color-success); color: #fff; }
 .option-btn.wrong-ans   { border-color: var(--color-danger); background: var(--color-danger-light); }
 .option-btn.wrong-ans .opt-letter   { border-color: var(--color-danger); background: var(--color-danger); color: #fff; }

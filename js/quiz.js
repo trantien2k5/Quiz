@@ -75,6 +75,7 @@ function startQuiz(setOrId, settings) {
   document.querySelector('[onclick="toggleQuizMode()"]').style.display = '';
   document.getElementById('quiz-side-map').style.display = '';
   document.querySelector('.quiz-progress-bar').style.display = '';
+  document.querySelector('.quiz-header').style.display = '';
   document.getElementById('quiz-counter').style.display = '';
   document.getElementById('quiz-practice-hud').style.display = 'none';
   renderQuiz();
@@ -128,6 +129,7 @@ function startPractice(setOrId) {
   document.querySelector('[onclick="toggleQuizMode()"]').style.display = 'none';
   document.getElementById('quiz-side-map').style.display = 'none';
   document.querySelector('.quiz-progress-bar').style.display = 'none';
+  document.querySelector('.quiz-header').style.display = 'none';
   document.getElementById('quiz-counter').style.display = 'none';
   document.getElementById('quiz-timer').style.display = 'none';
   document.getElementById('quiz-practice-hud').style.display = '';
@@ -313,15 +315,8 @@ function renderQuizNav() {
   const q = _quiz;
   const nav = document.getElementById('quiz-nav');
 
-  if (q.pQueue) { // practice mode
-    const mastered = q.pMastered.filter(Boolean).length;
-    const skipped  = q.pSkipped.filter(Boolean).length;
-    const total    = q.set.questions.length;
-    const pos      = q.currentIdx;
-    const isLocked = q.locked[pos];
-    const qIdx     = q.pQueue[pos];
-    const statLabel  = `${mastered}/${total} đã thuộc${skipped ? ' · ' + skipped + ' bỏ qua' : ''}`;
-    nav.innerHTML = !isLocked ? `<div class="practice-nav"><div class="practice-hint-nav">Chọn đáp án để tiếp tục</div></div>` : '';
+  if (q.pQueue) { // practice mode — đáp án/feedback đã đủ rõ, không cần thanh nav riêng (tránh dải trống/viền thừa)
+    nav.innerHTML = '';
     return;
   }
 

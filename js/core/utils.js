@@ -137,19 +137,21 @@ function playSound(type) {
   const ctx = _audioCtx;
   const tones = {
     correct: [{ freq: 880, at: 0 }, { freq: 1320, at: 0.08 }],
-    wrong: [{ freq: 220, at: 0 }],
+    wrong: [{ freq: 300, at: 0, dur: 0.2, type: 'square' }, { freq: 180, at: 0.12, dur: 0.2, type: 'square' }],
     levelup: [{ freq: 660, at: 0 }, { freq: 880, at: 0.1 }, { freq: 1100, at: 0.2 }]
   };
-  (tones[type] || []).forEach(({ freq, at }) => {
+  // wrong dùng 'square' + tần số thấp hơn (buzz rõ ràng) vì sine 220Hz ngắn quá nhỏ, dễ bị
+  // lẫn/không nghe thấy trên loa điện thoại — vẫn giữ gain thấp để không chói
+  (tones[type] || []).forEach(({ freq, at, dur = 0.15, type: oscType = 'sine' }) => {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.frequency.value = freq;
-    osc.type = 'sine';
+    osc.type = oscType;
     gain.gain.setValueAtTime(0.15, ctx.currentTime + at);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + at + 0.15);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + at + dur);
     osc.connect(gain).connect(ctx.destination);
     osc.start(ctx.currentTime + at);
-    osc.stop(ctx.currentTime + at + 0.15);
+    osc.stop(ctx.currentTime + at + dur);
   });
 }
 
