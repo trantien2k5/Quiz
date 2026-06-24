@@ -138,7 +138,10 @@ function playSound(type) {
   const tones = {
     correct: [{ freq: 880, at: 0 }, { freq: 1320, at: 0.08 }],
     wrong: [{ freq: 300, at: 0, dur: 0.2, type: 'square' }, { freq: 180, at: 0.12, dur: 0.2, type: 'square' }],
-    levelup: [{ freq: 660, at: 0 }, { freq: 880, at: 0.1 }, { freq: 1100, at: 0.2 }]
+    levelup: [{ freq: 660, at: 0 }, { freq: 880, at: 0.1 }, { freq: 1100, at: 0.2 }],
+    // Chuông cảnh báo treo máy/sao nhãng lúc luyện tập — 2 nốt cách xa nhau, dur dài hơn
+    // (0.4s) để nghe rõ như tiếng chuông, khác hẳn correct/wrong/levelup (ngắn, dồn nhanh)
+    idle: [{ freq: 740, at: 0, dur: 0.4 }, { freq: 740, at: 0.5, dur: 0.4 }]
   };
   // wrong dùng 'square' + tần số thấp hơn (buzz rõ ràng) vì sine 220Hz ngắn quá nhỏ, dễ bị
   // lẫn/không nghe thấy trên loa điện thoại — vẫn giữ gain thấp để không chói

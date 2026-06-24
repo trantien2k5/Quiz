@@ -478,11 +478,25 @@
     margin-top: 0;
   }
 
-  .question-block .q-text {
-    grid-column: 1 / -1;
-    grid-row: 1;
-    margin-bottom: 0;
-    font-size: var(--text-md);
+  /* Đẩy câu hỏi lên đè vào dải top-bar (X nằm trái, nút đổi chế độ nằm phải — ở practice
+     nút này bị ẩn nên gần như trống trơn) để tận dụng khoảng trống đó, nhường lại hết
+     row 1 (giờ rỗng, tự co về 0) cho đáp án/feedback bên dưới. Scope bằng :not(:has(
+     .quiz-separator)) — CHỈ áp dụng khi đang hiện 1 câu (practice/one-by-one), KHÔNG áp
+     dụng chế độ "Hiển thị tất cả câu" (nhiều .question-block cùng lúc, đè chồng lên nhau
+     sẽ hỏng) */
+  #quiz-questions-content:not(:has(.quiz-separator)) .question-block .q-text {
+    position: absolute;
+    top: 0;
+    left: 3rem;
+    right: 3rem;
+    z-index: var(--z-top-bar);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.5rem;
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: var(--fw-bold);
     text-align: center;
     overflow-y: auto;
   }

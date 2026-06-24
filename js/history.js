@@ -1357,7 +1357,6 @@ function renderHistorySettings() {
     </div>
     <div class="hst-chart-card">
       <div class="hst-chart-title">Dữ liệu thống kê</div>
-      <button class="btn btn-outline btn-full" style="margin-bottom:8px" onclick="exportPersonalizationData()">📤 Xuất dữ liệu</button>
       <button class="btn btn-outline btn-full" onclick="navTo('settings')">⚙️ Nhập dữ liệu & Reset thống kê</button>
     </div>`;
 }
