@@ -18,6 +18,31 @@
   }
 }
 
+/* Điện thoại xoay ngang (chiều cao thấp): ép về 1 cột dạng danh sách thay vì lưới card —
+   card rộng full ngang nên dồn được tên+badge vào CÙNG 1 hàng (tận dụng chỗ ngang dư ra),
+   chỉ còn 2 hàng/card (thông tin + nút hành động) thay vì 3 hàng như mặc định — gọn hơn,
+   nhìn nhiều mục hơn không cần cuộn nhiều.
+   Đặt SAU rule min-width:48rem trong cùng file nên tự thắng khi cả 2 điều kiện đều đúng. */
+@media (max-height: 37.5rem) and (orientation: landscape) {
+  .set-list { grid-template-columns: 1fr; gap: var(--space-2); }
+
+  .set-card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: var(--space-4);
+    padding: 0.625rem var(--space-3);
+  }
+
+  /* Tên/icon + badge dồn chung 1 hàng — bỏ mô tả "Tạo bởi AI" (ít giá trị, chiếm chỗ) */
+  .set-card-top { flex: 1 1 auto; min-width: 11rem; margin-bottom: 0; }
+  .set-card-desc { display: none; }
+  .set-card-meta { flex: 0 1 auto; margin-bottom: 0; }
+
+  /* Nút hành động xuống hẳn 1 hàng riêng full ngang */
+  .set-card-actions { flex: 1 1 100%; }
+}
+
 .set-card {
   padding: 0.875rem var(--space-4);
   border: 1px solid var(--color-border);
@@ -79,6 +104,15 @@
 @media (min-width: 37.5rem) {
   .set-card-actions {
     justify-content: flex-end;
+  }
+}
+
+/* Landscape (xem media ở đầu file): actions full-width 1 hàng riêng nên căn trái mới đúng —
+   rule flex-end ở @media min-width:37.5rem phía trên (đứng SAU trong file) đang đè làm
+   nút bị dồn hết sang phải, hở khoảng trống bên trái */
+@media (max-height: 37.5rem) and (orientation: landscape) {
+  .set-card-actions {
+    justify-content: flex-start;
   }
 }
 

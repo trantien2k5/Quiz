@@ -47,19 +47,22 @@
   color: #fff;
 }
 
-/* ===== NAV GRID 2×2 ===== */
+/* ===== NAV GRID — mobile-first: dạng LIST 1 cột (icon trái, tên+sub phải) —
+   gọn hơn lưới 2×2 cũ trên màn hẹp, không cần cuộn quá nhiều cho 12 mục.
+   Tablet/desktop (≥48rem) khôi phục lại lưới 2×2 dạng card vuông cũ (xem media dưới). */
 .hst-nav-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
   padding: 0.625rem var(--space-4) var(--space-2);
 }
 
 .hst-nav-card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  padding: 1.25rem var(--space-4) var(--space-4);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   background: var(--color-surface);
@@ -72,9 +75,27 @@
 
 .hst-nav-card:active { transform: scale(0.97); }
 
-.hst-nav-card-icon  { font-size: 1.75rem; line-height: 1; }
-.hst-nav-card-title { margin-top: 0.375rem; font-size: var(--text-lg); font-weight: var(--fw-bold); color: var(--color-text); }
+.hst-nav-card-icon  { grid-row: 1 / 3; font-size: 1.5rem; line-height: 1; }
+.hst-nav-card-title { font-size: var(--text-lg); font-weight: var(--fw-bold); color: var(--color-text); }
 .hst-nav-card-sub   { font-size: var(--text-xs); color: var(--color-text-muted); }
+
+@media (min-width: 48rem) {
+  .hst-nav-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .hst-nav-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: 1.25rem var(--space-4) var(--space-4);
+  }
+
+  .hst-nav-card-icon  { font-size: 1.75rem; }
+  .hst-nav-card-title { margin-top: 0.375rem; }
+}
 
 /* ===== STATS GRID ===== */
 .hst-stats-grid {

@@ -49,15 +49,6 @@
   .stat-lbl { font-size: var(--text-xs); }
 }
 
-/* Tablet/Desktop: nút chỉ có 1 hành động, không cần chiếm full hàng như mobile */
-@media (min-width: 48rem) {
-  .home-ai-cta {
-    width: auto;
-    min-width: 16rem;
-    max-width: 22rem;
-  }
-}
-
 .home-empty {
   padding: 0.75rem 0 var(--space-4);
   font-size: var(--text-sm);
@@ -149,4 +140,30 @@
   #home-recent-sets .recent-set-item {
     margin-bottom: 0;
   }
+}
+
+/* Điện thoại xoay ngang (chiều cao thấp): các hàng (banner/stats/CTA/list) đều đã nằm
+   ngang sẵn rồi, chỉ cần thu nhỏ margin/padding dọc cho đỡ tốn chiều cao ít ỏi —
+   scope theo #screen-home để không ảnh hưởng Luyện đề/Thống kê dùng chung class */
+@media (max-height: 37.5rem) and (orientation: landscape) {
+  #screen-home .home-streak-banner { margin-bottom: 0.5rem; padding: 0.5rem var(--space-4); }
+  #screen-home .stats-row { margin-bottom: 0.625rem; }
+  #screen-home .stat-box { padding: 0.5rem var(--space-2); }
+  #screen-home .stat-val { font-size: var(--text-xl); }
+  #screen-home .section-row,
+  #screen-home .section-label { margin-bottom: 0.375rem; }
+  #screen-home .recent-set-item { margin-bottom: 0.375rem; padding: 0.5rem 0.625rem; }
+  #screen-home .recent-history-item { padding: 0.375rem 0; }
+
+  /* Sắp lại thứ tự hiển thị theo độ ưu tiên hành động (không đổi DOM/HTML, chỉ đổi
+     thứ tự nhìn thấy bằng flex order) — ưu tiên "tiếp tục học" (đề gần đây) lên ngay
+     sau streak, vì đó là hành động người dùng mở app để làm nhất; thống kê/lịch sử
+     là thông tin tham khảo nên đẩy xuống dưới */
+  #screen-home .scroll-content { display: flex; flex-direction: column; }
+  #screen-home .scroll-content > .home-streak-banner { order: 1; }
+  #screen-home .scroll-content > .section-row        { order: 2; }
+  #screen-home .scroll-content > #home-recent-sets    { order: 3; }
+  #screen-home .scroll-content > .stats-row           { order: 4; }
+  #screen-home .scroll-content > .section-label       { order: 5; }
+  #screen-home .scroll-content > #home-recent-history { order: 6; }
 }

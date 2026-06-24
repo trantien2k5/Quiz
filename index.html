@@ -15,37 +15,37 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- base -->
-  <link rel="stylesheet" href="css/base/tokens.css?v=109">
-  <link rel="stylesheet" href="css/base/reset.css?v=109">
+  <link rel="stylesheet" href="css/base/tokens.css?v=110">
+  <link rel="stylesheet" href="css/base/reset.css?v=110">
   <!-- layout -->
-  <link rel="stylesheet" href="css/layout/shell.css?v=109">
-  <link rel="stylesheet" href="css/layout/nav.css?v=109">
+  <link rel="stylesheet" href="css/layout/shell.css?v=110">
+  <link rel="stylesheet" href="css/layout/nav.css?v=110">
   <!-- components -->
-  <link rel="stylesheet" href="css/components/button.css?v=109">
-  <link rel="stylesheet" href="css/components/form.css?v=109">
-  <link rel="stylesheet" href="css/components/toggle.css?v=109">
-  <link rel="stylesheet" href="css/components/badge.css?v=109">
-  <link rel="stylesheet" href="css/components/modal.css?v=109">
-  <link rel="stylesheet" href="css/components/toast.css?v=109">
-  <link rel="stylesheet" href="css/components/update-banner.css?v=109">
-  <link rel="stylesheet" href="css/components/fab.css?v=109">
-  <link rel="stylesheet" href="css/components/level-up.css?v=109">
-  <link rel="stylesheet" href="css/components/confetti.css?v=109">
-  <link rel="stylesheet" href="css/components/card.css?v=109">
-  <link rel="stylesheet" href="css/components/section-label.css?v=109">
-  <link rel="stylesheet" href="css/components/drop-zone.css?v=109">
-  <link rel="stylesheet" href="css/components/settings-row.css?v=109">
+  <link rel="stylesheet" href="css/components/button.css?v=110">
+  <link rel="stylesheet" href="css/components/form.css?v=110">
+  <link rel="stylesheet" href="css/components/toggle.css?v=110">
+  <link rel="stylesheet" href="css/components/badge.css?v=110">
+  <link rel="stylesheet" href="css/components/modal.css?v=110">
+  <link rel="stylesheet" href="css/components/toast.css?v=110">
+  <link rel="stylesheet" href="css/components/update-banner.css?v=110">
+  <link rel="stylesheet" href="css/components/fab.css?v=110">
+  <link rel="stylesheet" href="css/components/level-up.css?v=110">
+  <link rel="stylesheet" href="css/components/confetti.css?v=110">
+  <link rel="stylesheet" href="css/components/card.css?v=110">
+  <link rel="stylesheet" href="css/components/section-label.css?v=110">
+  <link rel="stylesheet" href="css/components/drop-zone.css?v=110">
+  <link rel="stylesheet" href="css/components/settings-row.css?v=110">
   <!-- pages -->
-  <link rel="stylesheet" href="css/pages/home.css?v=109">
-  <link rel="stylesheet" href="css/pages/editor.css?v=109">
-  <link rel="stylesheet" href="css/pages/quiz.css?v=109">
-  <link rel="stylesheet" href="css/pages/results.css?v=109">
-  <link rel="stylesheet" href="css/pages/history.css?v=109">
-  <link rel="stylesheet" href="css/pages/ai.css?v=109">
-  <link rel="stylesheet" href="css/pages/import.css?v=109">
+  <link rel="stylesheet" href="css/pages/home.css?v=110">
+  <link rel="stylesheet" href="css/pages/editor.css?v=110">
+  <link rel="stylesheet" href="css/pages/quiz.css?v=110">
+  <link rel="stylesheet" href="css/pages/results.css?v=110">
+  <link rel="stylesheet" href="css/pages/history.css?v=110">
+  <link rel="stylesheet" href="css/pages/ai.css?v=110">
+  <link rel="stylesheet" href="css/pages/import.css?v=110">
   <!-- utilities -->
-  <link rel="stylesheet" href="css/utilities/utilities.css?v=109">
-  <link rel="stylesheet" href="css/utilities/animations.css?v=109">
+  <link rel="stylesheet" href="css/utilities/utilities.css?v=110">
+  <link rel="stylesheet" href="css/utilities/animations.css?v=110">
 </head>
 <body>
 <div id="update-banner">
@@ -85,10 +85,6 @@
     <div class="scroll-content">
       <div id="home-streak" class="home-streak-banner"></div>
       <div id="home-stats" class="stats-row"></div>
-      <button class="btn btn-primary btn-full home-ai-cta mb-4" onclick="showAICreate()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-        Tạo đề bằng AI
-      </button>
       <div class="section-row">
         <div class="section-label" style="margin-bottom:0">Đề gần đây</div>
         <button class="link-btn" onclick="navTo('library')">Xem tất cả →</button>
@@ -98,6 +94,9 @@
       <div class="section-label">Lịch sử gần đây</div>
       <div id="home-recent-history"></div>
     </div>
+    <button class="fab" onclick="showAICreate()" title="Tạo đề mới">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
   </section>
 
   <!-- ===== EDITOR SCREEN ===== -->
@@ -894,20 +893,20 @@ Giải thích: ...</pre>
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="js/core/storage.js?v=109" defer></script>
-<script src="js/core/utils.js?v=109" defer></script>
-<script src="js/core/activity-tracker.js?v=109" defer></script>
-<script src="js/home.js?v=109" defer></script>
-<script src="js/editor.js?v=109" defer></script>
-<script src="js/quiz.js?v=109" defer></script>
-<script src="js/results.js?v=109" defer></script>
-<script src="js/library.js?v=109" defer></script>
-<script src="js/history.js?v=109" defer></script>
-<script src="js/history-progress.js?v=109" defer></script>
-<script src="js/history-analysis.js?v=109" defer></script>
-<script src="js/ai.js?v=109" defer></script>
-<script src="js/import-text.js?v=109" defer></script>
-<script src="js/core/app.js?v=109" defer></script>
+<script src="js/core/storage.js?v=110" defer></script>
+<script src="js/core/utils.js?v=110" defer></script>
+<script src="js/core/activity-tracker.js?v=110" defer></script>
+<script src="js/home.js?v=110" defer></script>
+<script src="js/editor.js?v=110" defer></script>
+<script src="js/quiz.js?v=110" defer></script>
+<script src="js/results.js?v=110" defer></script>
+<script src="js/library.js?v=110" defer></script>
+<script src="js/history.js?v=110" defer></script>
+<script src="js/history-progress.js?v=110" defer></script>
+<script src="js/history-analysis.js?v=110" defer></script>
+<script src="js/ai.js?v=110" defer></script>
+<script src="js/import-text.js?v=110" defer></script>
+<script src="js/core/app.js?v=110" defer></script>
 <script>
   if ('serviceWorker' in navigator) {
     const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname);

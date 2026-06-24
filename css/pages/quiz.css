@@ -197,6 +197,9 @@
   display: none;
 }
 
+/* Chỉ có ý nghĩa ở layout 2 cột (xoay ngang) — mặc định ẩn vì không có cột riêng để đặt */
+.practice-hint-placeholder { display: none; }
+
 .option-btn {
   display: flex;
   align-items: center;
@@ -502,6 +505,129 @@
     grid-column: 2;
     grid-row: 2;
     min-height: 0;
+  }
+
+  /* Cột phải đỡ trống trơn khi chưa trả lời — hiện lại info game hóa thật (Boss HP/combo/
+     accuracy/giờ học/level+XP, vốn bị ẩn cùng #quiz-practice-hud ở layout này) thay vào chỗ
+     .practice-feedback sẽ chiếm sau khi đã trả lời. Tái dùng class .boss-hp-row/.boss-hp-
+     bar-wrap/.boss-hp-fill/.practice-hud-stats/.combo-badge có sẵn từ HUD gốc (css ở trên) —
+     chỉ tính giá trị mới (không dùng chung id với HUD gốc, tránh trùng id) */
+  .practice-hint-placeholder {
+    display: flex;
+    grid-column: 2;
+    grid-row: 2;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    overflow-y: auto;
+  }
+
+  /* ===== Boss card (mockup design — xem CLAUDE.md "Mục chưa có chức năng" cho field dev) ===== */
+  .boss-card-header {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+    margin: calc(-1 * var(--space-3)) calc(-1 * var(--space-3)) 0;
+    padding: 0.5rem var(--space-3);
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark));
+    color: #fff;
+  }
+
+  .boss-card-label {
+    font-size: var(--text-2xs);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.05em;
+  }
+
+  .boss-card-lv {
+    padding: 0.0625rem 0.375rem;
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    font-size: var(--text-2xs);
+    font-weight: var(--fw-bold);
+  }
+
+  .boss-card-sub {
+    margin-top: -0.125rem;
+    font-size: var(--text-2xs);
+    text-align: center;
+    color: var(--color-text-muted);
+  }
+
+  .boss-card-stats-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.375rem;
+  }
+
+  .boss-card-stat {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.125rem;
+    padding: 0.375rem 0.25rem;
+    border-radius: var(--radius-xs);
+    background: var(--color-bg);
+    font-size: var(--text-2xs);
+  }
+
+  .boss-card-stat span:first-child {
+    font-size: var(--text-md);
+  }
+
+  .boss-card-stat strong {
+    font-size: var(--text-sm);
+    color: var(--color-brand);
+  }
+
+  .boss-card-panel {
+    padding: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xs);
+    background: var(--color-bg);
+  }
+
+  .boss-card-panel-title {
+    margin-bottom: 0.25rem;
+    font-size: var(--text-2xs);
+    font-weight: var(--fw-bold);
+    color: var(--color-text);
+  }
+
+  .boss-card-mini-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    border-radius: var(--radius-xs);
+    background: var(--color-bg);
+  }
+
+  .boss-card-mini-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: var(--text-2xs);
+  }
+
+  .boss-card-mission-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+    font-size: var(--text-2xs);
   }
 
   /* Chỉ phần nội dung (body) cuộn riêng — header màu + nút "Tiếp theo" luôn cố định,
