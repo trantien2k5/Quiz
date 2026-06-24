@@ -119,13 +119,20 @@ function startPractice(setOrId) {
     timeLeft: null,
     mode: 'one-by-one'
   };
+  // Toast cảnh báo treo máy là STICKY (không tự ẩn) — phải giữ ở biến ngoài để đóng được
+  // khi onIdleResolved bắn (xem activity-tracker.js), KHÔNG dùng biến cục bộ trong callback
+  // vì callback chạy lại mỗi lần lặp, sẽ mất tham chiếu element cũ
+  let _idleToastEl = null;
   _quiz.activityTracker = startActivityTracking({
     onResumeNudge: sec => toast(`👋 Quay lại tập trung học nào! (đã rời ${fmtTime(sec)})`),
     onPomodoroBreak: () => toast('🍅 Đã học liên tục 25 phút — nghỉ giải lao 5 phút nhé!'),
-    onIdleWarning: () => {
-      toast('⏸️ Không thấy thao tác — bộ đếm sẽ tạm dừng nếu bạn rời thêm 60s nữa');
+    // Chuông kêu LẶP LẠI mỗi 5s (xem IDLE_WARNING_REPEAT_MS) cho tới khi quay lại tương
+    // tác — toast hiện liên tục (sticky), không tự ẩn theo thời gian
+    onIdleWarning: isFirst => {
+      if (isFirst) _idleToastEl = toast('⏸️ Không thấy thao tác — bộ đếm sẽ tạm dừng nếu bạn rời thêm 60s nữa', '', true);
       playSound('idle');
-    }
+    },
+    onIdleResolved: () => { dismissToast(_idleToastEl); _idleToastEl = null; }
   });
   _quizInProgress = true;
   localStorage.setItem('quiz_last_set', _quiz.originalSetId);
@@ -231,7 +238,7 @@ function buildQuizQuestion(question, i) {
   // cột riêng để đặt) — full "Boss card" theo mockup design, field có data thật lấy từ
   // hệ thống, field chưa có hệ thống (Lives/Coins/Hint/Mission đa mục tiêu/Reward Chest)
   // hiện devBadge() (đã hỏi user, chọn giữ đủ layout + đánh dấu phát triển thay vì ẩn)
-  const hintPlaceholder = (isPractice && !isLocked) ? buildBossCardHtml(total) : '';
+  const hintPlaceholder = (isPractice && !isLocked) ? buildPracticeStatsCardHtml(total) : '';
 
   const isMastered = isPractice && _quiz.pMastered[qIdx];
   const pLPct = isPractice ? Math.round((_quiz.pL[qIdx] ?? 0.3) * 100) : 0;

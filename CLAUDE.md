@@ -93,7 +93,7 @@ js/
   home.js               ← renderHome()
   library.js            ← renderLibrary(), set cards, import/export
   quiz.js               ← quiz state, timer, submit, scoring
-  gamification.js        ← buildBossCardHtml() — "Boss card" cột phải practice mode khi xoay ngang (Boss HP/combo/accuracy/time/level+XP/nhiệm vụ thật, field chưa có hệ thống dùng devBadge()), tách riêng vì khu vực này dự kiến phát triển thêm. Đọc state từ _quiz (global ở quiz.js) — PHỤ THUỘC quiz.js, load SAU
+  gamification.js        ← buildPracticeStatsCardHtml() — cột phải practice mode khi xoay ngang, 6 field thật (Combo/Accuracy/Progress/Time/Level+XP), KHÔNG hiện Boss HP/Coin/Mission (chưa có hệ thống thật, đã thử bản mockup đầy đủ rồi bỏ vì rối — xem GOTCHAS). Đọc state từ _quiz (global ở quiz.js) — PHỤ THUỘC quiz.js, load SAU
   history.js            ← renderHistory(), showHistorySection(), helper chung (XP/level, chart SVG, compare, BKT...), + các tab nhỏ (Lỗi sai/Ghi nhớ/Hiệu suất/Hành vi học/Lịch sử/So sánh/Dự đoán/Báo cáo/Cài đặt) — 1886 dòng cũ đã tách, file gốc còn ~1290 dòng
   history-progress.js   ← tách từ history.js: riêng tab Tiến bộ (filter, chart, personal best, prediction) — PHỤ THUỘC helper chung ở history.js, phải load SAU
   history-analysis.js   ← tách từ history.js: riêng tab Phân tích (theo chủ đề/bộ đề, skill stats) — PHỤ THUỘC helper chung ở history.js, phải load SAU

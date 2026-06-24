@@ -509,6 +509,7 @@
   .question-block:has(.practice-feedback) .options-list {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     grid-column: 1;
     grid-row: 2;
     gap: var(--space-2);
@@ -526,14 +527,16 @@
      .practice-feedback sẽ chiếm sau khi đã trả lời. Tái dùng class .boss-hp-row/.boss-hp-
      bar-wrap/.boss-hp-fill/.practice-hud-stats/.combo-badge có sẵn từ HUD gốc (css ở trên) —
      chỉ tính giá trị mới (không dùng chung id với HUD gốc, tránh trùng id) */
+  /* grid-row:2 — cao bằng cột đáp án (4 câu trắc nghiệm) thôi, KHÔNG span luôn row 1
+     (câu hỏi) nữa — span 1/-1 làm khung quá cao, rỗng nhiều, đã thử rồi bỏ */
   .practice-hint-placeholder {
     display: flex;
     grid-column: 2;
     grid-row: 2;
     flex-direction: column;
-    justify-content: flex-start;
-    gap: 0.5rem;
-    padding: var(--space-3);
+    justify-content: center;
+    gap: var(--space-3);
+    padding: var(--space-4);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     background: var(--color-surface);
@@ -543,106 +546,56 @@
     overflow-y: auto;
   }
 
-  /* ===== Boss card (mockup design — xem CLAUDE.md "Mục chưa có chức năng" cho field dev) ===== */
-  .boss-card-header {
+  /* ===== Practice stats card — 6 field thật cần lúc luyện tập (Combo/Accuracy/Progress/
+     Time/Level+XP), KHÔNG còn khung "Boss Battle"/field mock (Lives/Coins/Mission...) */
+
+  /* Level+XP lên đầu, KHÔNG bọc card (chỉ chữ + thanh XP trần) — phân biệt với 4 ô stat
+     bên dưới (có card nổi bật), tạo lớp phân cấp: Level là context chung, 4 ô là số liệu
+     phiên hiện tại */
+  .practice-stats-level {
     display: flex;
-    flex-shrink: 0;
     align-items: center;
-    justify-content: space-between;
-    margin: calc(-1 * var(--space-3)) calc(-1 * var(--space-3)) 0;
-    padding: 0.5rem var(--space-3);
-    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-    background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark));
-    color: #fff;
-  }
-
-  .boss-card-label {
+    gap: 0.5rem;
     font-size: var(--text-2xs);
-    font-weight: var(--fw-bold);
-    letter-spacing: 0.05em;
+    font-weight: var(--fw-semi);
   }
 
-  .boss-card-lv {
-    padding: 0.0625rem 0.375rem;
-    border-radius: var(--radius-full);
-    background: rgba(255, 255, 255, 0.25);
-    color: #fff;
-    font-size: var(--text-2xs);
-    font-weight: var(--fw-bold);
-  }
-
-  .boss-card-sub {
-    margin-top: -0.125rem;
-    font-size: var(--text-2xs);
-    text-align: center;
-    color: var(--color-text-muted);
-  }
-
-  .boss-card-stats-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 0.375rem;
-  }
-
-  .boss-card-stat {
-    display: flex;
+  .practice-stats-level .boss-hp-bar-wrap {
     flex: 1;
+  }
+
+  .practice-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .practice-stats-item {
+    display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.125rem;
-    padding: 0.375rem 0.25rem;
-    border-radius: var(--radius-xs);
-    background: var(--color-bg);
-    font-size: var(--text-2xs);
-  }
-
-  .boss-card-stat span:first-child {
-    font-size: var(--text-md);
-  }
-
-  .boss-card-stat strong {
-    font-size: var(--text-sm);
-    color: var(--color-brand);
-  }
-
-  .boss-card-panel {
-    padding: 0.5rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-xs);
-    background: var(--color-bg);
-  }
-
-  .boss-card-panel-title {
-    margin-bottom: 0.25rem;
-    font-size: var(--text-2xs);
-    font-weight: var(--fw-bold);
-    color: var(--color-text);
-  }
-
-  .boss-card-mini-row {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
     gap: 0.25rem;
-    padding: 0.5rem;
-    border-radius: var(--radius-xs);
+    padding: var(--space-3) var(--space-2);
+    border-radius: var(--radius-sm);
     background: var(--color-bg);
-  }
-
-  .boss-card-mini-item {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
+    box-shadow: var(--shadow-sm);
     font-size: var(--text-2xs);
   }
 
-  .boss-card-mission-line {
-    display: flex;
-    justify-content: space-between;
-    gap: 0.5rem;
-    margin-bottom: 0.25rem;
-    font-size: var(--text-2xs);
+  .practice-stats-item span:first-child {
+    font-size: var(--text-xl);
   }
+
+  .practice-stats-item strong {
+    font-size: var(--text-lg);
+    font-weight: var(--fw-black);
+  }
+
+  /* Mỗi loại 1 màu accent riêng cho số liệu — dễ phân biệt nhanh bằng mắt thay vì đọc chữ */
+  .practice-stats-item.combo strong    { color: var(--color-warning); }
+  .practice-stats-item.accuracy strong { color: var(--color-success); }
+  .practice-stats-item.progress strong { color: var(--color-brand); }
+  .practice-stats-item.time strong     { color: var(--color-text); }
 
   /* Chỉ phần nội dung (body) cuộn riêng — header màu + nút "Tiếp theo" luôn cố định,
      không bị cuộn mất khi giải thích dài */

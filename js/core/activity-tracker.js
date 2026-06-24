@@ -3,16 +3,17 @@
    Module độc lập, không biết gì về _quiz — quiz.js chỉ giữ 1 handle. */
 
 const IDLE_WARNING_MS = 60000;            // không tương tác > 60s → cảnh báo sắp tạm dừng đếm
+const IDLE_WARNING_REPEAT_MS = 5000;      // sau mốc 60s, lặp lại cảnh báo mỗi 5s cho tới khi quay lại/bị tạm dừng
 const PAUSE_THRESHOLD_MS = 120000;        // không tương tác > 120s → ngừng ghi nhận thời gian học
 const RESUME_NUDGE_THRESHOLD_MS = 120000; // chỉ nhắc tập trung nếu đã rời >= 2 phút
 const POMODORO_MINUTES = 25;              // mốc nhắc nghỉ giải lao
 
-function startActivityTracking({ onResumeNudge, onPomodoroBreak, onIdleWarning } = {}) {
+function startActivityTracking({ onResumeNudge, onPomodoroBreak, onIdleWarning, onIdleResolved } = {}) {
   const state = {
     lastActiveAt: Date.now(),
     activeMs: 0,
     idleSince: null,
-    idleWarned: false,
+    lastIdleWarnAt: 0,
     pomodoroNotifiedAt: 0,
     tickInterval: null,
     stopped: false
@@ -26,7 +27,11 @@ function startActivityTracking({ onResumeNudge, onPomodoroBreak, onIdleWarning }
       }
       state.idleSince = null;
     }
-    state.idleWarned = false;
+    // Đang ở giữa chuỗi cảnh báo (đã từng bắn ít nhất 1 lần) mà giờ user thao tác lại →
+    // báo cho caller đóng toast sticky + ngưng coi như "đã xử lý" (KHÁC onResumeNudge, cái
+    // đó chỉ bắn khi rời >= 2 phút, còn cảnh báo bắt đầu từ 60s nên cần hook riêng)
+    if (state.lastIdleWarnAt !== 0 && onIdleResolved) onIdleResolved();
+    state.lastIdleWarnAt = 0;
     state.lastActiveAt = Date.now();
   };
 
@@ -60,9 +65,14 @@ function startActivityTracking({ onResumeNudge, onPomodoroBreak, onIdleWarning }
     } else if (state.idleSince == null) {
       state.idleSince = Date.now();
     }
-    if (isVisible && !state.idleWarned && idleMs >= IDLE_WARNING_MS && idleMs < PAUSE_THRESHOLD_MS) {
-      state.idleWarned = true;
-      if (onIdleWarning) onIdleWarning();
+    // Lặp lại cảnh báo mỗi IDLE_WARNING_REPEAT_MS kể từ mốc 60s — KHÔNG dừng ở mốc 120s
+    // (mốc đó chỉ ngừng cộng activeMs, không liên quan tới việc còn cảnh báo hay không) —
+    // chỉ dừng khi user thao tác lại thật (markActive() reset lastIdleWarnAt về 0)
+    if (isVisible && idleMs >= IDLE_WARNING_MS
+        && Date.now() - state.lastIdleWarnAt >= IDLE_WARNING_REPEAT_MS) {
+      const isFirst = state.lastIdleWarnAt === 0;
+      state.lastIdleWarnAt = Date.now();
+      if (onIdleWarning) onIdleWarning(isFirst);
     }
   }, 1000);
 

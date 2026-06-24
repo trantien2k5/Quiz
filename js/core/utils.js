@@ -75,7 +75,9 @@ function shuffleOptions(q) {
 }
 
 /* ===== TOAST ===== */
-function toast(msg, type) {
+/* sticky=true: không tự ẩn sau 2.8s, trả về element để caller chủ động gọi dismissToast()
+   khi muốn đóng (dùng cho cảnh báo treo máy — phải hiện tới khi user thao tác lại) */
+function toast(msg, type, sticky) {
   const container = document.getElementById('toast-container');
   const t = document.createElement('div');
   t.className = 'toast' + (type === 'success' ? ' toast-success' : type === 'error' ? ' toast-error' : '');
@@ -84,10 +86,17 @@ function toast(msg, type) {
   t.querySelector('.toast-icon').textContent = icon;
   t.querySelector('.toast-msg').textContent = msg;
   container.appendChild(t);
+  if (sticky) return t;
   setTimeout(() => {
     t.style.animation = 'toastOut 0.25s cubic-bezier(0.4, 0, 1, 1) forwards';
     setTimeout(() => t.remove(), 250);
   }, 2800);
+}
+
+function dismissToast(t) {
+  if (!t || !t.isConnected) return;
+  t.style.animation = 'toastOut 0.25s cubic-bezier(0.4, 0, 1, 1) forwards';
+  setTimeout(() => t.remove(), 250);
 }
 
 /* ===== CONFIRM MODAL ===== */
@@ -135,22 +144,28 @@ function playSound(type) {
   if (!getSoundEnabled()) return;
   if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   const ctx = _audioCtx;
+  // Chuông idle bắn từ setInterval (không phải click) — nếu đây là âm đầu tiên trong phiên,
+  // trình duyệt có thể tạo AudioContext ở trạng thái 'suspended' và im lặng vĩnh viễn cho
+  // tới khi được resume() chủ động (chưa từng gọi resume() ở đâu khác trong file này)
+  if (ctx.state === 'suspended') ctx.resume();
   const tones = {
     correct: [{ freq: 880, at: 0 }, { freq: 1320, at: 0.08 }],
     wrong: [{ freq: 300, at: 0, dur: 0.2, type: 'square' }, { freq: 180, at: 0.12, dur: 0.2, type: 'square' }],
     levelup: [{ freq: 660, at: 0 }, { freq: 880, at: 0.1 }, { freq: 1100, at: 0.2 }],
     // Chuông cảnh báo treo máy/sao nhãng lúc luyện tập — 2 nốt cách xa nhau, dur dài hơn
-    // (0.4s) để nghe rõ như tiếng chuông, khác hẳn correct/wrong/levelup (ngắn, dồn nhanh)
-    idle: [{ freq: 740, at: 0, dur: 0.4 }, { freq: 740, at: 0.5, dur: 0.4 }]
+    // (0.4s) để nghe rõ như tiếng chuông, khác hẳn correct/wrong/levelup (ngắn, dồn nhanh).
+    // gain cao hơn mức chung (0.15) vì mục đích là GÂY CHÚ Ý đánh thức người dùng đang
+    // treo máy, không phải feedback nhẹ nhàng như đúng/sai
+    idle: [{ freq: 740, at: 0, dur: 0.4, gain: 0.35 }, { freq: 740, at: 0.5, dur: 0.4, gain: 0.35 }]
   };
   // wrong dùng 'square' + tần số thấp hơn (buzz rõ ràng) vì sine 220Hz ngắn quá nhỏ, dễ bị
   // lẫn/không nghe thấy trên loa điện thoại — vẫn giữ gain thấp để không chói
-  (tones[type] || []).forEach(({ freq, at, dur = 0.15, type: oscType = 'sine' }) => {
+  (tones[type] || []).forEach(({ freq, at, dur = 0.15, type: oscType = 'sine', gain: gainLevel = 0.15 }) => {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.frequency.value = freq;
     osc.type = oscType;
-    gain.gain.setValueAtTime(0.15, ctx.currentTime + at);
+    gain.gain.setValueAtTime(gainLevel, ctx.currentTime + at);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + at + dur);
     osc.connect(gain).connect(ctx.destination);
     osc.start(ctx.currentTime + at);
