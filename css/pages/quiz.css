@@ -190,6 +190,13 @@
   gap: 0.625rem;
 }
 
+/* options-list giờ luôn render kèm feedback (js/quiz.js) thay vì bị feedback thay thế —
+   mặc định (dọc) vẫn ẨN đáp án khi đã có feedback để giữ đúng giao diện cũ, chỉ hiện song song
+   ở landscape phone (xem khối "ĐIỆN THOẠI XOAY NGANG" dưới) */
+.question-block:has(.practice-feedback) .options-list {
+  display: none;
+}
+
 .option-btn {
   display: flex;
   align-items: center;
@@ -404,55 +411,128 @@
   background: var(--color-border);
 }
 
-/* ===== ĐIỆN THOẠI XOAY NGANG (KHÔNG áp dụng tablet/PC — đã có layout riêng từ 48rem) =====
-   Quay ngang khi học đỡ mỏi tay hơn (giữ máy 2 tay như chơi game) — bố cục 2 cột kiểu
-   quiz game (Kahoot...): câu hỏi bên trái, 4 đáp án dạng lưới 2x2 bên phải (luôn đúng 4
-   đáp án theo data model — xem CLAUDE.md) thay vì list dọc phải cuộn. Thu gọn header/HUD
-   để tiết kiệm chiều cao (landscape phone rất thấp). */
-@media (max-width: 47.9375rem) and (orientation: landscape) {
-  .quiz-header { padding: 0.25rem var(--space-4); }
+/* ===== ĐIỆN THOẠI XOAY NGANG =====
+   Dùng max-height (KHÔNG dùng max-width) để nhận diện — điện thoại to hiện đại quay ngang
+   (vd Redmi Note 14 Pro+ 922×412) chiều RỘNG có thể vượt quá 48rem (breakpoint sidebar PC),
+   nhưng chiều CAO luôn thấp (~400px) bất kể máy to nhỏ, khác hẳn tablet/laptop ngang
+   (cao ≥768px). Quay ngang khi học đỡ mỏi tay hơn (giữ máy 2 tay như chơi game). Yêu cầu:
+   vừa khít 1 khung hình, KHÔNG cuộn — câu hỏi trên cùng (full chiều ngang), dưới chia 2
+   cột: trái = đáp án, phải = feedback (sau khi trả lời). Trước khi trả lời, đáp án chiếm
+   full 2 cột (chưa có gì để chia sẻ không gian). Ẩn HUD/badge không thiết yếu (Boss HP,
+   % đã thuộc) để dồn hết chiều cao ít ỏi cho câu hỏi + đáp án. */
+@media (max-height: 31.25rem) and (orientation: landscape) {
+  /* Bỏ HUD luyện tập + badge mastery — chỉ giữ câu hỏi + đáp án theo yêu cầu.
+     :has(.practice-badge) để CHỈ ẩn ở practice mode — exam mode dùng q-num-row cho
+     "Câu X" + nút đánh dấu (flag), không được ẩn mất chức năng đó. */
+  #quiz-practice-hud,
+  .question-block .q-num-row:has(.practice-badge),
+  #quiz-top-title {
+    display: none;
+  }
 
-  .quiz-practice-hud { padding: 0.25rem var(--space-4); }
-  .boss-hp-row        { margin-bottom: 0.125rem; font-size: var(--text-xs); }
-  .boss-hp-bar-wrap    { height: 0.3125rem; }
-  .practice-hud-stats  { margin-top: 0.125rem; font-size: var(--text-xs); }
-  .near-finish-banner  { margin-top: 0.125rem; font-size: var(--text-xs); }
+  #screen-quiz .top-bar { height: 2.5rem; }
+  .quiz-header { padding: 0.1875rem var(--space-4); }
 
-  #screen-quiz .scroll-content { padding: var(--space-2) var(--space-4); }
+  /* Toàn bộ cột dọc (top-bar → nav) không cuộn trang — chỉ scroll-content được phép
+     cuộn NỘI BỘ nếu nội dung câu hỏi/feedback quá dài, không kéo cả khung hình */
+  #screen-quiz { overflow: hidden; }
+  #screen-quiz .scroll-content {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-2) var(--space-4);
+    overflow: hidden;
+  }
+
+  #quiz-questions-content {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
 
   .question-block {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    flex: 1;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto minmax(0, 1fr) auto;
     column-gap: var(--space-4);
-    align-items: start;
+    row-gap: var(--space-2);
+    min-height: 0;
   }
 
-  .question-block .q-num-row { grid-column: 1; }
+  /* Nút "Tiếp theo" — khối riêng hẳn, không nằm trong card feedback nữa, chiếm hàng cuối
+     full chiều ngang (chỉ xuất hiện khi đã trả lời nên không tốn chỗ lúc chưa khoá) */
+  .question-block .practice-inline-nav {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+
   .question-block .q-text {
-    grid-column: 1;
+    grid-column: 1 / -1;
+    grid-row: 1;
     margin-bottom: 0;
-    font-size: var(--text-lg);
+    font-size: var(--text-md);
+    overflow-y: auto;
   }
 
-  /* feedbackHtml (đã trả lời, practice mode) thay thế options-list ở cùng vị trí — giữ cùng cột */
+  /* Đáp án LUÔN nằm cố định cột trái, 1 cột dọc — dù chưa hay đã trả lời (cột phải
+     để dành riêng cho feedback, trống khi chưa trả lời, KHÔNG cho đáp án dàn sang).
+     KHÔNG dùng !important: khai báo display ở CẢ 2 selector (thường + :has) để khớp
+     đúng specificity với rule ẩn portrait phía trên — đứng sau trong file nên thắng. */
   .question-block .options-list,
-  .question-block .practice-feedback {
-    grid-column: 2;
+  .question-block:has(.practice-feedback) .options-list {
+    display: flex;
+    flex-direction: column;
+    grid-column: 1;
+    grid-row: 2;
+    gap: var(--space-2);
+    overflow-y: auto;
   }
 
-  .options-list {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-2);
+  .practice-feedback {
+    grid-column: 2;
+    grid-row: 2;
+    min-height: 0;
+  }
+
+  /* Chỉ phần nội dung (body) cuộn riêng — header màu + nút "Tiếp theo" luôn cố định,
+     không bị cuộn mất khi giải thích dài */
+  .practice-feedback-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
   }
 
   .option-btn {
-    min-height: 2.75rem;
+    min-height: 0;
     padding: 0.5rem var(--space-3);
-    font-size: var(--text-md);
+    font-size: var(--text-sm);
   }
 
-  .quiz-nav { padding: 0.375rem var(--space-4) calc(0.375rem + env(safe-area-inset-bottom, 0)); }
+  .quiz-nav { padding: 0.25rem var(--space-4) calc(0.25rem + env(safe-area-inset-bottom, 0)); }
+
+  /* Chế độ "Hiển thị tất cả câu" (exam, nhiều .question-block + .quiz-separator cùng lúc) —
+     KHÔNG thể vừa khít 1 khung hình như single-question (practice/one-by-one luôn chỉ có
+     1 câu). Giữ cuộn dọc bình thường, mỗi câu vẫn 1 cột như portrait, không ép lưới 2 cột
+     (sẽ rối khi nhiều câu liên tiếp). Specificity cao hơn (#id + :has) nên tự thắng các rule
+     2 cột phía trên mà không cần đổi thứ tự file. */
+  #screen-quiz:has(.quiz-separator) .scroll-content {
+    overflow-y: auto;
+  }
+
+  #quiz-questions-content:has(.quiz-separator) {
+    display: block;
+    overflow-y: visible;
+  }
+
+  #quiz-questions-content:has(.quiz-separator) .question-block {
+    display: block;
+    flex: none;
+  }
+
+  #quiz-questions-content:has(.quiz-separator) .options-list {
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 /* ===== QUIZ SETTINGS MODAL ===== */
@@ -555,34 +635,54 @@
 .option-btn.wrong-ans   { border-color: var(--color-danger); background: var(--color-danger-light); }
 .option-btn.wrong-ans .opt-letter   { border-color: var(--color-danger); background: var(--color-danger); color: #fff; }
 
+/* Card chia 3 khối rõ ràng: header (màu đúng/sai) → body (nội dung trung tính) → nav (nút) —
+   tránh dồn hết màu đỏ/xanh + text + nút vào 1 khối như trước (khó nhìn, khó bấm) */
 .practice-feedback {
-  padding: 0.875rem;
-  border: 1px solid;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  overflow: hidden;
 }
 
-.practice-feedback.correct { border-color: #86EFAC; background: #DCFCE7; }
-.practice-feedback.wrong   { border-color: #FCA5A5; background: var(--color-danger-light); }
+.practice-feedback-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem 0.875rem;
+}
+
+.practice-feedback.correct .practice-feedback-header { background: var(--color-success); }
+.practice-feedback.wrong   .practice-feedback-header { background: var(--color-danger); }
 
 .practice-feedback-badge {
-  margin-bottom: 0.375rem;
-  font-size: var(--text-lg);
+  font-size: var(--text-md);
   font-weight: var(--fw-bold);
-  color: var(--color-text);
+  color: #fff;
 }
 
+.practice-feedback-body {
+  padding: 0.875rem;
+}
+
+/* "Sửa lỗi" — đáp án đúng tách thành 1 khối riêng, không lẫn với phần giải thích */
 .practice-feedback-correct {
-  margin-bottom: 0.375rem;
+  margin-bottom: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #86EFAC;
+  border-radius: var(--radius-xs);
+  background: #DCFCE7;
   font-size: var(--text-sm);
   color: var(--color-text);
 }
 
 .combo-badge {
   display: inline-block;
-  margin-bottom: 0.375rem;
   padding: 0.25rem 0.625rem;
   border-radius: var(--radius-full);
-  background: var(--color-warning-light);
+  background: rgba(255, 255, 255, 0.9);
   color: var(--color-warning);
   font-size: var(--text-sm);
   font-weight: var(--fw-bold);
@@ -596,6 +696,7 @@
   white-space: pre-wrap;
 }
 
+/* Nút "Tiếp theo" — khối riêng hẳn, không còn nằm trong card feedback */
 .practice-inline-nav {
   display: flex;
   gap: 0.625rem;

@@ -203,13 +203,17 @@ function buildQuizQuestion(question, i) {
 
   const feedbackHtml = isLocked ? `
     <div class="practice-feedback ${selected === correct ? 'correct' : 'wrong'}">
-      <div class="practice-feedback-badge">${selected === correct ? '✅ Chính xác! ⚔️ Đánh trúng Boss!' : '❌ Sai rồi! 🛡 Boss chưa mất máu'}</div>
-      ${selected === correct && _quiz.combo >= 2 ? `<div class="combo-badge">🔥 Combo x${_quiz.combo}</div>` : ''}
-      ${selected !== correct ? `<div class="practice-feedback-correct">Đáp án đúng: <strong>${esc(question.options[correct])}</strong></div>` : ''}
-      ${question.explanation ? `<div class="practice-feedback-exp">${esc(question.explanation)}</div>` : ''}
-      <div class="practice-inline-nav">
-        <button class="btn btn-primary practice-next-btn" onclick="practiceAdvance()">Tiếp theo →</button>
+      <div class="practice-feedback-header">
+        <span class="practice-feedback-badge">${selected === correct ? '✅ Chính xác! ⚔️ Đánh trúng Boss!' : '❌ Sai rồi! 🛡 Boss chưa mất máu'}</span>
+        ${selected === correct && _quiz.combo >= 2 ? `<span class="combo-badge">🔥 Combo x${_quiz.combo}</span>` : ''}
       </div>
+      <div class="practice-feedback-body">
+        ${selected !== correct ? `<div class="practice-feedback-correct">Đáp án đúng: <strong>${esc(question.options[correct])}</strong></div>` : ''}
+        ${question.explanation ? `<div class="practice-feedback-exp">${esc(question.explanation)}</div>` : ''}
+      </div>
+    </div>
+    <div class="practice-inline-nav">
+      <button class="btn btn-primary practice-next-btn" onclick="practiceAdvance()">Tiếp theo →</button>
     </div>` : '';
 
   const isMastered = isPractice && _quiz.pMastered[qIdx];
@@ -234,7 +238,8 @@ function buildQuizQuestion(question, i) {
         ${flagBtn}
       </div>
       <div class="q-text">${esc(question.text)}</div>
-      ${isLocked ? feedbackHtml : `<div class="options-list">${optHtml}</div>`}
+      <div class="options-list">${optHtml}</div>
+      ${feedbackHtml}
     </div>`;
 }
 
