@@ -1,4 +1,4 @@
-const APP_V = 106;
+const APP_V = 107;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -66,6 +66,8 @@ function navTo(name) {
 function renderSettings() {
   const el = document.getElementById('settings-version');
   if (el) el.textContent = 'v' + APP_V;
+  const soundToggle = document.getElementById('settings-sound-toggle');
+  if (soundToggle) soundToggle.checked = getSoundEnabled();
 }
 
 function confirmClearAllData() {

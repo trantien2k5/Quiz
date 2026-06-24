@@ -67,12 +67,16 @@ function startQuiz(setOrId, settings) {
   };
   _quiz.activityTracker = startActivityTracking({
     onResumeNudge: sec => toast(`👋 Quay lại tập trung học nào! (đã rời ${fmtTime(sec)})`),
-    onPomodoroBreak: () => toast('🍅 Đã học liên tục 25 phút — nghỉ giải lao 5 phút nhé!')
+    onPomodoroBreak: () => toast('🍅 Đã học liên tục 25 phút — nghỉ giải lao 5 phút nhé!'),
+    onIdleWarning: () => toast('⏸️ Không thấy thao tác — bộ đếm sẽ tạm dừng nếu bạn rời thêm 60s nữa')
   });
   _quizInProgress = true;
   localStorage.setItem('quiz_last_set', _quiz.originalSetId);
   document.querySelector('[onclick="toggleQuizMode()"]').style.display = '';
   document.getElementById('quiz-side-map').style.display = '';
+  document.querySelector('.quiz-progress-bar').style.display = '';
+  document.getElementById('quiz-counter').style.display = '';
+  document.getElementById('quiz-practice-hud').style.display = 'none';
   renderQuiz();
   showScreen('screen-quiz');
 }
@@ -105,6 +109,9 @@ function startPractice(setOrId) {
     responseTimes: new Array(n).fill(null),
     locked:  new Array(n).fill(false),
     flagged: new Array(n).fill(false),
+    combo: 0,
+    totalAttempts: 0,
+    correctAttempts: 0,
     startTime: Date.now(),
     currentIdx: 0,
     timerInterval: null,
@@ -113,12 +120,20 @@ function startPractice(setOrId) {
   };
   _quiz.activityTracker = startActivityTracking({
     onResumeNudge: sec => toast(`👋 Quay lại tập trung học nào! (đã rời ${fmtTime(sec)})`),
-    onPomodoroBreak: () => toast('🍅 Đã học liên tục 25 phút — nghỉ giải lao 5 phút nhé!')
+    onPomodoroBreak: () => toast('🍅 Đã học liên tục 25 phút — nghỉ giải lao 5 phút nhé!'),
+    onIdleWarning: () => toast('⏸️ Không thấy thao tác — bộ đếm sẽ tạm dừng nếu bạn rời thêm 60s nữa')
   });
   _quizInProgress = true;
   localStorage.setItem('quiz_last_set', _quiz.originalSetId);
   document.querySelector('[onclick="toggleQuizMode()"]').style.display = 'none';
   document.getElementById('quiz-side-map').style.display = 'none';
+  document.querySelector('.quiz-progress-bar').style.display = 'none';
+  document.getElementById('quiz-counter').style.display = 'none';
+  document.getElementById('quiz-timer').style.display = 'none';
+  document.getElementById('quiz-practice-hud').style.display = '';
+  _quiz.activeDisplayInterval = setInterval(() => {
+    document.getElementById('practice-hud-timer').textContent = '⏱ ' + fmtTime(_quiz.activityTracker.getActiveSec());
+  }, 1000);
   renderQuiz();
   showScreen('screen-quiz');
 }
@@ -148,7 +163,7 @@ function renderQuiz() {
         }
       }, 1000);
     }
-  } else {
+  } else if (!q.pQueue) {
     timerEl.style.display = 'none';
   }
 
@@ -188,7 +203,8 @@ function buildQuizQuestion(question, i) {
 
   const feedbackHtml = isLocked ? `
     <div class="practice-feedback ${selected === correct ? 'correct' : 'wrong'}">
-      <div class="practice-feedback-badge">${selected === correct ? '✅ Chính xác!' : '❌ Sai rồi!'}</div>
+      <div class="practice-feedback-badge">${selected === correct ? '✅ Chính xác! ⚔️ Đánh trúng Boss!' : '❌ Sai rồi! 🛡 Boss chưa mất máu'}</div>
+      ${selected === correct && _quiz.combo >= 2 ? `<div class="combo-badge">🔥 Combo x${_quiz.combo}</div>` : ''}
       ${selected !== correct ? `<div class="practice-feedback-correct">Đáp án đúng: <strong>${esc(question.options[correct])}</strong></div>` : ''}
       ${question.explanation ? `<div class="practice-feedback-exp">${esc(question.explanation)}</div>` : ''}
       <div class="practice-inline-nav">
@@ -242,6 +258,7 @@ function updateQuizCounterDisplay() {
     document.getElementById('quiz-counter').textContent =
       `${mastered}/${total} đã thuộc${skipped ? ' · ' + skipped + ' bỏ qua' : ''}`;
     document.getElementById('quiz-progress-fill').style.width = ((mastered + skipped) / total * 100) + '%';
+    updatePracticeHud();
   } else {
     const answered = q.answers.filter(a => a !== null).length;
     if (q.mode === 'one-by-one') {
@@ -250,6 +267,33 @@ function updateQuizCounterDisplay() {
       document.getElementById('quiz-counter').textContent = `${answered}/${total} đã trả lời`;
     }
     document.getElementById('quiz-progress-fill').style.width = (answered / total * 100) + '%';
+  }
+}
+
+/* HUD luyện tập: Boss HP (= % chưa thuộc), combo, accuracy live, near-finish banner */
+function updatePracticeHud() {
+  const q = _quiz;
+  const total = q.set.questions.length;
+  const mastered = q.pMastered.filter(Boolean).length;
+  const skipped  = q.pSkipped.filter(Boolean).length;
+  const bossHp = Math.max(0, Math.round((1 - mastered / total) * 100));
+  document.getElementById('boss-hp-pct').textContent = bossHp + '%';
+  document.getElementById('boss-hp-fill').style.width = bossHp + '%';
+
+  const comboEl = document.getElementById('practice-hud-combo');
+  if (q.combo >= 2) { comboEl.style.display = ''; comboEl.textContent = `🔥 x${q.combo}`; }
+  else comboEl.style.display = 'none';
+
+  const acc = q.totalAttempts ? Math.round(q.correctAttempts / q.totalAttempts * 100) : 100;
+  document.getElementById('practice-hud-accuracy').textContent = `🎯 ${acc}%`;
+
+  const remaining = total - mastered - skipped;
+  const finishEl = document.getElementById('practice-near-finish');
+  if (remaining > 0 && remaining <= 3) {
+    finishEl.style.display = '';
+    finishEl.textContent = `🏁 Còn ${remaining} câu nữa`;
+  } else {
+    finishEl.style.display = 'none';
   }
 }
 
@@ -302,6 +346,19 @@ function selectAnswer(qIdx, optIdx) {
   _quiz.answers[qIdx] = optIdx;
   if (_quiz.pQueue) { // practice mode
     _quiz.locked[qIdx] = true;
+    const isCorrect = optIdx === _quiz.set.questions[_quiz.pQueue[qIdx]].correct;
+    const rt = _quiz.responseTimes[qIdx];
+    const prevCombo = _quiz.combo || 0;
+    _quiz.combo = isCorrect ? prevCombo + 1 : 0;
+    _quiz.totalAttempts++;
+    if (isCorrect) _quiz.correctAttempts++;
+    playSound(isCorrect ? 'correct' : 'wrong');
+    if (isCorrect) {
+      const isCrit = (rt != null && rt < 3000) || (_quiz.combo > 0 && _quiz.combo % 3 === 0);
+      showFloatingXp(isCrit ? '⚡ +15 XP' : '+10 XP', isCrit);
+    } else if (prevCombo >= 2) {
+      showComboBrokenFlash();
+    }
     renderCurrentQuestion();
     renderQuizNav();
     return;
@@ -369,7 +426,9 @@ function practiceAdvance() {
 
 /* Lưu kết quả luyện tập (history + skill/topic log) — dùng chung cho hoàn thành tự nhiên VÀ thoát giữa chừng */
 function _savePracticeResults() {
+  const oldLevel = getXpLevelInfo(getHistory()).level;
   const timeTaken = Math.round((Date.now() - _quiz.startTime) / 1000);
+  clearInterval(_quiz.activeDisplayInterval);
   const activeTimeSec = _quiz.activityTracker ? _quiz.activityTracker.stop() : null;
   const total    = _quiz.set.questions.length;
   const mastered = _quiz.pMastered.filter(Boolean).length;
@@ -391,6 +450,8 @@ function _savePracticeResults() {
     responseTimes: _quiz.set.questions.map((_, i) => _rtByQIdx[i] ?? null)
   };
   addHistoryEntry(entry);
+  const newXp = getXpLevelInfo(getHistory());
+  if (newXp.level > oldLevel) showLevelUpCelebration(newXp);
   // Log skill + topic timeline
   const _today = new Date().toISOString().slice(0,10);
   const _sk = {}, _skW = {};
@@ -417,11 +478,11 @@ function finishPractice() {
 
 function renderPracticeResult(mastered, skipped, total, timeTaken, set, activeTimeSec) {
   const pct = Math.round(mastered / total * 100);
-  const emoji = pct === 100 ? '🎉' : pct >= 70 ? '👍' : '💪';
+  const emoji = pct === 100 ? '🏆' : pct >= 70 ? '👍' : '💪';
 
   document.getElementById('result-emoji').textContent = emoji;
   document.getElementById('result-title').textContent =
-    pct === 100 ? 'Xuất sắc! Thuộc hết rồi!' : `Hoàn thành luyện tập!`;
+    pct === 100 ? '🎉 Boss Defeated! Chapter Cleared!' : `Hoàn thành luyện tập!`;
   document.getElementById('result-subtitle').textContent =
     `${set.name} · ${fmtTime(timeTaken)}`;
   const elActive = document.getElementById('result-active-time');
@@ -558,6 +619,7 @@ function submitQuizConfirm() {
 
 function submitQuiz(autoSubmit) {
   if (!_quiz) return;
+  const oldLevel = getXpLevelInfo(getHistory()).level;
   clearInterval(_quiz.timerInterval);
   _quiz.timerInterval = null;
   _quizInProgress = false;
@@ -587,6 +649,8 @@ function submitQuiz(autoSubmit) {
     responseTimes: q.responseTimes.slice()
   };
   addHistoryEntry(entry);
+  const newXp = getXpLevelInfo(getHistory());
+  if (newXp.level > oldLevel) showLevelUpCelebration(newXp);
   // Log skill + topic timeline
   const _today = new Date().toISOString().slice(0,10);
   const _sk = {}, _skW = {};
@@ -620,6 +684,7 @@ function toggleQuizMode() {
 function exitQuiz() {
   const goBack = () => {
     clearInterval(_quiz && _quiz.timerInterval);
+    clearInterval(_quiz && _quiz.activeDisplayInterval);
     if (_quiz && _quiz.activityTracker) _quiz.activityTracker.stop();
     _quizInProgress = false; _quiz = null; navTo('library');
   };

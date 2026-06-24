@@ -15,35 +15,37 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- base -->
-  <link rel="stylesheet" href="css/base/tokens.css?v=106">
-  <link rel="stylesheet" href="css/base/reset.css?v=106">
+  <link rel="stylesheet" href="css/base/tokens.css?v=107">
+  <link rel="stylesheet" href="css/base/reset.css?v=107">
   <!-- layout -->
-  <link rel="stylesheet" href="css/layout/shell.css?v=106">
-  <link rel="stylesheet" href="css/layout/nav.css?v=106">
+  <link rel="stylesheet" href="css/layout/shell.css?v=107">
+  <link rel="stylesheet" href="css/layout/nav.css?v=107">
   <!-- components -->
-  <link rel="stylesheet" href="css/components/button.css?v=106">
-  <link rel="stylesheet" href="css/components/form.css?v=106">
-  <link rel="stylesheet" href="css/components/toggle.css?v=106">
-  <link rel="stylesheet" href="css/components/badge.css?v=106">
-  <link rel="stylesheet" href="css/components/modal.css?v=106">
-  <link rel="stylesheet" href="css/components/toast.css?v=106">
-  <link rel="stylesheet" href="css/components/update-banner.css?v=106">
-  <link rel="stylesheet" href="css/components/fab.css?v=106">
-  <link rel="stylesheet" href="css/components/card.css?v=106">
-  <link rel="stylesheet" href="css/components/section-label.css?v=106">
-  <link rel="stylesheet" href="css/components/drop-zone.css?v=106">
-  <link rel="stylesheet" href="css/components/settings-row.css?v=106">
+  <link rel="stylesheet" href="css/components/button.css?v=107">
+  <link rel="stylesheet" href="css/components/form.css?v=107">
+  <link rel="stylesheet" href="css/components/toggle.css?v=107">
+  <link rel="stylesheet" href="css/components/badge.css?v=107">
+  <link rel="stylesheet" href="css/components/modal.css?v=107">
+  <link rel="stylesheet" href="css/components/toast.css?v=107">
+  <link rel="stylesheet" href="css/components/update-banner.css?v=107">
+  <link rel="stylesheet" href="css/components/fab.css?v=107">
+  <link rel="stylesheet" href="css/components/level-up.css?v=107">
+  <link rel="stylesheet" href="css/components/confetti.css?v=107">
+  <link rel="stylesheet" href="css/components/card.css?v=107">
+  <link rel="stylesheet" href="css/components/section-label.css?v=107">
+  <link rel="stylesheet" href="css/components/drop-zone.css?v=107">
+  <link rel="stylesheet" href="css/components/settings-row.css?v=107">
   <!-- pages -->
-  <link rel="stylesheet" href="css/pages/home.css?v=106">
-  <link rel="stylesheet" href="css/pages/editor.css?v=106">
-  <link rel="stylesheet" href="css/pages/quiz.css?v=106">
-  <link rel="stylesheet" href="css/pages/results.css?v=106">
-  <link rel="stylesheet" href="css/pages/history.css?v=106">
-  <link rel="stylesheet" href="css/pages/ai.css?v=106">
-  <link rel="stylesheet" href="css/pages/import.css?v=106">
+  <link rel="stylesheet" href="css/pages/home.css?v=107">
+  <link rel="stylesheet" href="css/pages/editor.css?v=107">
+  <link rel="stylesheet" href="css/pages/quiz.css?v=107">
+  <link rel="stylesheet" href="css/pages/results.css?v=107">
+  <link rel="stylesheet" href="css/pages/history.css?v=107">
+  <link rel="stylesheet" href="css/pages/ai.css?v=107">
+  <link rel="stylesheet" href="css/pages/import.css?v=107">
   <!-- utilities -->
-  <link rel="stylesheet" href="css/utilities/utilities.css?v=106">
-  <link rel="stylesheet" href="css/utilities/animations.css?v=106">
+  <link rel="stylesheet" href="css/utilities/utilities.css?v=107">
+  <link rel="stylesheet" href="css/utilities/animations.css?v=107">
 </head>
 <body>
 <div id="update-banner">
@@ -234,7 +236,18 @@ Giải thích: ...</pre>
       <h1>⚙️ Cài đặt</h1>
     </div>
     <div class="scroll-content">
-      <div class="section-label">Trí tuệ nhân tạo (AI)</div>
+      <div class="section-label">Hành trình học</div>
+      <div class="settings-card">
+        <button class="settings-row" onclick="showChapterManager()">
+          <div class="settings-row-info">
+            <div class="settings-row-label">🗺 Quản lý Chapter</div>
+            <div class="settings-row-desc">Nhóm bộ đề thành hành trình học có thứ tự</div>
+          </div>
+          <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <div class="section-label" style="margin-top:1.25rem">Trí tuệ nhân tạo (AI)</div>
       <div class="settings-card">
         <button class="settings-row" onclick="showAiConfig()">
           <div class="settings-row-info">
@@ -268,6 +281,20 @@ Giải thích: ...</pre>
           </div>
           <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
+      </div>
+
+      <div class="section-label" style="margin-top:1.25rem">Trải nghiệm</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label">🔊 Âm thanh hiệu ứng</div>
+            <div class="settings-row-desc">Tiếng khi trả lời đúng/sai, lên Level</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="settings-sound-toggle" onchange="saveSoundEnabled(this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
       </div>
 
       <div class="section-label" style="margin-top:1.25rem">Vùng nguy hiểm</div>
@@ -376,6 +403,37 @@ Giải thích: ...</pre>
     </div>
   </div>
 
+  <!-- ===== MODAL CHAPTER MANAGER (Hành trình học) ===== -->
+  <div id="modal-chapter-manager" class="modal-overlay" onclick="if(event.target===this)hideChapterManager()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">🗺 Quản lý Chapter</div>
+      <div id="chapter-manager-list" style="max-height:50vh;overflow-y:auto"></div>
+      <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="addChapter()">+ Thêm Chapter</button>
+    </div>
+  </div>
+
+  <!-- ===== MODAL CHAPTER EDIT ===== -->
+  <div id="modal-chapter-edit" class="modal-overlay" onclick="if(event.target===this)hideChapterEdit()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Chapter</div>
+      <div class="form-row">
+        <div class="form-group" style="flex:0 0 4rem">
+          <label class="form-label">Icon</label>
+          <input type="text" id="chapter-edit-icon" class="form-control" maxlength="4">
+        </div>
+        <div class="form-group" style="flex:1">
+          <label class="form-label">Tên Chapter</label>
+          <input type="text" id="chapter-edit-name" class="form-control" placeholder="VD: Cơ bản, Giao tiếp văn phòng...">
+        </div>
+      </div>
+      <label class="form-label">Bộ đề thuộc Chapter này</label>
+      <div id="chapter-edit-sets" style="max-height:35vh;overflow-y:auto;margin-bottom:12px"></div>
+      <button class="btn btn-primary btn-full" onclick="saveChapterDraft()">Lưu Chapter</button>
+    </div>
+  </div>
+
   <!-- ===== MODAL AI ANALYSIS ===== -->
   <div id="modal-ai-analysis" class="modal-overlay" onclick="if(event.target===this)hideAiAnalysisModal()">
     <div class="modal-sheet">
@@ -386,6 +444,33 @@ Giải thích: ...</pre>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
         Phân tích lại
       </button>
+    </div>
+  </div>
+
+  <!-- ===== LEVEL UP CELEBRATION ===== -->
+  <div id="level-up-overlay" class="level-up-overlay" onclick="hideLevelUp()">
+    <div class="level-up-card">
+      <div class="level-up-icon" id="level-up-icon">🌱</div>
+      <div class="level-up-title" id="level-up-title">Lên Level!</div>
+      <div class="level-up-sub" id="level-up-sub"></div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL DAY DETAIL (heatmap) ===== -->
+  <div id="modal-day-detail" class="modal-overlay" onclick="if(event.target===this)hideDayDetail()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title" id="day-detail-title">Chi tiết ngày</div>
+      <div id="day-detail-body"></div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL ANALYSIS DETAIL (Phân tích — chi tiết chủ đề/bộ đề) ===== -->
+  <div id="modal-analysis-detail" class="modal-overlay" onclick="if(event.target===this)hideAnalysisDetail()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title" id="analysis-detail-title">Chi tiết</div>
+      <div id="analysis-detail-body" style="max-height:60vh;overflow-y:auto"></div>
     </div>
   </div>
 
@@ -409,6 +494,19 @@ Giải thích: ...</pre>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         <span id="quiz-timer-text">00:00</span>
       </div>
+    </div>
+    <div id="quiz-practice-hud" class="quiz-practice-hud" style="display:none">
+      <div class="boss-hp-row">
+        <span>👹 Boss HP</span>
+        <span id="boss-hp-pct">100%</span>
+      </div>
+      <div class="boss-hp-bar-wrap"><div id="boss-hp-fill" class="boss-hp-fill" style="width:100%"></div></div>
+      <div class="practice-hud-stats">
+        <span id="practice-hud-combo" class="practice-hud-combo" style="display:none">🔥 x0</span>
+        <span id="practice-hud-accuracy">🎯 100%</span>
+        <span id="practice-hud-timer">⏱ 0:00</span>
+      </div>
+      <div id="practice-near-finish" class="near-finish-banner" style="display:none">🏁 Còn câu nữa</div>
     </div>
     <div class="scroll-content" style="padding:16px;padding-bottom:16px">
       <div id="quiz-questions-content"></div>
@@ -530,7 +628,7 @@ Giải thích: ...</pre>
         <button class="btn-icon" onclick="showHistoryHome()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
-        <h1>Tổng quan</h1>
+        <h1>Dashboard</h1>
       </div>
       <div class="scroll-content" id="hst-overview-body"></div>
     </div>
@@ -546,6 +644,17 @@ Giải thích: ...</pre>
       <div class="scroll-content" id="hst-progress-body"></div>
     </div>
 
+    <!-- CẤP 2: Phân tích -->
+    <div id="hst-analysis" class="hst-sub">
+      <div class="top-bar">
+        <button class="btn-icon" onclick="showHistoryHome()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h1>Phân tích</h1>
+      </div>
+      <div class="scroll-content" id="hst-analysis-body"></div>
+    </div>
+
     <!-- CẤP 2: Lỗi sai -->
     <div id="hst-mistakes" class="hst-sub">
       <div class="top-bar">
@@ -557,6 +666,39 @@ Giải thích: ...</pre>
       <div class="scroll-content" id="hst-mistakes-body"></div>
     </div>
 
+    <!-- CẤP 2: Ghi nhớ -->
+    <div id="hst-memory" class="hst-sub">
+      <div class="top-bar">
+        <button class="btn-icon" onclick="showHistoryHome()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h1>Ghi nhớ</h1>
+      </div>
+      <div class="scroll-content" id="hst-memory-body"></div>
+    </div>
+
+    <!-- CẤP 2: Hiệu suất -->
+    <div id="hst-performance" class="hst-sub">
+      <div class="top-bar">
+        <button class="btn-icon" onclick="showHistoryHome()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h1>Hiệu suất</h1>
+      </div>
+      <div class="scroll-content" id="hst-performance-body"></div>
+    </div>
+
+    <!-- CẤP 2: Hành vi học -->
+    <div id="hst-behavior" class="hst-sub">
+      <div class="top-bar">
+        <button class="btn-icon" onclick="showHistoryHome()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h1>Hành vi học</h1>
+      </div>
+      <div class="scroll-content" id="hst-behavior-body"></div>
+    </div>
+
     <!-- CẤP 2: Lịch sử -->
     <div id="hst-log" class="hst-sub">
       <div class="top-bar">
@@ -566,6 +708,50 @@ Giải thích: ...</pre>
         <h1>Lịch sử</h1>
       </div>
       <div class="scroll-content" id="hst-log-body"></div>
+    </div>
+
+    <!-- CẤP 2: So sánh -->
+    <div id="hst-compare" class="hst-sub">
+      <div class="top-bar">
+        <button class="btn-icon" onclick="showHistoryHome()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h1>So sánh</h1>
+      </div>
+      <div class="scroll-content" id="hst-compare-body"></div>
+    </div>
+
+    <!-- CẤP 2: Dự đoán -->
+    <div id="hst-predict" class="hst-sub">
+      <div class="top-bar">
+        <button class="btn-icon" onclick="showHistoryHome()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h1>Dự đoán</h1>
+      </div>
+      <div class="scroll-content" id="hst-predict-body"></div>
+    </div>
+
+    <!-- CẤP 2: Báo cáo -->
+    <div id="hst-report" class="hst-sub">
+      <div class="top-bar">
+        <button class="btn-icon" onclick="showHistoryHome()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h1>Báo cáo</h1>
+      </div>
+      <div class="scroll-content" id="hst-report-body"></div>
+    </div>
+
+    <!-- CẤP 2: Cài đặt thống kê -->
+    <div id="hst-settings" class="hst-sub">
+      <div class="top-bar">
+        <button class="btn-icon" onclick="showHistoryHome()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h1>Cài đặt thống kê</h1>
+      </div>
+      <div class="scroll-content" id="hst-settings-body"></div>
     </div>
 
   </section>
@@ -685,18 +871,20 @@ Giải thích: ...</pre>
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="js/core/storage.js?v=106" defer></script>
-<script src="js/core/utils.js?v=106" defer></script>
-<script src="js/core/activity-tracker.js?v=106" defer></script>
-<script src="js/home.js?v=106" defer></script>
-<script src="js/editor.js?v=106" defer></script>
-<script src="js/quiz.js?v=106" defer></script>
-<script src="js/results.js?v=106" defer></script>
-<script src="js/library.js?v=106" defer></script>
-<script src="js/history.js?v=106" defer></script>
-<script src="js/ai.js?v=106" defer></script>
-<script src="js/import-text.js?v=106" defer></script>
-<script src="js/core/app.js?v=106" defer></script>
+<script src="js/core/storage.js?v=107" defer></script>
+<script src="js/core/utils.js?v=107" defer></script>
+<script src="js/core/activity-tracker.js?v=107" defer></script>
+<script src="js/home.js?v=107" defer></script>
+<script src="js/editor.js?v=107" defer></script>
+<script src="js/quiz.js?v=107" defer></script>
+<script src="js/results.js?v=107" defer></script>
+<script src="js/library.js?v=107" defer></script>
+<script src="js/history.js?v=107" defer></script>
+<script src="js/history-progress.js?v=107" defer></script>
+<script src="js/history-analysis.js?v=107" defer></script>
+<script src="js/ai.js?v=107" defer></script>
+<script src="js/import-text.js?v=107" defer></script>
+<script src="js/core/app.js?v=107" defer></script>
 <script>
   if ('serviceWorker' in navigator) {
     const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname);

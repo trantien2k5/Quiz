@@ -17,6 +17,8 @@ function renderResult(entry, set, activeTimeSec) {
   document.getElementById('result-detail-btn').style.display = '';
   document.getElementById('result-detail-btn').innerHTML = '📋 Xem đáp án chi tiết';
 
+  if (pct === 100) triggerConfetti();
+
   // Populate summary
   document.getElementById('result-emoji').textContent = resultEmoji(pct);
   document.getElementById('result-title').textContent =

@@ -1,0 +1,25 @@
+/* =====================================================
+   COMPONENT: Confetti burst (kết quả 100%)
+   ===================================================== */
+
+.confetti-container {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-toast);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -1rem;
+  width: 0.5rem;
+  height: 0.875rem;
+  opacity: 0.9;
+  animation: confettiFall linear forwards;
+}
+
+@keyframes confettiFall {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 0.9; }
+  100% { transform: translateY(110vh) rotate(540deg); opacity: 0; }
+}

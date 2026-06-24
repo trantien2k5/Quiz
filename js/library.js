@@ -434,3 +434,108 @@ function handleImportFile(e) {
   reader.onload = ev => importSetsFromJSON(ev.target.result);
   reader.readAsText(file);
 }
+
+/* ===== HÀNH TRÌNH HỌC (Chapter) — quản lý từ modal riêng, hiển thị ở Dashboard (js/history.js) ===== */
+function getChapterProgress(chapter) {
+  const sets = chapter.setIds.map(id => getSet(id)).filter(Boolean);
+  if (!sets.length) return { done: 0, total: 0, pct: 0, mastered: false };
+  const done = sets.filter(s => (getBestScore(s.id) ?? 0) >= 80).length;
+  return { done, total: sets.length, pct: Math.round(done / sets.length * 100), mastered: done === sets.length };
+}
+
+function showChapterManager() {
+  renderChapterManagerList();
+  document.getElementById('modal-chapter-manager').classList.add('active');
+}
+function hideChapterManager() {
+  document.getElementById('modal-chapter-manager').classList.remove('active');
+}
+
+function renderChapterManagerList() {
+  const chapters = getChapters();
+  const el = document.getElementById('chapter-manager-list');
+  if (!chapters.length) {
+    el.innerHTML = `<p class="form-hint" style="text-align:center;padding:12px 0">Chưa có Chapter nào. Tạo Chapter để nhóm bộ đề thành hành trình học có thứ tự.</p>`;
+    return;
+  }
+  el.innerHTML = chapters.map((ch, i) => {
+    const prog = getChapterProgress(ch);
+    return `<div class="settings-row">
+      <div class="settings-row-info">
+        <div class="settings-row-label">${esc(ch.icon || '📘')} ${esc(ch.name)}</div>
+        <div class="settings-row-desc">${prog.total} bộ đề · ${prog.pct}% hoàn thành</div>
+      </div>
+      <div style="display:flex;gap:4px">
+        <button class="btn-icon" onclick="moveChapter(${i},-1)" ${i === 0 ? 'disabled' : ''} title="Lên">▲</button>
+        <button class="btn-icon" onclick="moveChapter(${i},1)" ${i === chapters.length - 1 ? 'disabled' : ''} title="Xuống">▼</button>
+        <button class="btn-icon" onclick="editChapter('${ch.id}')" title="Sửa">✏️</button>
+        <button class="btn-icon" onclick="deleteChapter('${ch.id}')" title="Xoá">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function moveChapter(idx, dir) {
+  const chapters = getChapters();
+  const j = idx + dir;
+  if (j < 0 || j >= chapters.length) return;
+  [chapters[idx], chapters[j]] = [chapters[j], chapters[idx]];
+  saveChapters(chapters);
+  renderChapterManagerList();
+}
+
+function deleteChapter(id) {
+  confirm('Xoá Chapter', 'Bộ đề trong Chapter này không bị xoá, chỉ bỏ khỏi hành trình.', () => {
+    saveChapters(getChapters().filter(c => c.id !== id));
+    renderChapterManagerList();
+  });
+}
+
+let _chapterDraft = null;
+function addChapter() {
+  _chapterDraft = { id: uid(), name: '', icon: '📘', setIds: [] };
+  renderChapterEditForm();
+  document.getElementById('modal-chapter-edit').classList.add('active');
+}
+function editChapter(id) {
+  const ch = getChapters().find(c => c.id === id);
+  if (!ch) return;
+  _chapterDraft = { ...ch, setIds: ch.setIds.slice() };
+  renderChapterEditForm();
+  document.getElementById('modal-chapter-edit').classList.add('active');
+}
+function hideChapterEdit() {
+  document.getElementById('modal-chapter-edit').classList.remove('active');
+  _chapterDraft = null;
+}
+
+function renderChapterEditForm() {
+  document.getElementById('chapter-edit-name').value = _chapterDraft.name;
+  document.getElementById('chapter-edit-icon').value = _chapterDraft.icon;
+  const sets = getSets();
+  document.getElementById('chapter-edit-sets').innerHTML = sets.length
+    ? sets.map(s => `<label class="chapter-set-check">
+        <input type="checkbox" value="${s.id}" ${_chapterDraft.setIds.includes(s.id) ? 'checked' : ''} onchange="toggleChapterSet('${s.id}', this.checked)">
+        <span>${esc(s.name)}</span>
+      </label>`).join('')
+    : `<p class="form-hint">Chưa có bộ đề nào trong Luyện đề</p>`;
+}
+
+function toggleChapterSet(setId, checked) {
+  if (checked) { if (!_chapterDraft.setIds.includes(setId)) _chapterDraft.setIds.push(setId); }
+  else { _chapterDraft.setIds = _chapterDraft.setIds.filter(id => id !== setId); }
+}
+
+function saveChapterDraft() {
+  const name = document.getElementById('chapter-edit-name').value.trim();
+  if (!name) { toast('Vui lòng nhập tên Chapter', 'error'); return; }
+  _chapterDraft.name = name;
+  _chapterDraft.icon = document.getElementById('chapter-edit-icon').value.trim() || '📘';
+  const chapters = getChapters();
+  const idx = chapters.findIndex(c => c.id === _chapterDraft.id);
+  if (idx >= 0) chapters[idx] = _chapterDraft; else chapters.push(_chapterDraft);
+  saveChapters(chapters);
+  hideChapterEdit();
+  renderChapterManagerList();
+  toast('Đã lưu Chapter', 'success');
+}

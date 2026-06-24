@@ -1,0 +1,42 @@
+/* =====================================================
+   COMPONENT: Level-up celebration overlay
+   ===================================================== */
+
+.level-up-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-toast);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.level-up-overlay.active {
+  display: flex;
+  animation: fadeIn var(--transition-base) ease;
+}
+
+.level-up-card {
+  padding: var(--space-8) var(--space-6);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+  text-align: center;
+  animation: levelUpPop 0.5s ease;
+}
+
+.level-up-icon { font-size: 3rem; line-height: 1; }
+
+.level-up-title {
+  margin-top: var(--space-2);
+  font-size: var(--text-2xl);
+  font-weight: var(--fw-black);
+  color: var(--color-text);
+}
+
+.level-up-sub {
+  margin-top: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}

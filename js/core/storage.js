@@ -98,6 +98,31 @@ function _appendDayLog(storageKey, name, date, c, w) {
 function appendSkillLog(skill, date, c, w) { _appendDayLog('quiz_skill_log', skill, date, c, w); }
 function appendTopicLog(topic, date, c, w)  { _appendDayLog('quiz_topic_log', topic, date, c, w); }
 
+/* ===== HÀNH TRÌNH HỌC (Chapter — nhóm bộ đề user tự định nghĩa) ===== */
+function getChapters() {
+  try { return JSON.parse(localStorage.getItem('quiz_chapters') || '[]'); } catch { return []; }
+}
+function saveChapters(chapters) {
+  localStorage.setItem('quiz_chapters', JSON.stringify(chapters));
+}
+
+/* ===== ÂM THANH HIỆU ỨNG (Cài đặt > Trải nghiệm) ===== */
+function getSoundEnabled() {
+  const v = localStorage.getItem('quiz_sound_enabled');
+  return v === null ? true : v === '1';
+}
+function saveSoundEnabled(enabled) {
+  localStorage.setItem('quiz_sound_enabled', enabled ? '1' : '0');
+}
+
+/* ===== MỤC TIÊU THỐNG KÊ (tab Thống kê > Cài đặt) ===== */
+function getStatsGoal() {
+  try { return JSON.parse(localStorage.getItem('quiz_stats_goal') || '{}'); } catch { return {}; }
+}
+function saveStatsGoal(goal) {
+  localStorage.setItem('quiz_stats_goal', JSON.stringify(goal));
+}
+
 /* ===== AI CONFIG (API key, model, tỷ giá) ===== */
 function getAiConfig() {
   try { return JSON.parse(localStorage.getItem('quiz_ai_config') || '{}'); } catch { return {}; }

@@ -126,6 +126,65 @@ function flashSuccess(btn, successText, duration = 1800) {
   }, duration);
 }
 
+/* ===== SOUND EFFECTS (Web Audio API — không cần file asset) ===== */
+let _audioCtx = null;
+function playSound(type) {
+  if (!getSoundEnabled()) return;
+  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const ctx = _audioCtx;
+  const tones = {
+    correct: [{ freq: 880, at: 0 }, { freq: 1320, at: 0.08 }],
+    wrong: [{ freq: 220, at: 0 }],
+    levelup: [{ freq: 660, at: 0 }, { freq: 880, at: 0.1 }, { freq: 1100, at: 0.2 }]
+  };
+  (tones[type] || []).forEach(({ freq, at }) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.15, ctx.currentTime + at);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + at + 0.15);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(ctx.currentTime + at);
+    osc.stop(ctx.currentTime + at + 0.15);
+  });
+}
+
+/* ===== CONFETTI (pure CSS, không thư viện) ===== */
+function triggerConfetti(count = 40) {
+  const container = document.createElement('div');
+  container.className = 'confetti-container';
+  const colors = ['#FFC700', '#FF3D71', '#00C2FF', '#4ADE80', '#A78BFA'];
+  for (let i = 0; i < count; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.background = colors[i % colors.length];
+    piece.style.animationDelay = (Math.random() * 0.4) + 's';
+    piece.style.animationDuration = (1.8 + Math.random() * 1) + 's';
+    container.appendChild(piece);
+  }
+  document.body.appendChild(container);
+  setTimeout(() => container.remove(), 3200);
+}
+
+/* ===== FLOATING XP / COMBO BROKEN (practice mode HUD) ===== */
+function showFloatingXp(text, isCrit) {
+  const el = document.createElement('div');
+  el.className = 'floating-xp' + (isCrit ? ' crit' : '');
+  el.textContent = text;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1200);
+}
+
+function showComboBrokenFlash() {
+  const el = document.createElement('div');
+  el.className = 'combo-broken-flash';
+  el.textContent = '💥 Combo Broken';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1100);
+}
+
 function getISOWeek(date) {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
