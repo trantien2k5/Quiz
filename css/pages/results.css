@@ -2,6 +2,15 @@
    PAGE: Results — score hero · score card · review
    ===================================================== */
 
+/* VIEW 1 wrapper thiếu display:flex sẽ khiến .scroll-content (flex:1) bên trong
+   không có hiệu lực — content cao hơn viewport (vd landscape, chiều cao thấp)
+   sẽ bị section cha (overflow:hidden) cắt mất, không cuộn/bấm nút được. */
+#result-summary-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 /* ===== RESULT HERO ===== */
 .result-hero {
   padding: 1.75rem var(--space-4) 1.25rem;
