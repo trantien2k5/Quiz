@@ -78,6 +78,9 @@ function startQuiz(setOrId, settings) {
   document.querySelector('.quiz-header').style.display = '';
   document.getElementById('quiz-counter').style.display = '';
   document.getElementById('quiz-practice-hud').style.display = 'none';
+  document.getElementById('practice-layout-toggle-btn').style.display = 'none';
+  document.getElementById('quiz-questions-content').classList.remove('layout-flipped');
+  document.getElementById('screen-quiz').classList.remove('is-practice');
   renderQuiz();
   showScreen('screen-quiz');
 }
@@ -143,6 +146,9 @@ function startPractice(setOrId) {
   document.getElementById('quiz-counter').style.display = 'none';
   document.getElementById('quiz-timer').style.display = 'none';
   document.getElementById('quiz-practice-hud').style.display = '';
+  document.getElementById('practice-layout-toggle-btn').style.display = '';
+  document.getElementById('quiz-questions-content').classList.remove('layout-flipped');
+  document.getElementById('screen-quiz').classList.add('is-practice');
   _quiz.activeDisplayInterval = setInterval(() => {
     const txt = '⏱ ' + fmtTime(_quiz.activityTracker.getActiveSec());
     document.getElementById('practice-hud-timer').textContent = txt;
@@ -237,8 +243,10 @@ function buildQuizQuestion(question, i) {
   // .practice-hint-placeholder trong quiz.css, ẨN mặc định ở layout khác vì không có
   // cột riêng để đặt) — full "Boss card" theo mockup design, field có data thật lấy từ
   // hệ thống, field chưa có hệ thống (Lives/Coins/Hint/Mission đa mục tiêu/Reward Chest)
-  // hiện devBadge() (đã hỏi user, chọn giữ đủ layout + đánh dấu phát triển thay vì ẩn)
-  const hintPlaceholder = (isPractice && !isLocked) ? buildPracticeStatsCardHtml(total) : '';
+  // hiện devBadge() (đã hỏi user, chọn giữ đủ layout + đánh dấu phát triển thay vì ẩn).
+  // Luôn render (không kèm điều kiện !isLocked) — CSS quyết định ẩn/hiện theo isLocked
+  // VÀ theo layout (mặc định hay đã .layout-flipped, xem toggleLandscapeLayout())
+  const hintPlaceholder = isPractice ? buildPracticeStatsCardHtml(total) : '';
 
   const isMastered = isPractice && _quiz.pMastered[qIdx];
   const pLPct = isPractice ? Math.round((_quiz.pL[qIdx] ?? 0.3) * 100) : 0;
@@ -526,6 +534,16 @@ function renderPracticeResult(mastered, skipped, total, timeTaken, set, activeTi
   retryBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg> ${skipped > 0 ? 'Luyện lại (gồm câu bỏ qua)' : 'Luyện tập lại'}`;
   retryBtn.onclick = () => startPractice(set.id);
 
+  // Nút ở view chi tiết (result-detail-view) — renderResult() (luồng thi) có wire 2 nút
+  // này, renderPracticeResult() trước đây thì không nên bấm vô tác dụng. notMasteredQs
+  // tính ngay (đóng trong closure) trước khi startPractice() reassign lại _quiz ở trên.
+  document.getElementById('result-retry-btn2').onclick = () => startPractice(set.id);
+  const notMasteredQs = set.questions.filter((q, i) => !_quiz.pMastered[i]);
+  const retryWrongBtn = document.getElementById('result-retry-wrong-btn');
+  retryWrongBtn.textContent = `Làm lại ${notMasteredQs.length} câu chưa thuộc`;
+  retryWrongBtn.disabled = notMasteredQs.length === 0;
+  retryWrongBtn.onclick = () => startPractice({ id: set.id, name: `[Chưa thuộc] ${set.name}`, questions: notMasteredQs });
+
   document.getElementById('result-home-btn').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Về kho đề`;
   document.getElementById('result-home-btn').onclick = () => navTo('library');
 
@@ -708,6 +726,14 @@ function toggleQuizMode() {
   }
   renderQuizNav();
   toast(_quiz.mode === 'all' ? 'Hiển thị tất cả câu' : 'Hiển thị từng câu');
+}
+
+// Đổi vị trí 2 cột ở layout xoay ngang practice (xem .layout-flipped trong quiz.css):
+// mặc định đáp án cột trái/thống kê cột phải, bấm đổi thì ngược lại. Class gắn vào
+// #quiz-questions-content (KHÔNG vào .question-block bên trong) vì element này không bị
+// innerHTML ghi đè mỗi lần đổi câu — giữ trạng thái xuyên suốt phiên luyện tập.
+function toggleLandscapeLayout() {
+  document.getElementById('quiz-questions-content').classList.toggle('layout-flipped');
 }
 
 function exitQuiz() {

@@ -16,6 +16,7 @@ function buildSetCard(set) {
         <div class="set-card-name">${esc(set.name)}</div>
         <div class="set-card-desc">${esc(set.description || 'Không có mô tả')}</div>
       </div>
+      <button class="btn-icon set-card-more-btn" onclick="showSetActions('${set.id}')" title="Thêm tùy chọn">⋮</button>
     </div>
     <div class="set-card-meta">
       <span class="badge badge-purple">${qCount} câu</span>
@@ -26,12 +27,36 @@ function buildSetCard(set) {
     <div class="set-card-actions">
       <button class="btn btn-primary btn-sm" onclick="startPractice('${set.id}')" ${qCount === 0 ? 'disabled' : ''}>🎯 Luyện tập</button>
       <button class="btn btn-secondary btn-sm" onclick="showQuizSettings('${set.id}')" ${qCount === 0 ? 'disabled' : ''}>📝 Thi thử</button>
-      <button class="btn btn-secondary btn-sm" onclick="openEditor('${set.id}')">✏️ Sửa</button>
-      <button class="btn btn-outline btn-sm" onclick="showAICreate('${set.id}')">✨ Thêm câu</button>
-      <button class="btn btn-danger btn-sm" onclick="confirmDeleteSet('${set.id}', '${esc(set.name)}')">🗑 Xóa</button>
-      <button class="btn btn-outline btn-sm" onclick="exportSet('${set.id}')">↓ Xuất</button>
     </div>
   </div>`;
+}
+
+// Modal gộp 4 hành động ít dùng hơn (Sửa/Thêm câu/Xuất/Xóa) — trước đây 6 nút full-width
+// trên mỗi card làm card quá to, gom lại 1 nút "⋮" cho gọn (xem modal-set-actions)
+let _setActionsId = null;
+function showSetActions(id) {
+  _setActionsId = id;
+  document.getElementById('modal-set-actions').classList.add('active');
+}
+function hideSetActions() {
+  document.getElementById('modal-set-actions').classList.remove('active');
+  _setActionsId = null;
+}
+function setActionEdit() {
+  const id = _setActionsId; hideSetActions();
+  openEditor(id);
+}
+function setActionAddQuestions() {
+  const id = _setActionsId; hideSetActions();
+  showAICreate(id);
+}
+function setActionExport() {
+  const id = _setActionsId; hideSetActions();
+  exportSet(id);
+}
+function setActionDelete() {
+  const set = getSet(_setActionsId); hideSetActions();
+  if (set) confirmDeleteSet(set.id, set.name);
 }
 
 function renderLibrary() {

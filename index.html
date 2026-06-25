@@ -15,37 +15,37 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- base -->
-  <link rel="stylesheet" href="css/base/tokens.css?v=114">
-  <link rel="stylesheet" href="css/base/reset.css?v=114">
+  <link rel="stylesheet" href="css/base/tokens.css?v=115">
+  <link rel="stylesheet" href="css/base/reset.css?v=115">
   <!-- layout -->
-  <link rel="stylesheet" href="css/layout/shell.css?v=114">
-  <link rel="stylesheet" href="css/layout/nav.css?v=114">
+  <link rel="stylesheet" href="css/layout/shell.css?v=115">
+  <link rel="stylesheet" href="css/layout/nav.css?v=115">
   <!-- components -->
-  <link rel="stylesheet" href="css/components/button.css?v=114">
-  <link rel="stylesheet" href="css/components/form.css?v=114">
-  <link rel="stylesheet" href="css/components/toggle.css?v=114">
-  <link rel="stylesheet" href="css/components/badge.css?v=114">
-  <link rel="stylesheet" href="css/components/modal.css?v=114">
-  <link rel="stylesheet" href="css/components/toast.css?v=114">
-  <link rel="stylesheet" href="css/components/update-banner.css?v=114">
-  <link rel="stylesheet" href="css/components/fab.css?v=114">
-  <link rel="stylesheet" href="css/components/level-up.css?v=114">
-  <link rel="stylesheet" href="css/components/confetti.css?v=114">
-  <link rel="stylesheet" href="css/components/card.css?v=114">
-  <link rel="stylesheet" href="css/components/section-label.css?v=114">
-  <link rel="stylesheet" href="css/components/drop-zone.css?v=114">
-  <link rel="stylesheet" href="css/components/settings-row.css?v=114">
+  <link rel="stylesheet" href="css/components/button.css?v=115">
+  <link rel="stylesheet" href="css/components/form.css?v=115">
+  <link rel="stylesheet" href="css/components/toggle.css?v=115">
+  <link rel="stylesheet" href="css/components/badge.css?v=115">
+  <link rel="stylesheet" href="css/components/modal.css?v=115">
+  <link rel="stylesheet" href="css/components/toast.css?v=115">
+  <link rel="stylesheet" href="css/components/update-banner.css?v=115">
+  <link rel="stylesheet" href="css/components/fab.css?v=115">
+  <link rel="stylesheet" href="css/components/level-up.css?v=115">
+  <link rel="stylesheet" href="css/components/confetti.css?v=115">
+  <link rel="stylesheet" href="css/components/card.css?v=115">
+  <link rel="stylesheet" href="css/components/section-label.css?v=115">
+  <link rel="stylesheet" href="css/components/drop-zone.css?v=115">
+  <link rel="stylesheet" href="css/components/settings-row.css?v=115">
   <!-- pages -->
-  <link rel="stylesheet" href="css/pages/home.css?v=114">
-  <link rel="stylesheet" href="css/pages/editor.css?v=114">
-  <link rel="stylesheet" href="css/pages/quiz.css?v=114">
-  <link rel="stylesheet" href="css/pages/results.css?v=114">
-  <link rel="stylesheet" href="css/pages/history.css?v=114">
-  <link rel="stylesheet" href="css/pages/ai.css?v=114">
-  <link rel="stylesheet" href="css/pages/import.css?v=114">
+  <link rel="stylesheet" href="css/pages/home.css?v=115">
+  <link rel="stylesheet" href="css/pages/editor.css?v=115">
+  <link rel="stylesheet" href="css/pages/quiz.css?v=115">
+  <link rel="stylesheet" href="css/pages/results.css?v=115">
+  <link rel="stylesheet" href="css/pages/history.css?v=115">
+  <link rel="stylesheet" href="css/pages/ai.css?v=115">
+  <link rel="stylesheet" href="css/pages/import.css?v=115">
   <!-- utilities -->
-  <link rel="stylesheet" href="css/utilities/utilities.css?v=114">
-  <link rel="stylesheet" href="css/utilities/animations.css?v=114">
+  <link rel="stylesheet" href="css/utilities/utilities.css?v=115">
+  <link rel="stylesheet" href="css/utilities/animations.css?v=115">
 </head>
 <body>
 <div id="update-banner">
@@ -157,6 +157,17 @@
         <p class="form-hint">Dán nhiều câu cùng lúc theo định dạng Câu N / A-D / Đáp án / Giải thích — xem trước, sửa lỗi rồi mới thêm vào bộ đề này.</p>
         <button class="btn btn-primary btn-full" onclick="goToImportTextFromEditor()">Tiếp tục dán văn bản →</button>
       </div>
+    </div>
+  </div>
+
+  <div id="modal-set-actions" class="modal-overlay" onclick="if(event.target===this)hideSetActions()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Tùy chọn bộ đề</div>
+      <button class="btn btn-secondary btn-full" style="margin-bottom:0.625rem" onclick="setActionEdit()">✏️ Sửa</button>
+      <button class="btn btn-outline btn-full" style="margin-bottom:0.625rem" onclick="setActionAddQuestions()">✨ Thêm câu</button>
+      <button class="btn btn-outline btn-full" style="margin-bottom:0.625rem" onclick="setActionExport()">↓ Xuất</button>
+      <button class="btn btn-danger btn-full" onclick="setActionDelete()">🗑 Xóa</button>
     </div>
   </div>
 
@@ -501,6 +512,9 @@ Giải thích: ...</pre>
       <button class="btn-icon" onclick="exitQuiz()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
+      <button id="practice-layout-toggle-btn" class="btn-icon" style="display:none" onclick="toggleLandscapeLayout()" title="Đổi vị trí đáp án/thống kê (xoay ngang)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h12l-3-3M21 17H9l3 3"/></svg>
+      </button>
       <h1 id="quiz-top-title">Làm bài</h1>
       <button class="btn-icon" onclick="toggleQuizMode()" title="Chuyển chế độ hiển thị">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -518,7 +532,6 @@ Giải thích: ...</pre>
     </div>
     <div id="quiz-practice-hud" class="quiz-practice-hud" style="display:none">
       <div class="boss-hp-row">
-        <span>👹 Boss HP</span>
         <span id="boss-hp-pct">100%</span>
       </div>
       <div class="boss-hp-bar-wrap"><div id="boss-hp-fill" class="boss-hp-fill" style="width:100%"></div></div>
@@ -892,21 +905,21 @@ Giải thích: ...</pre>
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="js/core/storage.js?v=114" defer></script>
-<script src="js/core/utils.js?v=114" defer></script>
-<script src="js/core/activity-tracker.js?v=114" defer></script>
-<script src="js/home.js?v=114" defer></script>
-<script src="js/editor.js?v=114" defer></script>
-<script src="js/quiz.js?v=114" defer></script>
-<script src="js/gamification.js?v=114" defer></script>
-<script src="js/results.js?v=114" defer></script>
-<script src="js/library.js?v=114" defer></script>
-<script src="js/history.js?v=114" defer></script>
-<script src="js/history-progress.js?v=114" defer></script>
-<script src="js/history-analysis.js?v=114" defer></script>
-<script src="js/ai.js?v=114" defer></script>
-<script src="js/import-text.js?v=114" defer></script>
-<script src="js/core/app.js?v=114" defer></script>
+<script src="js/core/storage.js?v=115" defer></script>
+<script src="js/core/utils.js?v=115" defer></script>
+<script src="js/core/activity-tracker.js?v=115" defer></script>
+<script src="js/home.js?v=115" defer></script>
+<script src="js/editor.js?v=115" defer></script>
+<script src="js/quiz.js?v=115" defer></script>
+<script src="js/gamification.js?v=115" defer></script>
+<script src="js/results.js?v=115" defer></script>
+<script src="js/library.js?v=115" defer></script>
+<script src="js/history.js?v=115" defer></script>
+<script src="js/history-progress.js?v=115" defer></script>
+<script src="js/history-analysis.js?v=115" defer></script>
+<script src="js/ai.js?v=115" defer></script>
+<script src="js/import-text.js?v=115" defer></script>
+<script src="js/core/app.js?v=115" defer></script>
 <script>
   if ('serviceWorker' in navigator) {
     const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname);

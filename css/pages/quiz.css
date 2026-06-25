@@ -66,7 +66,7 @@
 .boss-hp-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   margin-bottom: 0.25rem;
   font-size: var(--text-sm);
   font-weight: var(--fw-bold);
@@ -223,7 +223,6 @@
 /* Hover dùng xám đậm trung tính — tránh trùng màu tím với trạng thái đã chọn (selected) gây mờ/nhầm lẫn */
 .option-btn:hover { border-color: var(--color-text-light); background: var(--color-surface); }
 .option-btn.selected {
-  border-width: 2.5px;
   border-color: var(--color-brand);
   background: var(--color-brand-light);
   box-shadow: 0 1px 6px rgba(99,102,241,0.18);
@@ -470,6 +469,17 @@
     min-height: 0;
   }
 
+  /* CHỈ practice mới có nút "Tiếp theo" (row 3) xuất hiện/biến mất theo trạng thái trả
+     lời — "auto" lúc đó đổi từ 0 → ~2.75rem, co row 2 (1fr) lại, đẩy nội dung đang
+     justify-content:center bên trong dịch lên (tâm điểm box thấp hơn luôn cao hơn tâm
+     điểm box cao hơn cùng đáy cố định). Cố định row 3 = 2.75rem (min-height của .btn)
+     LUÔN chiếm chỗ — dù chưa có nút — để row 2 không đổi kích thước giữa 2 trạng thái.
+     Scope riêng #screen-quiz.is-practice — exam mode không có nút này, để "auto" (= 0)
+     như cũ, tránh lãng phí khoảng trống cố định không cần thiết. */
+  #screen-quiz.is-practice .question-block {
+    grid-template-rows: auto minmax(0, 1fr) 2.75rem;
+  }
+
   /* Nút "Tiếp theo" nằm dưới card feedback, CHỈ trong cột phải (không tràn sang cột đáp án
      trái) — dễ bấm ngay sau khi đọc giải thích, không che nội dung đáp án bên trái */
   .question-block .practice-inline-nav {
@@ -501,6 +511,13 @@
     overflow-y: auto;
   }
 
+  /* Practice có thêm 1 nút icon (đổi layout, kế nút thoát) ở mép trái top-bar so với exam
+     — mép che của q-text (left:3rem ở trên, đo theo 1 nút icon) phải nới rộng ra để không
+     che mất nút thứ 2 mới thêm (padding 0.75rem + 2 nút 2.25rem + gap 0.375rem ≈ 5.625rem) */
+  #screen-quiz.is-practice #quiz-questions-content:not(:has(.quiz-separator)) .question-block .q-text {
+    left: 5.75rem;
+  }
+
   /* Đáp án LUÔN nằm cố định cột trái, 1 cột dọc — dù chưa hay đã trả lời (cột phải
      để dành riêng cho feedback, trống khi chưa trả lời, KHÔNG cho đáp án dàn sang).
      KHÔNG dùng !important: khai báo display ở CẢ 2 selector (thường + :has) để khớp
@@ -516,9 +533,14 @@
     overflow-y: auto;
   }
 
+  /* height:100% BẮT BUỘC — không có dòng này, .practice-feedback tự co theo nội dung
+     (giải thích dài) thay vì lấp đúng khung ô grid, kéo cả .question-block cao hơn màn
+     hình (gây "xê dịch lên" cả 2 cột). Có height cố định thì .practice-feedback-body
+     (flex:1; overflow-y:auto, định nghĩa dưới) mới thật sự cuộn nội bộ được. */
   .practice-feedback {
     grid-column: 2;
     grid-row: 2;
+    height: 100%;
     min-height: 0;
   }
 
@@ -544,6 +566,34 @@
     font-size: var(--text-sm);
     color: var(--color-text-muted);
     overflow-y: auto;
+  }
+
+  /* Trước đây hint-placeholder chỉ tồn tại trong DOM khi chưa trả lời (JS không render
+     lúc isLocked) nên không cần rule ẩn. Từ khi luôn render (để layout-flipped phía dưới
+     có thể hiện nó kể cả lúc đã trả lời), mặc định (chưa flip) phải tự ẩn khi feedback
+     xuất hiện — tránh đè lên nhau trong cùng 1 ô grid (cột 2, dòng 2). */
+  .question-block:has(.practice-feedback) .practice-hint-placeholder {
+    display: none;
+  }
+
+  /* ===== Đổi layout (nút cạnh nút thoát, toggleLandscapeLayout()) — đảo đáp án sang
+     cột phải, bảng thống kê sang cột trái. Feedback KHÔNG đổi cột (vẫn cột phải, đúng
+     vị trí cũ của đáp án — nên nút "Tiếp theo" cũng không cần đổi gì). Đáp án phải ẨN khi
+     đã trả lời (khác mặc định luôn hiện cột trái) vì giờ đáp án và feedback chung 1 ô. */
+  #quiz-questions-content.layout-flipped .question-block .options-list {
+    grid-column: 2;
+  }
+
+  #quiz-questions-content.layout-flipped .question-block:has(.practice-feedback) .options-list {
+    display: none;
+  }
+
+  #quiz-questions-content.layout-flipped .practice-hint-placeholder {
+    grid-column: 1;
+  }
+
+  #quiz-questions-content.layout-flipped .question-block:has(.practice-feedback) .practice-hint-placeholder {
+    display: flex;
   }
 
   /* ===== Practice stats card — 6 field thật cần lúc luyện tập (Combo/Accuracy/Progress/

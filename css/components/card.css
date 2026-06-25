@@ -83,6 +83,12 @@
   min-width: 0;
 }
 
+.set-card-more-btn {
+  flex-shrink: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--fw-black);
+}
+
 .set-card-name {
   margin-bottom: 0.125rem;
   font-size: var(--text-base);
