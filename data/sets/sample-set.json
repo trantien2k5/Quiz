@@ -1,0 +1,16 @@
+{
+  "id": "sample-001",
+  "name": "Bộ đề mẫu",
+  "description": "Bộ đề mẫu dùng để demo cấu trúc data có sẵn",
+  "timeLimit": null,
+  "createdAt": "2026-06-25T00:00:00.000Z",
+  "questions": [
+    {
+      "id": "q1",
+      "text": "Câu hỏi mẫu 1?",
+      "options": ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
+      "correct": 0,
+      "explanation": ""
+    }
+  ]
+}

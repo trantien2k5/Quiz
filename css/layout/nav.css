@@ -52,6 +52,23 @@
   .top-bar h1 {
     font-size: var(--text-4xl);
   }
+
+  /* Tiêu đề top-bar của 4 tab chính lặp lại đúng tên đã hiện sẵn ở sidebar (nav-item active)
+     — bỏ hẳn khối top-bar ở Trang chủ/Luyện đề/Cài đặt (chỉ có title, không có nút hành động).
+     Thống kê (#hst-home) có nút AI phân tích/xuất báo cáo nên chỉ ẩn title, giữ lại nút. */
+  #screen-home > .top-bar,
+  #screen-library > .top-bar,
+  #screen-settings > .top-bar {
+    display: none;
+  }
+
+  #hst-home > .top-bar h1 {
+    display: none;
+  }
+
+  #hst-home > .top-bar {
+    justify-content: flex-end;
+  }
 }
 
 /* ===== BOTTOM NAV ===== */
@@ -108,7 +125,6 @@
    dùng position để căn layout"). Width co theo viewport qua clamp() ở
    shell.css (grid-template-columns), ở đây chỉ đổi hướng layout nội dung. */
 .sidebar-brand { display: none; }
-.nav-divider { display: none; }
 
 @media (min-width: 48rem) {
   #bottom-nav,
@@ -117,11 +133,11 @@
     width: 100%;
     height: 100%;
     max-width: none;
-    padding: var(--space-2);
+    padding: 0 var(--space-3) var(--space-3);
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
-    gap: 0.1875rem;
+    gap: var(--space-1);
     border-top: none;
     border-right: 1px solid var(--color-border);
     border-radius: 0;
@@ -130,24 +146,35 @@
     transform: none;
   }
 
-  /* Logo/tên app — điểm neo trực quan đầu sidebar, dùng tên app thật (không phải feature giả) */
+  /* Logo/tên app — điểm neo trực quan đầu sidebar, dùng tên app thật (không phải feature giả).
+     Height = height thật của .top-bar ở breakpoint này (4.5rem) để 2 khối thẳng hàng ngang. */
   .sidebar-brand {
     display: flex;
+    box-sizing: border-box;
+    height: 4.5rem;
     align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-2) var(--space-2) var(--space-3);
-    margin-bottom: var(--space-2);
-    border-bottom: 1px solid var(--color-border);
+    gap: var(--space-3);
+    padding: 0 var(--space-2);
+    margin-bottom: var(--space-3);
   }
 
   .sidebar-brand-icon {
-    font-size: 1.375rem;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-xs);
+    background: var(--color-brand-gradient);
+    box-shadow: var(--shadow-brand-sm);
+    font-size: 1.25rem;
     line-height: 1;
   }
 
   .sidebar-brand-text {
-    font-size: var(--text-lg);
-    font-weight: var(--fw-bold);
+    font-size: var(--text-3xl);
+    font-weight: var(--fw-black);
     color: var(--color-text);
   }
 
@@ -157,9 +184,9 @@
     justify-content: flex-start;
     min-height: auto;
     gap: var(--space-3);
-    padding: var(--space-3);
+    padding: var(--space-3) var(--space-4);
     border-radius: var(--radius-sm);
-    font-size: var(--text-sm);
+    font-size: var(--text-lg);
     font-weight: var(--fw-medium);
     transition: background var(--transition-fast), color var(--transition-fast);
   }
@@ -170,26 +197,17 @@
     color: var(--color-text);
   }
 
-  /* Chia khối: "Cài đặt" (cấu hình/utility) khác nhóm với 3 tab nội dung chính
-     (Trang chủ/Luyện đề/Thống kê) — đẩy xuống đáy sidebar bằng .nav-divider,
-     pattern phổ biến ở app hiện đại (nav chính trên, settings dưới) */
-  .nav-divider {
-    display: block;
-    flex-shrink: 0;
-    margin: auto var(--space-2) var(--space-2);
-    border-top: 1px solid var(--color-border);
-  }
-
-  /* Active: nền đặc màu brand kiểu "filled pill" (Vercel/Spotify) — rõ ràng, không cần thêm vạch/viền phụ */
+  /* Active: nền gradient màu brand + shadow màu, kiểu "premium pill" (tham khảo TOEIC Hub) */
   .nav-item.active {
-    background: var(--color-brand);
+    background: var(--color-brand-gradient);
     color: #fff;
     font-weight: var(--fw-bold);
+    box-shadow: var(--shadow-brand-md);
   }
 
   .nav-item svg {
-    width: 1.125rem;
-    height: 1.125rem;
+    width: 1.25rem;
+    height: 1.25rem;
     flex-shrink: 0;
   }
 

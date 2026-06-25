@@ -24,7 +24,7 @@
 @media (min-width: 48rem) {
   body {
     display: grid;
-    grid-template-columns: clamp(11.25rem, 11vw, 13rem) minmax(0, 1fr);
+    grid-template-columns: clamp(14rem, 16vw, 16.25rem) minmax(0, 1fr);
     gap: 0;
     max-width: 100rem;
     height: 100vh;
@@ -53,7 +53,7 @@
   /* Nav đã ra sidebar riêng, không còn nằm dưới đáy #app — bỏ khoảng chừa chỗ cho nav-h,
      đồng thời tăng padding nội dung cho cân đối hơn so với mobile (16px) */
   .scroll-content {
-    padding: clamp(1rem, 1.5vw, 1.5rem);
+    padding: clamp(1.5rem, 2.5vw, 2.5rem);
   }
 }
 

@@ -59,18 +59,18 @@
 
 /* ── Color variants ── */
 .btn--primary {
-  background: var(--color-brand);
+  background: var(--color-brand-gradient);
   color: #fff;
+  box-shadow: var(--shadow-brand-sm);
 }
 
 .btn--primary:hover:not(:disabled) {
-  background: var(--color-brand-dark);
-  box-shadow: 0 4px 12px rgba(99,102,241,0.35);
+  box-shadow: var(--shadow-brand-md);
+  transform: translateY(-1px);
 }
 
 .btn--primary:active:not(:disabled) {
-  background: var(--color-brand-dark);
-  box-shadow: none;
+  box-shadow: var(--shadow-brand-sm);
 }
 
 .btn--secondary {
@@ -158,9 +158,9 @@
   Legacy aliases — JS-generated HTML uses the old class names.
   Map to new design tokens.
 */
-.btn-primary   { background: var(--color-brand); color: #fff; }
-.btn-primary:hover:not(:disabled)  { background: var(--color-brand-dark); box-shadow: 0 4px 12px rgba(99,102,241,0.35); }
-.btn-primary:active:not(:disabled) { background: var(--color-brand-dark); box-shadow: none; }
+.btn-primary   { background: var(--color-brand-gradient); color: #fff; box-shadow: var(--shadow-brand-sm); }
+.btn-primary:hover:not(:disabled)  { box-shadow: var(--shadow-brand-md); transform: translateY(-1px); }
+.btn-primary:active:not(:disabled) { box-shadow: var(--shadow-brand-sm); }
 
 .btn-secondary { background: var(--color-brand-light); color: var(--color-brand); }
 .btn-secondary:hover:not(:disabled) { background: #E0E7FF; }

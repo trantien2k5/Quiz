@@ -9,9 +9,9 @@ function renderHome() {
   const avgPct = history.length ? Math.round(history.reduce((s, h) => s + scorePct(h.score, h.total), 0) / history.length) : 0;
   const statsEl = document.getElementById('home-stats');
   if (statsEl) statsEl.innerHTML = `
-    <div class="stat-box"><div class="stat-val">${sets.length}</div><div class="stat-lbl">Bộ đề</div></div>
-    <div class="stat-box"><div class="stat-val">${history.length}</div><div class="stat-lbl">Lượt làm bài</div></div>
-    <div class="stat-box"><div class="stat-val">${avgPct}%</div><div class="stat-lbl">Điểm TB</div></div>`;
+    <div class="stat-box"><div class="stat-box-icon stat-box-icon--sets">📚</div><div><div class="stat-val">${sets.length}</div><div class="stat-lbl">Bộ đề</div></div></div>
+    <div class="stat-box"><div class="stat-box-icon stat-box-icon--attempts">🏆</div><div><div class="stat-val">${history.length}</div><div class="stat-lbl">Lượt làm bài</div></div></div>
+    <div class="stat-box"><div class="stat-box-icon stat-box-icon--score">🎯</div><div><div class="stat-val">${avgPct}%</div><div class="stat-lbl">Điểm TB</div></div></div>`;
 
   const recentSets = sets.slice().reverse().slice(0, 3);
   const recentSetsEl = document.getElementById('home-recent-sets');
