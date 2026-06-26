@@ -39,7 +39,7 @@
 **Quiz App** — SPA trắc nghiệm chạy trên browser, không cần server.
 - Vanilla HTML + CSS + JS, không framework, không build tool
 - Lưu trữ: `localStorage` (`quiz_sets`, `quiz_history`)
-- Deploy: Cloudflare Pages — version hiện tại: **v94**
+- Deploy: Cloudflare Pages — version hiện tại: **v115**
 
 ---
 
