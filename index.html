@@ -15,37 +15,37 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- base -->
-  <link rel="stylesheet" href="css/base/tokens.css?v=115">
-  <link rel="stylesheet" href="css/base/reset.css?v=115">
+  <link rel="stylesheet" href="css/base/tokens.css?v=116">
+  <link rel="stylesheet" href="css/base/reset.css?v=116">
   <!-- layout -->
-  <link rel="stylesheet" href="css/layout/shell.css?v=115">
-  <link rel="stylesheet" href="css/layout/nav.css?v=115">
+  <link rel="stylesheet" href="css/layout/shell.css?v=116">
+  <link rel="stylesheet" href="css/layout/nav.css?v=116">
   <!-- components -->
-  <link rel="stylesheet" href="css/components/button.css?v=115">
-  <link rel="stylesheet" href="css/components/form.css?v=115">
-  <link rel="stylesheet" href="css/components/toggle.css?v=115">
-  <link rel="stylesheet" href="css/components/badge.css?v=115">
-  <link rel="stylesheet" href="css/components/modal.css?v=115">
-  <link rel="stylesheet" href="css/components/toast.css?v=115">
-  <link rel="stylesheet" href="css/components/update-banner.css?v=115">
-  <link rel="stylesheet" href="css/components/fab.css?v=115">
-  <link rel="stylesheet" href="css/components/level-up.css?v=115">
-  <link rel="stylesheet" href="css/components/confetti.css?v=115">
-  <link rel="stylesheet" href="css/components/card.css?v=115">
-  <link rel="stylesheet" href="css/components/section-label.css?v=115">
-  <link rel="stylesheet" href="css/components/drop-zone.css?v=115">
-  <link rel="stylesheet" href="css/components/settings-row.css?v=115">
+  <link rel="stylesheet" href="css/components/button.css?v=116">
+  <link rel="stylesheet" href="css/components/form.css?v=116">
+  <link rel="stylesheet" href="css/components/toggle.css?v=116">
+  <link rel="stylesheet" href="css/components/badge.css?v=116">
+  <link rel="stylesheet" href="css/components/modal.css?v=116">
+  <link rel="stylesheet" href="css/components/toast.css?v=116">
+  <link rel="stylesheet" href="css/components/update-banner.css?v=116">
+  <link rel="stylesheet" href="css/components/fab.css?v=116">
+  <link rel="stylesheet" href="css/components/level-up.css?v=116">
+  <link rel="stylesheet" href="css/components/confetti.css?v=116">
+  <link rel="stylesheet" href="css/components/card.css?v=116">
+  <link rel="stylesheet" href="css/components/section-label.css?v=116">
+  <link rel="stylesheet" href="css/components/drop-zone.css?v=116">
+  <link rel="stylesheet" href="css/components/settings-row.css?v=116">
   <!-- pages -->
-  <link rel="stylesheet" href="css/pages/home.css?v=115">
-  <link rel="stylesheet" href="css/pages/editor.css?v=115">
-  <link rel="stylesheet" href="css/pages/quiz.css?v=115">
-  <link rel="stylesheet" href="css/pages/results.css?v=115">
-  <link rel="stylesheet" href="css/pages/history.css?v=115">
-  <link rel="stylesheet" href="css/pages/ai.css?v=115">
-  <link rel="stylesheet" href="css/pages/import.css?v=115">
+  <link rel="stylesheet" href="css/pages/home.css?v=116">
+  <link rel="stylesheet" href="css/pages/editor.css?v=116">
+  <link rel="stylesheet" href="css/pages/quiz.css?v=116">
+  <link rel="stylesheet" href="css/pages/results.css?v=116">
+  <link rel="stylesheet" href="css/pages/history.css?v=116">
+  <link rel="stylesheet" href="css/pages/ai.css?v=116">
+  <link rel="stylesheet" href="css/pages/import.css?v=116">
   <!-- utilities -->
-  <link rel="stylesheet" href="css/utilities/utilities.css?v=115">
-  <link rel="stylesheet" href="css/utilities/animations.css?v=115">
+  <link rel="stylesheet" href="css/utilities/utilities.css?v=116">
+  <link rel="stylesheet" href="css/utilities/animations.css?v=116">
 </head>
 <body>
 <div id="update-banner">
@@ -516,9 +516,13 @@ Giải thích: ...</pre>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h12l-3-3M21 17H9l3 3"/></svg>
       </button>
       <h1 id="quiz-top-title">Làm bài</h1>
+      <button id="quiz-topbar-map-btn" class="btn-icon" style="display:none" onclick="showQuizMap()" title="Bảng câu hỏi">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>
+      </button>
       <button class="btn-icon" onclick="toggleQuizMode()" title="Chuyển chế độ hiển thị">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
       </button>
+      <button id="quiz-topbar-submit-btn" class="btn btn-primary btn-sm" style="display:none" onclick="submitQuizConfirm()">Nộp ✓</button>
     </div>
     <div class="quiz-progress-bar">
       <div id="quiz-progress-fill" class="quiz-progress-fill" style="width:0%"></div>
@@ -905,21 +909,21 @@ Giải thích: ...</pre>
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="js/core/storage.js?v=115" defer></script>
-<script src="js/core/utils.js?v=115" defer></script>
-<script src="js/core/activity-tracker.js?v=115" defer></script>
-<script src="js/home.js?v=115" defer></script>
-<script src="js/editor.js?v=115" defer></script>
-<script src="js/quiz.js?v=115" defer></script>
-<script src="js/gamification.js?v=115" defer></script>
-<script src="js/results.js?v=115" defer></script>
-<script src="js/library.js?v=115" defer></script>
-<script src="js/history.js?v=115" defer></script>
-<script src="js/history-progress.js?v=115" defer></script>
-<script src="js/history-analysis.js?v=115" defer></script>
-<script src="js/ai.js?v=115" defer></script>
-<script src="js/import-text.js?v=115" defer></script>
-<script src="js/core/app.js?v=115" defer></script>
+<script src="js/core/storage.js?v=116" defer></script>
+<script src="js/core/utils.js?v=116" defer></script>
+<script src="js/core/activity-tracker.js?v=116" defer></script>
+<script src="js/home.js?v=116" defer></script>
+<script src="js/editor.js?v=116" defer></script>
+<script src="js/quiz.js?v=116" defer></script>
+<script src="js/gamification.js?v=116" defer></script>
+<script src="js/results.js?v=116" defer></script>
+<script src="js/library.js?v=116" defer></script>
+<script src="js/history.js?v=116" defer></script>
+<script src="js/history-progress.js?v=116" defer></script>
+<script src="js/history-analysis.js?v=116" defer></script>
+<script src="js/ai.js?v=116" defer></script>
+<script src="js/import-text.js?v=116" defer></script>
+<script src="js/core/app.js?v=116" defer></script>
 <script>
   if ('serviceWorker' in navigator) {
     const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname);

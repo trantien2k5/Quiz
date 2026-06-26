@@ -345,18 +345,29 @@ function renderTimer() {
 function renderQuizNav() {
   const q = _quiz;
   const nav = document.getElementById('quiz-nav');
+  const topbarMapBtn = document.getElementById('quiz-topbar-map-btn');
+  const topbarSubmitBtn = document.getElementById('quiz-topbar-submit-btn');
 
   if (q.pQueue) { // practice mode — đáp án/feedback đã đủ rõ, không cần thanh nav riêng (tránh dải trống/viền thừa)
     nav.innerHTML = '';
+    topbarMapBtn.style.display = 'none';
+    topbarSubmitBtn.style.display = 'none';
     return;
   }
 
   const total = q.set.questions.length;
   renderQuizMap(); // đồng bộ sidebar bảng câu hỏi (desktop) + modal map (mobile)
   if (q.mode === 'all') {
-    nav.innerHTML = `<button class="btn btn-primary btn-full" onclick="submitQuizConfirm()">Nộp bài ✓</button>`;
+    // Chế độ danh sách: nút nộp bài + xem bảng câu hỏi chuyển lên top-bar (góc phải) —
+    // bỏ thanh full-width dưới đáy để nhường chỗ cuộn nội dung
+    nav.innerHTML = '';
+    topbarMapBtn.style.display = 'flex';
+    topbarSubmitBtn.style.display = '';
     return;
   }
+  topbarMapBtn.style.display = 'none';
+  topbarSubmitBtn.style.display = 'none';
+
   const isFirst = q.currentIdx === 0;
   const isLast  = q.currentIdx === total - 1;
   const answered = q.answers.filter(a => a !== null).length;
