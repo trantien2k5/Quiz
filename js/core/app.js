@@ -1,4 +1,4 @@
-const APP_V = 117;
+const APP_V = 118;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -93,6 +93,22 @@ async function seedSampleSets() {
   } catch (_) {} // không có mạng / không deploy data/ — bỏ qua, không chặn app
 }
 
+function seedDefaultChapters() {
+  // Lộ trình TOEIC B1 mặc định — seed 1 lần duy nhất, không tự thêm lại nếu user đã xoá
+  if (localStorage.getItem('quiz_chapters_seeded_v1')) return;
+  localStorage.setItem('quiz_chapters_seeded_v1', '1');
+  const defaults = [
+    { id: 'toeic-b1-stage-1', name: 'Giai đoạn 1 – Xây nền Part 5', icon: '📝', setIds: ['sample-word-form-toeic-1'] },
+    { id: 'toeic-b1-stage-2', name: 'Giai đoạn 2 – Ngữ pháp trọng tâm', icon: '🧩', setIds: [] },
+    { id: 'toeic-b1-stage-3', name: 'Giai đoạn 3 – Từ vựng TOEIC', icon: '📚', setIds: [] },
+    { id: 'toeic-b1-stage-4', name: 'Giai đoạn 4 – Listening', icon: '🎧', setIds: [] },
+    { id: 'toeic-b1-stage-5', name: 'Giai đoạn 5 – Reading', icon: '📖', setIds: [] }
+  ];
+  const chapters = getChapters();
+  if (chapters.some(c => c.id === defaults[0].id)) return; // tránh trùng nếu hàm bị gọi lại
+  saveChapters([...chapters, ...defaults]);
+}
+
 function confirmClearAllData() {
   confirm('Xoá toàn bộ dữ liệu', 'Tất cả bộ đề, lịch sử và thống kê sẽ bị xoá vĩnh viễn. Không thể khôi phục!', () => {
     ['quiz_sets','quiz_history','quiz_q_stats','quiz_last_set','quiz_ai_usage_log','quiz_ai_analysis_log','quiz_skill_log','quiz_topic_log'].forEach(k => localStorage.removeItem(k));
@@ -107,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderHome();
   renderLibrary();
   startUpdateCheck();
+  seedDefaultChapters();
   seedSampleSets();
 
   document.getElementById('import-file-input').addEventListener('change', handleImportFile);
