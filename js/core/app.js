@@ -1,4 +1,4 @@
-const APP_V = 119;
+const APP_V = 120;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -94,6 +94,52 @@ function confirmClearAllData() {
   });
 }
 
+/* ===== SAO LƯU / KHÔI PHỤC — gộp toàn bộ data học tập vào 1 file JSON. KHÔNG gồm
+   quiz_ai_config (API key) — theo quy ước có sẵn "không thêm sync/export config ra
+   ngoài" (xem quiz_ai_config ở storage.js), và quiz_last_set (chỉ là state UI tạm). */
+const BACKUP_KEYS = ['quiz_sets','quiz_history','quiz_q_stats','quiz_skill_log','quiz_topic_log','quiz_chapters','quiz_stats_goal','quiz_sound_enabled','quiz_ai_usage_log','quiz_ai_analysis_log'];
+
+function exportBackup() {
+  const data = {};
+  BACKUP_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v !== null) data[k] = v; });
+  const payload = { type: 'quiz_backup', version: APP_V, exportedAt: Date.now(), data };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `quiz_backup_${_nowStamp()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Đã xuất file sao lưu', 'success');
+}
+
+function triggerRestoreBackup() {
+  document.getElementById('restore-file-input').click();
+}
+
+function handleRestoreFile(e) {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  if (!file.name.endsWith('.json')) { toast('Vui lòng chọn file .json', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => confirmRestoreBackup(ev.target.result);
+  reader.readAsText(file);
+}
+
+function confirmRestoreBackup(jsonStr) {
+  let payload;
+  try { payload = JSON.parse(jsonStr); } catch { toast('File sao lưu không hợp lệ', 'error'); return; }
+  const data = payload && payload.type === 'quiz_backup' && payload.data ? payload.data : null;
+  if (!data) { toast('File sao lưu không hợp lệ', 'error'); return; }
+  confirm('Khôi phục dữ liệu', 'Toàn bộ bộ đề, lịch sử, thống kê hiện tại sẽ bị THAY THẾ bằng dữ liệu trong file sao lưu. Không thể hoàn tác!', () => {
+    BACKUP_KEYS.forEach(k => localStorage.removeItem(k));
+    Object.keys(data).forEach(k => { if (BACKUP_KEYS.includes(k)) localStorage.setItem(k, data[k]); });
+    renderHome(); renderLibrary(); renderHistory(); renderSettings();
+    toast('Đã khôi phục dữ liệu', 'success');
+  });
+}
+
 /* ===== INIT ===== */
 document.addEventListener('DOMContentLoaded', () => {
   showScreen('screen-home');
@@ -103,6 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
   seedDefaultChapters();
 
   document.getElementById('import-file-input').addEventListener('change', handleImportFile);
+  document.getElementById('restore-file-input').addEventListener('change', handleRestoreFile);
 
   const dropZone = document.getElementById('import-drop-zone');
   dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
