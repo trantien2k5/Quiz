@@ -20,7 +20,7 @@
 
 **Token tiết kiệm:**
 - KHÔNG đọc dạo file để "hiểu context" — Grep đúng mục tiêu, Read đúng đoạn cần
-- Sửa CSS/HTML không cần test. Sửa JS logic → mở browser kiểm tra console
+- Sửa CSS/HTML không cần test. Sửa JS logic rõ ràng/đơn giản → đọc lại code kỹ là đủ, KHÔNG cần mở browser. CHỈ mở browser kiểm tra khi logic phức tạp/rủi ro cao (tính toán điểm, BKT, data model, flow nhiều bước) hoặc khi không tự tin chắc đúng
 - Trả lời ngắn: kết quả + việc đã làm, không giải thích dài
 - Sau mỗi thay đổi lớn → cập nhật CLAUDE.md ngay
 
