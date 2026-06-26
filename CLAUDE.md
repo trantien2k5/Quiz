@@ -29,7 +29,7 @@
 - Khi push: lên CÙNG LÚC cả `claude/vietnamese-greeting-q0n2ab` VÀ `main`
 - `main` auto-deploy Cloudflare Pages — push là deploy
 - Bump cache version `?v=N` trong index.html + sw.js — chỉ cần bump 1 LẦN trước khi commit (không bump mỗi sửa nhỏ giữa session)
-- Script tự động: `node scripts/bump.js` (bump version.json, sw.js, index.html, js/core/app.js)
+- Script tự động: `node scripts/bump.js` (bump version.json, sw.js, index.html, src/core/app.js)
 - KHÔNG tạo PR, KHÔNG subscribe PR activity
 
 ---
@@ -46,61 +46,73 @@
 ## KIẾN TRÚC FILE
 
 ```
-index.html              ← shell duy nhất, load tất cả <script>/<link>
+index.html              ← shell duy nhất, load tất cả <script>/<link> (PHẢI ở root — entry point deploy)
 manifest.json           ← PWA manifest (phải ở root)
 sw.js                   ← Service Worker (phải ở root)
 version.json            ← { "v": N } — dùng để detect update
 CLAUDE.md               ← file này
 
-css/
-  base/
-    tokens.css          ← design tokens (colors, spacing, typography, z-index, transitions)
-    reset.css           ← box-sizing reset, base element styles
-  layout/
-    shell.css           ← .app, section screens, .scroll-content
-    nav.css             ← .top-bar, #bottom-nav, .nav-item
-  components/
-    button.css          ← .btn + modifiers, ripple, .btn-icon
-    form.css            ← .form-group, .form-control, .form-hint, .form-row
-    toggle.css          ← .toggle, .toggle-slider
-    badge.css           ← .badge + variants
-    modal.css           ← .modal-overlay, .modal-sheet
-    toast.css           ← .toast-container, .toast
-    update-banner.css   ← .update-banner / #update-banner
-    fab.css             ← .fab
-    card.css            ← .set-list, .set-card, .empty-state
-    section-label.css   ← .section-label, .section-row, .link-btn
-    drop-zone.css       ← .import-drop-zone
-    settings-row.css    ← .settings-row (quiz settings modal)
-  pages/
-    home.css            ← .stat-box, .recent-set-item, .recent-history-item
-    editor.css          ← .question-card, .option-row, .add-question-btn
-    quiz.css            ← .quiz-header, .option-btn, .qmap-*, practice mode
-    results.css         ← .result-hero, .review-card, .review-option
-    history.css         ← .hst-*, .cal-*, .hst-log-*, .history-score-circle
-    ai.css              ← .ai-card, .ai-chip, .ai-suggestions
-    import.css          ← .question-card.has-error, .import-error-banner, .import-format-hint
-  utilities/
-    utilities.css       ← .hidden, .text-center, .mt-*, .flex, .truncate
-    animations.css      ← @keyframes (ripple-expand, toast-in, fadeIn...)
-
-js/
-  core/
+src/
+  core/                 ← dùng chung toàn app, load TRƯỚC mọi feature
     app.js              ← init, routing, showScreen, navTo, APP_V
     storage.js          ← localStorage CRUD (getSets, saveSet, getHistory...)
     utils.js            ← esc, toast, confirm, date helpers
     activity-tracker.js ← startActivityTracking() — đo active time, idle/Pomodoro nhắc nhở
-  home.js               ← renderHome()
-  library.js            ← renderLibrary(), set cards, import/export
-  quiz.js               ← quiz state, timer, submit, scoring
-  gamification.js        ← buildPracticeStatsCardHtml() — cột phải practice mode khi xoay ngang, 6 field thật (Combo/Accuracy/Progress/Time/Level+XP), KHÔNG hiện Boss HP/Coin/Mission (chưa có hệ thống thật, đã thử bản mockup đầy đủ rồi bỏ vì rối — xem GOTCHAS). Đọc state từ _quiz (global ở quiz.js) — PHỤ THUỘC quiz.js, load SAU
-  history.js            ← renderHistory(), showHistorySection(), helper chung (XP/level, chart SVG, compare, BKT...), + các tab nhỏ (Lỗi sai/Ghi nhớ/Hiệu suất/Hành vi học/Lịch sử/So sánh/Dự đoán/Báo cáo/Cài đặt) — 1886 dòng cũ đã tách, file gốc còn ~1290 dòng
-  history-progress.js   ← tách từ history.js: riêng tab Tiến bộ (filter, chart, personal best, prediction) — PHỤ THUỘC helper chung ở history.js, phải load SAU
-  history-analysis.js   ← tách từ history.js: riêng tab Phân tích (theo chủ đề/bộ đề, skill stats) — PHỤ THUỘC helper chung ở history.js, phải load SAU
-  editor.js             ← editor screen (tạo/sửa bộ đề)
-  results.js            ← results screen, review chi tiết
-  ai.js                 ← AI integration (generate questions)
-  import-text.js        ← parse văn bản thô (định dạng Azota) → preview/sửa lỗi → tạo đề
+
+  features/             ← mỗi feature 1 thư mục, gồm .js + .css riêng của feature đó
+    home/
+      home.js           ← renderHome()
+      home.css          ← .stat-box, .recent-set-item, .recent-history-item
+    library/
+      library.js        ← renderLibrary(), set cards, Chapter, import/export (KHÔNG có .css riêng — UI set-card dùng chung shared/styles/components/card.css)
+    editor/
+      editor.js         ← editor screen (tạo/sửa bộ đề)
+      editor.css        ← .question-card, .option-row, .add-question-btn
+    quiz/
+      quiz.js           ← quiz state, timer, submit, scoring
+      gamification.js   ← buildPracticeStatsCardHtml() — cột phải practice mode khi xoay ngang, 6 field thật (Combo/Accuracy/Progress/Time/Level+XP), KHÔNG hiện Boss HP/Coin/Mission (chưa có hệ thống thật, đã thử bản mockup đầy đủ rồi bỏ vì rối — xem GOTCHAS). Đọc state từ _quiz (global ở quiz.js) — PHỤ THUỘC quiz.js, load SAU
+      quiz.css          ← .quiz-header, .option-btn, .qmap-*, practice mode
+    results/
+      results.js        ← results screen, review chi tiết
+      results.css       ← .result-hero, .review-card, .review-option
+    history/
+      history.js            ← renderHistory(), showHistorySection(), helper chung (XP/level, chart SVG, compare, BKT...), + các tab nhỏ (Lỗi sai/Ghi nhớ/Hiệu suất/Hành vi học/Lịch sử/So sánh/Dự đoán/Báo cáo/Cài đặt) — 1886 dòng cũ đã tách, file gốc còn ~1290 dòng
+      history-progress.js   ← tách từ history.js: riêng tab Tiến bộ (filter, chart, personal best, prediction) — PHỤ THUỘC helper chung ở history.js, phải load SAU
+      history-analysis.js   ← tách từ history.js: riêng tab Phân tích (theo chủ đề/bộ đề, skill stats) — PHỤ THUỘC helper chung ở history.js, phải load SAU
+      history.css       ← .hst-*, .cal-*, .hst-log-*, .history-score-circle
+    ai/
+      ai.js             ← AI integration (generate questions)
+      ai.css            ← .ai-card, .ai-chip, .ai-suggestions
+    import-text/
+      import-text.js    ← parse văn bản thô (định dạng Azota) → preview/sửa lỗi → tạo đề
+      import.css        ← .question-card.has-error, .import-error-banner, .import-format-hint
+
+  shared/
+    styles/
+      base/
+        tokens.css      ← design tokens (colors, spacing, typography, z-index, transitions)
+        reset.css       ← box-sizing reset, base element styles
+      layout/
+        shell.css       ← .app, section screens, .scroll-content
+        nav.css         ← .top-bar, #bottom-nav, .nav-item
+      components/
+        button.css        ← .btn + modifiers, ripple, .btn-icon
+        form.css          ← .form-group, .form-control, .form-hint, .form-row
+        toggle.css        ← .toggle, .toggle-slider
+        badge.css         ← .badge + variants
+        modal.css         ← .modal-overlay, .modal-sheet
+        toast.css         ← .toast-container, .toast
+        update-banner.css ← .update-banner / #update-banner
+        fab.css           ← .fab
+        level-up.css      ← #level-up-overlay (animation lên Level)
+        confetti.css      ← triggerConfetti() (điểm thi 100%)
+        card.css          ← .set-list, .set-card, .empty-state
+        section-label.css ← .section-label, .section-row, .link-btn
+        drop-zone.css     ← .import-drop-zone
+        settings-row.css  ← .settings-row (quiz settings modal)
+      utilities/
+        utilities.css   ← .hidden, .text-center, .mt-*, .flex, .truncate
+        animations.css  ← @keyframes (ripple-expand, toast-in, fadeIn...)
 
 assets/
   icon-192.svg
@@ -109,6 +121,13 @@ assets/
 scripts/
   bump.js               ← dev: node scripts/bump.js → bump version tất cả file
 ```
+
+**Quy ước thư mục (sau khi tái cấu trúc — chỉ DỜI file, KHÔNG đổi nội dung/logic bên trong):**
+- `src/core/` — code dùng chung toàn app (storage, utils, app shell/routing), không phụ thuộc feature nào, load TRƯỚC.
+- `src/features/<name>/` — 1 feature = 1 thư mục, gồm `.js` xử lý logic + `.css` riêng của feature đó (nếu có). KHÔNG đặt code dùng chung nhiều feature vào đây.
+- `src/shared/styles/` — CSS dùng chung nhiều feature (base/layout/components/utilities), giữ nguyên 4 nhóm con như trước khi dời.
+- `index.html`/`manifest.json`/`sw.js`/`version.json` BẮT BUỘC nằm ở root (không đưa vào `src/`) — app không có build tool, Cloudflare Pages serve trực tiếp từ root, `sw.js`/`manifest.json` phải đúng scope root mới hoạt động.
+- Thêm feature mới → tạo `src/features/<name>/` mới, thêm `<script src="src/features/<name>/<name>.js?v=N">`/`<link href=".../<name>.css?v=N">` vào `index.html` + thêm path vào `STATIC` ở `sw.js`.
 
 **Global scope** — không có module system, tất cả function là global. Đặt tên cẩn thận, tránh trùng.
 
@@ -129,26 +148,26 @@ Các screen overlay (ẩn bottom nav khi hiện):
 - `screen-quiz`        — đang làm bài
 - `screen-result`      — xem kết quả
 
-`showScreen(id)` trong `screens[]` array (`js/core/app.js`) — thêm screen mới phải thêm vào array này.
+`showScreen(id)` trong `screens[]` array (`src/core/app.js`) — thêm screen mới phải thêm vào array này.
 
-**History sub-screens** (`showHistorySection(name)`, mảng `HST_SECTIONS` trong js/history.js — tên hiển thị do user định nghĩa, không tự đổi):
+**History sub-screens** (`showHistorySection(name)`, mảng `HST_SECTIONS` trong src/features/history/history.js — tên hiển thị do user định nghĩa, không tự đổi):
 `hst-home` (lưới `#hst-nav-grid`, 12 card) → `overview`=Dashboard, `progress`=Tiến bộ, `analysis`=Phân tích, `mistakes`=Lỗi sai, `memory`=Ghi nhớ, `performance`=Hiệu suất, `behavior`=Hành vi học, `log`=Lịch sử, `compare`=So sánh, `predict`=Dự đoán, `report`=Báo cáo, `settings`=Cài đặt thống kê.
 
 **XP/Level là số thật** (không phải mock): `getXpLevelInfo(history)` suy ra từ `quiz_history` mỗi lần render (không lưu field riêng). Công thức ở `XP_PER_CORRECT/WRONG/SESSION/STREAK_DAY` (+10/+2/+50/+20) và `xpThresholdForLevel()` (L1=0, L2=100, mỗi level sau +50) — sửa công thức thì sửa đúng 2 chỗ này. `calcXpForEntries()` là điểm tính XP DUY NHẤT, tái dùng ở Dashboard/Tiến bộ/Dự đoán.
 
-**Game hóa nhẹ (animation)**: `js/quiz.js` (`submitQuiz()`/`_savePracticeResults()`) so `getXpLevelInfo(history).level` TRƯỚC và SAU `addHistoryEntry()` — tăng level thì gọi `showLevelUpCelebration(xpInfo)` (js/history.js) mở `#level-up-overlay` (tự ẩn sau 3s hoặc click, CSS ở `css/components/level-up.css`). Đáp án đúng ở practice mode (`.option-btn.correct-ans`) có animation `option-pop` (đã định nghĩa sẵn trong `animations.css`, trước đây chưa dùng tới) — thêm hiệu ứng mới thì ưu tiên tái dùng keyframe có sẵn trước khi tạo keyframe mới. Combo streak (`_quiz.combo`, tăng khi đúng liên tiếp trong practice, reset về 0 khi sai) hiện badge "🔥 Combo xN" khi ≥2 — set/reset trong `selectAnswer()` nhánh practice. `playSound(type)` (js/core/utils.js, Web Audio API thuần — không cần file asset) phát tiếng `correct`/`wrong`/`levelup`, tắt/mở qua `getSoundEnabled()`/toggle ở Cài đặt > Trải nghiệm (mặc định bật). `triggerConfetti()` (utils.js, CSS thuần) gọi khi `renderResult()` (js/results.js) thấy điểm thi 100% — KHÔNG áp dụng cho practice (mastered/skipped khác khái niệm % so với exam).
+**Game hóa nhẹ (animation)**: `src/features/quiz/quiz.js` (`submitQuiz()`/`_savePracticeResults()`) so `getXpLevelInfo(history).level` TRƯỚC và SAU `addHistoryEntry()` — tăng level thì gọi `showLevelUpCelebration(xpInfo)` (src/features/history/history.js) mở `#level-up-overlay` (tự ẩn sau 3s hoặc click, CSS ở `src/shared/styles/components/level-up.css`). Đáp án đúng ở practice mode (`.option-btn.correct-ans`) có animation `option-pop` (đã định nghĩa sẵn trong `animations.css`, trước đây chưa dùng tới) — thêm hiệu ứng mới thì ưu tiên tái dùng keyframe có sẵn trước khi tạo keyframe mới. Combo streak (`_quiz.combo`, tăng khi đúng liên tiếp trong practice, reset về 0 khi sai) hiện badge "🔥 Combo xN" khi ≥2 — set/reset trong `selectAnswer()` nhánh practice. `playSound(type)` (src/core/utils.js, Web Audio API thuần — không cần file asset) phát tiếng `correct`/`wrong`/`levelup`, tắt/mở qua `getSoundEnabled()`/toggle ở Cài đặt > Trải nghiệm (mặc định bật). `triggerConfetti()` (utils.js, CSS thuần) gọi khi `renderResult()` (src/features/results/results.js) thấy điểm thi 100% — KHÔNG áp dụng cho practice (mastered/skipped khác khái niệm % so với exam).
 
-**Hành trình học (Chapter)** — nhóm bộ đề user tự gán theo thứ tự, bản thân tính năng KHÔNG gắn cứng theo TOEIC/môn học cụ thể (đã hỏi user, chọn generic). Data: `quiz_chapters` (storage.js `getChapters()`/`saveChapters()`) — mỗi Chapter `{id,name,icon,setIds}`. CRUD + modal quản lý (`showChapterManager()`, `addChapter()`/`editChapter()`/`deleteChapter()`/`moveChapter()`, modal `#modal-chapter-manager`/`#modal-chapter-edit`) đều ở `js/library.js` — entry point ở Cài đặt > "Quản lý Chapter". `getChapterProgress(chapter)` (library.js) = % bộ đề trong Chapter có `getBestScore() >= 80`, `mastered` khi đạt 100% bộ đề (Chapter rỗng `setIds` luôn `mastered:false` → khoá vĩnh viễn Chapter sau, đúng ý "chưa có nội dung thì chưa qua được"). Hiển thị ở Dashboard qua `renderJourneyMapHtml()` (js/history.js) — Chapter sau chỉ hiện khoá `🔒` (CSS `.journey-chapter.locked`, chỉ mang tính trực quan/động viên, KHÔNG chặn thật việc vào làm bộ đề ở Library) nếu Chapter ngay trước chưa `mastered`. `seedDefaultChapters()` (js/core/app.js, gọi 1 lần ở `DOMContentLoaded`, track qua `quiz_chapters_seeded_v1`) seed sẵn lộ trình "TOEIC B1" 5 Chapter theo yêu cầu user (Giai đoạn 1 Xây nền Part 5 → ... → Giai đoạn 5 Reading), tất cả để trống `setIds` — thêm bộ đề cho từng giai đoạn thì sửa trực tiếp Chapter qua UI (Cài đặt > Quản lý Chapter) hoặc thêm setId vào đúng Chapter trong code seed.
+**Hành trình học (Chapter)** — nhóm bộ đề user tự gán theo thứ tự, bản thân tính năng KHÔNG gắn cứng theo TOEIC/môn học cụ thể (đã hỏi user, chọn generic). Data: `quiz_chapters` (storage.js `getChapters()`/`saveChapters()`) — mỗi Chapter `{id,name,icon,setIds}`. CRUD + modal quản lý (`showChapterManager()`, `addChapter()`/`editChapter()`/`deleteChapter()`/`moveChapter()`, modal `#modal-chapter-manager`/`#modal-chapter-edit`) đều ở `src/features/library/library.js` — entry point ở Cài đặt > "Quản lý Chapter". `getChapterProgress(chapter)` (library.js) = % bộ đề trong Chapter có `getBestScore() >= 80`, `mastered` khi đạt 100% bộ đề (Chapter rỗng `setIds` luôn `mastered:false` → khoá vĩnh viễn Chapter sau, đúng ý "chưa có nội dung thì chưa qua được"). Hiển thị ở Dashboard qua `renderJourneyMapHtml()` (src/features/history/history.js) — Chapter sau chỉ hiện khoá `🔒` (CSS `.journey-chapter.locked`, chỉ mang tính trực quan/động viên, KHÔNG chặn thật việc vào làm bộ đề ở Library) nếu Chapter ngay trước chưa `mastered`. `seedDefaultChapters()` (src/core/app.js, gọi 1 lần ở `DOMContentLoaded`, track qua `quiz_chapters_seeded_v1`) seed sẵn lộ trình "TOEIC B1" 5 Chapter theo yêu cầu user (Giai đoạn 1 Xây nền Part 5 → ... → Giai đoạn 5 Reading), tất cả để trống `setIds` — thêm bộ đề cho từng giai đoạn thì sửa trực tiếp Chapter qua UI (Cài đặt > Quản lý Chapter) hoặc thêm setId vào đúng Chapter trong code seed.
 
-**Nhiệm vụ hàng ngày (Daily Quest)**: `getDailyQuestProgress(history)` (js/history.js) tính thẳng từ `quiz_history` lọc theo ngày hôm nay (KHÔNG lưu state riêng) — mục tiêu cố định `DAILY_QUEST_TARGET=20` câu/ngày. Toast chúc mừng chỉ hiện 1 lần/ngày qua `sessionStorage` key `quiz_quest_celebrated` (không phải localStorage — reset mỗi session là chủ ý, tránh phải thêm field mới vào data model).
+**Nhiệm vụ hàng ngày (Daily Quest)**: `getDailyQuestProgress(history)` (src/features/history/history.js) tính thẳng từ `quiz_history` lọc theo ngày hôm nay (KHÔNG lưu state riêng) — mục tiêu cố định `DAILY_QUEST_TARGET=20` câu/ngày. Toast chúc mừng chỉ hiện 1 lần/ngày qua `sessionStorage` key `quiz_quest_celebrated` (không phải localStorage — reset mỗi session là chủ ý, tránh phải thêm field mới vào data model).
 
-**Practice HUD (Boss HP/Combo/Accuracy/Critical Hit)** — CHỈ áp dụng practice mode, KHÔNG đổi exam mode. `#quiz-practice-hud` (index.html) thay thế `.quiz-progress-bar`/`#quiz-counter`/`#quiz-timer` khi practice (toggle hiện/ẩn ở `startPractice()`/`startQuiz()` — đổi 1 trong 2 hàm này thì phải đổi cả hàm kia để không lệch trạng thái khi tái dùng `#screen-quiz`). `updatePracticeHud()` (js/quiz.js, gọi từ `updateQuizCounterDisplay()` nhánh practice) tính: Boss HP = `(1 - mastered/total)*100` (giảm khi pL BKT vượt ngưỡng mastered — KHÔNG giảm ngay lúc trả lời đúng, vì mastery là BKT spaced-repetition, có thể cần nhiều lần đúng mới đủ ngưỡng — do đó feedback mỗi câu chỉ ghi "⚔️ Đánh trúng Boss!" chung, không ghi số HP cụ thể để tránh sai lệch với thanh HP thật), Accuracy live = `correctAttempts/totalAttempts` (đếm mọi lần trả lời trong phiên, kể cả câu lặp lại do SRS chèn lại — khác `pMastered`), near-finish banner khi còn ≤3 câu chưa xong. `_quiz.combo` (tăng đúng liên tiếp, reset khi sai) → Critical Hit nếu `rt<3000ms` HOẶC combo chia hết 3, hiện `showFloatingXp()`/`showComboBrokenFlash()` (js/core/utils.js, `position:fixed` gắn vào `document.body` — KHÔNG gắn trong `#quiz-questions-content` vì DOM đó bị `innerHTML` ghi đè ngay sau mỗi câu). Critical Hit "+15 XP" CHỈ là số hiển thị nổi (cosmetic, không persist) — XP thật vẫn tính qua `calcXpForEntries()` (nguồn duy nhất), không đổi công thức XP_PER_CORRECT thật. ĐÃ CHỦ ĐỘNG BỎ theo yêu cầu: Reward Milestone/Chest (trùng hướng Badge/cosmetic đã quyết định không mở rộng thêm), Danger Zone (practice dùng đếm-lên active time, không có countdown nên "sắp hết giờ" không áp dụng — chỉ hợp lý cho exam mode nếu sau này được yêu cầu).
+**Practice HUD (Boss HP/Combo/Accuracy/Critical Hit)** — CHỈ áp dụng practice mode, KHÔNG đổi exam mode. `#quiz-practice-hud` (index.html) thay thế `.quiz-progress-bar`/`#quiz-counter`/`#quiz-timer` khi practice (toggle hiện/ẩn ở `startPractice()`/`startQuiz()` — đổi 1 trong 2 hàm này thì phải đổi cả hàm kia để không lệch trạng thái khi tái dùng `#screen-quiz`). `updatePracticeHud()` (src/features/quiz/quiz.js, gọi từ `updateQuizCounterDisplay()` nhánh practice) tính: Boss HP = `(1 - mastered/total)*100` (giảm khi pL BKT vượt ngưỡng mastered — KHÔNG giảm ngay lúc trả lời đúng, vì mastery là BKT spaced-repetition, có thể cần nhiều lần đúng mới đủ ngưỡng — do đó feedback mỗi câu chỉ ghi "⚔️ Đánh trúng Boss!" chung, không ghi số HP cụ thể để tránh sai lệch với thanh HP thật), Accuracy live = `correctAttempts/totalAttempts` (đếm mọi lần trả lời trong phiên, kể cả câu lặp lại do SRS chèn lại — khác `pMastered`), near-finish banner khi còn ≤3 câu chưa xong. `_quiz.combo` (tăng đúng liên tiếp, reset khi sai) → Critical Hit nếu `rt<3000ms` HOẶC combo chia hết 3, hiện `showFloatingXp()`/`showComboBrokenFlash()` (src/core/utils.js, `position:fixed` gắn vào `document.body` — KHÔNG gắn trong `#quiz-questions-content` vì DOM đó bị `innerHTML` ghi đè ngay sau mỗi câu). Critical Hit "+15 XP" CHỈ là số hiển thị nổi (cosmetic, không persist) — XP thật vẫn tính qua `calcXpForEntries()` (nguồn duy nhất), không đổi công thức XP_PER_CORRECT thật. ĐÃ CHỦ ĐỘNG BỎ theo yêu cầu: Reward Milestone/Chest (trùng hướng Badge/cosmetic đã quyết định không mở rộng thêm), Danger Zone (practice dùng đếm-lên active time, không có countdown nên "sắp hết giờ" không áp dụng — chỉ hợp lý cho exam mode nếu sau này được yêu cầu).
 
 **Mục chưa có chức năng/data thật vẫn hiện trong UI** kèm `devRow()`/`devBadge()` (badge cam "🚧 Đang phát triển") thay vì ẩn đi — gồm: Avatar/Rank, AI Insight thật (hiện là heuristic `generateInsights()`), tag Part/từ loại/ngữ pháp/CEFR/độ khó/loại câu/nguồn (đã hỏi user, xác nhận bỏ qua — KHÔNG tự thêm field tag câu hỏi nếu chưa hỏi lại), Forgetting Curve, Precision/Recall/Confidence/Fatigue Score, Calendar/Replay/Ghi chú, PDF/Excel/Đồng bộ/Sao lưu. Phải hỏi user trước khi build thật bất kỳ mục nào ở đây.
 
-**Helper tính toán dùng chung** (js/history.js, tái dùng trước khi viết hàm mới): `compareTimePeriods(history,unit)`, `calcStdDev/median/linearRegressionPredict`, `getMemoryBuckets()` (đọc `quiz_q_stats` BKT `pL`), `getTopConfusedAnswers()`/`getConsecutiveWrongStreaks()`/`getFixStatus()`, `computeCoreMetrics()` (accuracy/velocity/efficiency/consistency/focus — dùng chung Dashboard+Hiệu suất+Hành vi học), `computeSetStats()` (nguồn tính duy nhất theo set), `predictLevelETA()`/`getGoalProgress()` (dùng chung Dự đoán + Tiến bộ), `getAchievementBadges()`/`getLongestStreakEver()` (badge tính thật từ history, không phải data giả), `getPersonalBests()`, `showDayDetail()`/`hideDayDetail()` (popup chi tiết ngày, dùng chung Dashboard heatmap + XP-by-day chart ở Tiến bộ).
+**Helper tính toán dùng chung** (src/features/history/history.js, tái dùng trước khi viết hàm mới): `compareTimePeriods(history,unit)`, `calcStdDev/median/linearRegressionPredict`, `getMemoryBuckets()` (đọc `quiz_q_stats` BKT `pL`), `getTopConfusedAnswers()`/`getConsecutiveWrongStreaks()`/`getFixStatus()`, `computeCoreMetrics()` (accuracy/velocity/efficiency/consistency/focus — dùng chung Dashboard+Hiệu suất+Hành vi học), `computeSetStats()` (nguồn tính duy nhất theo set), `predictLevelETA()`/`getGoalProgress()` (dùng chung Dự đoán + Tiến bộ), `getAchievementBadges()`/`getLongestStreakEver()` (badge tính thật từ history, không phải data giả), `getPersonalBests()`, `showDayDetail()`/`hideDayDetail()` (popup chi tiết ngày, dùng chung Dashboard heatmap + XP-by-day chart ở Tiến bộ).
 
-**Tiến bộ (js/history-progress.js) & Phân tích (js/history-analysis.js)**: mỗi tab có bộ lọc riêng persistent (`_progressFilter`/`_analysisFilter`: range `7d|30d|90d|6m|1y|all` + bộ đề/chủ đề) — đổi filter chỉ re-render phần chart (`renderProgressCharts()`/`renderAnalysisBody()`), KHÔNG render lại filter bar (giữ DOM, không mất giá trị select). `getProgressFilteredHistory()` cache theo chữ ký filter, không tính lại nếu filter chưa đổi. Phân tích chỉ "Theo chủ đề" (`computeSkillStats()` — khác `computeWeakSkills()` ở tab Lỗi sai, đừng gộp 2 hàm) và "Theo bộ đề" có data thật, 7 mục còn lại là `devRow()`. Click 1 dòng → `showSkillDetail()`/`showSetDetail()` mở `#modal-analysis-detail` chung. Nhóm `<10 câu` hiện "Dữ liệu chưa đủ để đánh giá."
+**Tiến bộ (src/features/history/history-progress.js) & Phân tích (src/features/history/history-analysis.js)**: mỗi tab có bộ lọc riêng persistent (`_progressFilter`/`_analysisFilter`: range `7d|30d|90d|6m|1y|all` + bộ đề/chủ đề) — đổi filter chỉ re-render phần chart (`renderProgressCharts()`/`renderAnalysisBody()`), KHÔNG render lại filter bar (giữ DOM, không mất giá trị select). `getProgressFilteredHistory()` cache theo chữ ký filter, không tính lại nếu filter chưa đổi. Phân tích chỉ "Theo chủ đề" (`computeSkillStats()` — khác `computeWeakSkills()` ở tab Lỗi sai, đừng gộp 2 hàm) và "Theo bộ đề" có data thật, 7 mục còn lại là `devRow()`. Click 1 dòng → `showSkillDetail()`/`showSetDetail()` mở `#modal-analysis-detail` chung. Nhóm `<10 câu` hiện "Dữ liệu chưa đủ để đánh giá."
 
 **Khác**: `getStatsGoal()`/`saveStatsGoal()` (storage.js) lưu mục tiêu accuracy trong `quiz_stats_goal`, dùng ở Dự đoán + Cài đặt thống kê.
 
@@ -177,7 +196,7 @@ Các screen overlay (ẩn bottom nav khi hiện):
 // timeTaken: wall-clock giây (Date.now() - startTime lúc nộp/thoát) — giữ nguyên ý nghĩa cũ, không đổi
 ```
 
-**`quiz_ai_config`** — cấu hình gọi AI trực tiếp (js/ai.js):
+**`quiz_ai_config`** — cấu hình gọi AI trực tiếp (src/features/ai/ai.js):
 ```js
 { apiKey, model: 'gpt-4o-mini'|'gpt-4o', fxRate: number /* VND/USD */, fxUpdatedAt: ts|null }
 ```
@@ -194,7 +213,7 @@ Các screen overlay (ẩn bottom nav khi hiện):
   date, model, promptTokens, completionTokens, costUSD, costVND }
 ```
 
-**`quiz_skill_log`** / **`quiz_topic_log`** — object log tiến độ đúng/sai theo ngày, key = tên skill/topic (`js/core/storage.js: appendSkillLog()/appendTopicLog()`):
+**`quiz_skill_log`** / **`quiz_topic_log`** — object log tiến độ đúng/sai theo ngày, key = tên skill/topic (`src/core/storage.js: appendSkillLog()/appendTopicLog()`):
 ```js
 { [skillOrTopicName]: { [date]: { c: số câu đúng, w: số câu sai } } }
 ```
@@ -208,7 +227,7 @@ Các screen overlay (ẩn bottom nav khi hiện):
 
 ## API CHEATSHEET — hàm có sẵn, KHÔNG viết lại
 
-**Storage** (`js/core/storage.js`):
+**Storage** (`src/core/storage.js`):
 ```js
 getSets()                    // → Set[]
 saveSets(sets)
@@ -223,7 +242,7 @@ getAiUsageLog() / logAiUsage(entry)      // prepend, giữ max 500
 getAiAnalysisLog() / addAiAnalysisLog(entry)   // prepend, giữ max 20 — log các lần phân tích để xem lại
 ```
 
-**AI** (`js/ai.js`):
+**AI** (`src/features/ai/ai.js`):
 ```js
 generateDirectly()           // gọi OpenAI API trực tiếp bằng key đã lưu, tự nhập câu hỏi + log usage
 applyAIQuestions(data, fallbackName)   // áp dụng JSON câu hỏi vào set — dùng chung cho paste-tay (importAIText) và gọi API (generateDirectly)
@@ -234,7 +253,7 @@ viewAiAnalysisEntry(id)       // xem lại 1 lần phân tích cũ trong log
 quickCreateFromAnalysis(topic) // mở modal AI, điền sẵn yêu cầu theo gợi ý từ phân tích
 ```
 
-**Chapter / Hành trình học** (`js/library.js`):
+**Chapter / Hành trình học** (`src/features/library/library.js`):
 ```js
 getChapterProgress(chapter)   // → {done,total,pct,mastered} dựa getBestScore() >= 80 mỗi set trong chapter
 showChapterManager() / hideChapterManager()      // modal danh sách Chapter
@@ -242,7 +261,7 @@ addChapter() / editChapter(id) / deleteChapter(id) / moveChapter(idx, dir)
 saveChapterDraft()             // lưu _chapterDraft (đang sửa) vào quiz_chapters
 ```
 
-**Import text** (`js/import-text.js`):
+**Import text** (`src/features/import-text/import-text.js`):
 ```js
 openImportText(appendSetId)  // mở screen-import-text, set _appendToSetId (dùng chung biến với ai.js)
 parseAzotaText(raw)          // text thô → array câu hỏi {text,options,correct,explanation,_error}
@@ -251,12 +270,12 @@ commitImportText()           // lọc câu hợp lệ (!q._error) → applyAIQue
 
 **Render** (gọi sau khi mutate data):
 ```js
-renderHome()       // js/home.js
-renderLibrary()    // js/library.js
-renderHistory()    // js/history.js
+renderHome()       // src/features/home/home.js
+renderLibrary()    // src/features/library/library.js
+renderHistory()    // src/features/history/history.js
 ```
 
-**Navigation** (`js/core/app.js`):
+**Navigation** (`src/core/app.js`):
 ```js
 navTo('home' | 'library' | 'history')   // chuyển tab + refresh content
 showScreen('screen-xxx')                 // chuyển màn không refresh data
@@ -264,14 +283,14 @@ showHistorySection('overview'|'progress'|'analysis'|'mistakes'|'memory'|'perform
 showHistoryHome()                        // về hst-home
 ```
 
-**UI utils** (`js/core/utils.js`):
+**UI utils** (`src/core/utils.js`):
 ```js
 toast('message', 'success'|'error'|'')  // thông báo nổi
 confirm('title', 'msg', onOkFn)         // dialog xác nhận custom
 esc(str)                                 // escape HTML — BẮT BUỘC khi render user data
 ```
 
-**Quiz** (`js/quiz.js`):
+**Quiz** (`src/features/quiz/quiz.js`):
 ```js
 showQuizSettings(setId)    // mở modal cài đặt trước khi làm bài
 startQuiz(set, settings)   // bắt đầu quiz với settings {shuffleQ, shuffleOpts, numQ}
@@ -282,22 +301,22 @@ startQuiz(set, settings)   // bắt đầu quiz với settings {shuffleQ, shuffl
 ## PATTERN THÊM TÍNH NĂNG
 
 ### Thêm field mới vào câu hỏi
-1. `buildQuestionCard()` trong `js/editor.js` — thêm input field
+1. `buildQuestionCard()` trong `src/features/editor/editor.js` — thêm input field
 2. `addQuestion()` — thêm default value
 3. `saveEditor()` — map field khi lưu
 4. `buildSetCard()` / kết quả — hiện field nếu cần
 5. `importSetsFromData()` — parse field từ JSON import
 
 ### Thêm section vào tab
-- Home: thêm element vào `screen-home` (index.html), render trong `renderHome()` (js/home.js)
-- Library: thêm vào `screen-library`, render trong `renderLibrary()` (js/library.js)
-- History: thêm vào `screen-history`, render trong `renderHistory()` (js/history.js)
+- Home: thêm element vào `screen-home` (index.html), render trong `renderHome()` (src/features/home/home.js)
+- Library: thêm vào `screen-library`, render trong `renderLibrary()` (src/features/library/library.js)
+- History: thêm vào `screen-history`, render trong `renderHistory()` (src/features/history/history.js)
 
 ### Thêm tab mới
 1. Thêm `<button data-nav="name">` vào `#bottom-nav` trong index.html
 2. Thêm `<section id="screen-name">` vào index.html
-3. Thêm `'screen-name'` vào `screens[]` trong `js/core/app.js`
-4. Thêm `else if (name === 'name') { ... }` vào `navTo()` trong `js/core/app.js`
+3. Thêm `'screen-name'` vào `screens[]` trong `src/core/app.js`
+4. Thêm `else if (name === 'name') { ... }` vào `navTo()` trong `src/core/app.js`
 
 ### Thêm modal mới
 1. Thêm `<div id="modal-xxx" class="modal-overlay">` vào index.html
@@ -324,7 +343,7 @@ startQuiz(set, settings)   // bắt đầu quiz với settings {shuffleQ, shuffl
 - Thứ tự property trong 1 rule: Layout → Box Model → Typography → Visual → Animation
 - Comment chỉ cho logic phức tạp (lý do/constraint ẩn), không comment hiển nhiên
 
-**Design tokens** (`css/base/tokens.css`) — dùng tên semantic, KHÔNG dùng tên primitive:
+**Design tokens** (`src/shared/styles/base/tokens.css`) — dùng tên semantic, KHÔNG dùng tên primitive:
 ```css
 /* Brand / semantic colors */
 --color-brand        --color-brand-dark    --color-brand-light
@@ -372,11 +391,11 @@ startQuiz(set, settings)   // bắt đầu quiz với settings {shuffleQ, shuffl
 
 ## PC RESPONSIVE (v107+, mobile-first — KHÔNG dùng position để căn layout, ưu tiên CSS Grid + clamp())
 
-**Kiến trúc:** `#bottom-nav` và `#app` đều là con trực tiếp của `<body>` (xem index.html) — từ `48rem` (768px), `body` trở thành **CSS Grid 2 cột** (`css/layout/shell.css`): `grid-template-columns: clamp(13rem,13vw,15rem) minmax(0,1fr)`. `#bottom-nav` tự nhiên là cột 1 (sidebar), `#app` là cột 2 (main content, co giãn `1fr` — KHÔNG width cố định). Toàn grid giới hạn `max-width:100rem` (1600px, tránh quá dãn ở 2K/4K) + `margin:0 auto` canh giữa. `gap:0`, KHÔNG có padding ngoài — edge-to-edge thật (kiểu Discord/Notion/Slack, user yêu cầu bỏ "đệm trắng khung bao ngoài cùng"), `#app`/`#bottom-nav` không bo góc/đổ bóng nữa (chạm sát viền `body` nên bo góc sẽ lộ góc trắng). Phân tách sidebar/content chỉ bằng `border-right` ở `#bottom-nav` (nav.css), không dùng shadow.
+**Kiến trúc:** `#bottom-nav` và `#app` đều là con trực tiếp của `<body>` (xem index.html) — từ `48rem` (768px), `body` trở thành **CSS Grid 2 cột** (`src/shared/styles/layout/shell.css`): `grid-template-columns: clamp(13rem,13vw,15rem) minmax(0,1fr)`. `#bottom-nav` tự nhiên là cột 1 (sidebar), `#app` là cột 2 (main content, co giãn `1fr` — KHÔNG width cố định). Toàn grid giới hạn `max-width:100rem` (1600px, tránh quá dãn ở 2K/4K) + `margin:0 auto` canh giữa. `gap:0`, KHÔNG có padding ngoài — edge-to-edge thật (kiểu Discord/Notion/Slack, user yêu cầu bỏ "đệm trắng khung bao ngoài cùng"), `#app`/`#bottom-nav` không bo góc/đổ bóng nữa (chạm sát viền `body` nên bo góc sẽ lộ góc trắng). Phân tách sidebar/content chỉ bằng `border-right` ở `#bottom-nav` (nav.css), không dùng shadow.
 
 `#update-banner` là `position:fixed` → tự thoát khỏi grid (không tính là 1 trong 2 cột), không ảnh hưởng layout.
 
-**Khi nav bị ẩn** (quiz/editor/dán văn bản/kết quả — mảng `noNav` trong `showScreen()`, js/core/app.js): `body:has(#screen-quiz.active)` (+ 3 screen khác) đổi `grid-template-columns: minmax(0,1fr)` để cột sidebar KHÔNG để trống (track grid vẫn chiếm chỗ dù item display:none, phải tự đổi số cột bằng `:has()`, không sửa JS).
+**Khi nav bị ẩn** (quiz/editor/dán văn bản/kết quả — mảng `noNav` trong `showScreen()`, src/core/app.js): `body:has(#screen-quiz.active)` (+ 3 screen khác) đổi `grid-template-columns: minmax(0,1fr)` để cột sidebar KHÔNG để trống (track grid vẫn chiếm chỗ dù item display:none, phải tự đổi số cột bằng `:has()`, không sửa JS).
 
 `#bottom-nav` ở breakpoint này: `position:static` (không còn fixed/calc), `flex-direction:column`, `.nav-item` đổi row, `justify-content:flex-start` (KHÔNG dùng `center` — đã thử, dồn hết item vào giữa sidebar trông trống/xấu, user phản hồi sửa lại). `.nav-item.active` có vạch nhấn trái (`::before`, kiểu Linear/Notion) + `font-weight:bold`; `.nav-item:not(.active):hover` có nền nhạt — sidebar PC cần hover state riêng (mobile không cần vì là tap).
 
@@ -385,13 +404,13 @@ startQuiz(set, settings)   // bắt đầu quiz với settings {shuffleQ, shuffl
 `#toast-container` ở breakpoint này dùng `bottom:var(--space-4)` (KHÔNG còn cộng thêm padding của body vì body không còn padding).
 
 **Grid nội dung** dùng `repeat(auto-fit, minmax(...))` (KHÔNG cố định số cột — tự co giãn theo độ rộng thật, ít breakpoint hơn):
-- `.stats-row` (Trang chủ — 3 thẻ thống kê), `minmax(6.25rem,1fr)`, `css/pages/home.css`
+- `.stats-row` (Trang chủ — 3 thẻ thống kê), `minmax(6.25rem,1fr)`, `src/features/home/home.css`
 - `#home-recent-sets` (Trang chủ — đề gần đây), `minmax(17.5rem,1fr)`, cùng file
-- `.set-list` (Luyện đề — `#library-set-list`), `minmax(17.5rem,1fr)`, `css/components/card.css`
+- `.set-list` (Luyện đề — `#library-set-list`), `minmax(17.5rem,1fr)`, `src/shared/styles/components/card.css`
 
 `.home-ai-cta` (nút "Tạo đề bằng AI") chỉ full-width ở mobile (`.btn-full`), từ `48rem` co về `width:auto;min-width:16rem;max-width:22rem` (1 hành động không cần chiếm cả hàng).
 
-`#screen-settings` (Cài đặt) — mỗi nhóm (label + `.settings-card`) bọc trong `.settings-group`, tất cả nằm trong `.settings-grid` (`css/components/settings-row.css`) dùng `auto-fit` giống Trang chủ/Luyện đề. Thêm nhóm settings mới: chỉ cần thêm 1 `.settings-group` trong `.settings-grid`, KHÔNG cần sửa CSS.
+`#screen-settings` (Cài đặt) — mỗi nhóm (label + `.settings-card`) bọc trong `.settings-group`, tất cả nằm trong `.settings-grid` (`src/shared/styles/components/settings-row.css`) dùng `auto-fit` giống Trang chủ/Luyện đề. Thêm nhóm settings mới: chỉ cần thêm 1 `.settings-group` trong `.settings-grid`, KHÔNG cần sửa CSS.
 
 CHƯA làm: Thống kê (History)/Editor — chưa có layout multi-column riêng cho PC như Trang chủ/Luyện đề/Quiz/Cài đặt.
 
@@ -415,7 +434,7 @@ CHƯA làm: Thống kê (History)/Editor — chưa có layout multi-column riên
 
 ## JAVASCRIPT CONVENTIONS
 
-⚠️ **Lưu ý quan trọng:** dự án dùng **global scope, không có module system** (xem KIẾN TRÚC FILE — đã là quyết định kiến trúc, không phải nợ kỹ thuật). Các quy tắc "ES Modules import/export", "tách api/storage/utils/ui/features riêng file .mjs" KHÔNG áp dụng theo nghĩa đen — thay vào đó tinh thần tương đương đã có sẵn: mỗi file JS trong `js/` đảm nhiệm 1 khu vực (`storage.js`, `utils.js`, `quiz.js`...), function global đặt tên cẩn thận tránh trùng. KHÔNG tự ý chuyển sang ES Modules/bundler — đó là thay đổi kiến trúc lớn (Mức 3), chỉ làm khi user yêu cầu rõ.
+⚠️ **Lưu ý quan trọng:** dự án dùng **global scope, không có module system** (xem KIẾN TRÚC FILE — đã là quyết định kiến trúc, không phải nợ kỹ thuật). Các quy tắc "ES Modules import/export", "tách api/storage/utils/ui/features riêng file .mjs" KHÔNG áp dụng theo nghĩa đen — thay vào đó tinh thần tương đương đã có sẵn: mỗi file JS trong `src/core/`/`src/features/` đảm nhiệm 1 khu vực (`storage.js`, `utils.js`, `quiz.js`...), function global đặt tên cẩn thận tránh trùng. KHÔNG tự ý chuyển sang ES Modules/bundler — đó là thay đổi kiến trúc lớn (Mức 3), chỉ làm khi user yêu cầu rõ.
 
 - Mỗi file JS một khu vực chức năng (tinh thần "module theo tính năng" — xem KIẾN TRÚC FILE)
 - Hàm ngắn, một trách nhiệm; đặt tên rõ nghĩa
@@ -435,7 +454,7 @@ CHƯA làm: Thống kê (History)/Editor — chưa có layout multi-column riên
 - Comment cho "tại sao" (constraint ẩn, lý do workaround), không comment "làm gì" (tên hàm/biến đã rõ nghĩa)
 - Tránh magic number/string — đặt hằng số có tên khi giá trị lặp lại hoặc ý nghĩa không tự rõ
 - Dùng guard clause (`if (!x) return;`) để giảm lồng `if`
-- Mọi thay đổi dữ liệu đi qua hàm storage có sẵn (xem API CHEATSHEET) — không tự ý `localStorage.setItem` rải rác ngoài `js/core/storage.js`
+- Mọi thay đổi dữ liệu đi qua hàm storage có sẵn (xem API CHEATSHEET) — không tự ý `localStorage.setItem` rải rác ngoài `src/core/storage.js`
 
 ---
 
@@ -452,36 +471,36 @@ CHƯA làm: Thống kê (History)/Editor — chưa có layout multi-column riên
 **Quiz/History:**
 - Quiz mode default `'all'` (list — hiện hết câu, cuộn dọc), `'one-by-one'` là chế độ 2 (1 câu/màn, Trước/Tiếp). `toggleQuizMode()` chuyển qua lại, ẩn ở practice mode. `shuffleOptions(q)` trả câu hỏi mới với options đảo + `correct` cập nhật
 - `qs-time-limit` (modal-quiz-settings) mặc định = tổng số câu (1 phút/câu) khi mở `showQuizSettings()` — KHÔNG tự đổi nếu user sửa "Số câu muốn làm" sau đó, là giới hạn biết trước, không phải bug
-- `.quiz-side-map` (css/pages/quiz.css) — sidebar bảng câu hỏi cố định bên phải, CHỈ hiện ở desktop (`@media min-width: 80rem`), ẩn hẳn qua JS khi practice mode. Render bằng `renderQuizMap()` — hàm này ghi vào CẢ modal mobile (`#qmap-grid`) VÀ sidebar desktop (`#qmap-grid-side`) cùng lúc, gọi từ `renderQuizNav()` (mọi lần đổi câu/đáp án) + `toggleFlag()` (không tự kéo theo renderQuizNav)
+- `.quiz-side-map` (src/features/quiz/quiz.css) — sidebar bảng câu hỏi cố định bên phải, CHỈ hiện ở desktop (`@media min-width: 80rem`), ẩn hẳn qua JS khi practice mode. Render bằng `renderQuizMap()` — hàm này ghi vào CẢ modal mobile (`#qmap-grid`) VÀ sidebar desktop (`#qmap-grid-side`) cùng lúc, gọi từ `renderQuizNav()` (mọi lần đổi câu/đáp án) + `toggleFlag()` (không tự kéo theo renderQuizNav)
 - `.qnav-map-btn` (nút "X/10" mở modal map, chế độ one-by-one) bị ẩn bằng CSS ở cùng breakpoint `80rem` — vì sidebar desktop đã thay chức năng, hiện cả 2 sẽ trùng UI
 - `jumpToQuestion(idx)` phân biệt theo `_quiz.mode`: `'all'` → `scrollIntoView()` tới block câu đó; `'one-by-one'` → đổi `currentIdx` + render lại. Thêm mode mới phải xử lý cả 2 nhánh này
 - `toggleFlag(idx)` phải query `#quiz-q-${idx} .quiz-flag-btn` (scoped theo từng câu) — KHÔNG dùng `document.querySelector('.quiz-flag-btn')` chung, vì mode `'all'` hiện nhiều nút cờ cùng lúc trên màn hình
 - `renderHistoryMistakes()` overwrite toàn bộ `hst-mistakes-body` bằng `innerHTML` — không đặt HTML tĩnh trong container này (mất), nút retry phải sinh trong JS (`retryBtnHtml`)
-- `RECENT_MISTAKES_WINDOW` (js/history.js) dùng chung bởi `renderHistoryMistakes()` và `retryAllWrongQuestions()` — phải cùng giá trị, lệch nhau sẽ mâu thuẫn giữa hiển thị và hành động
+- `RECENT_MISTAKES_WINDOW` (src/features/history/history.js) dùng chung bởi `renderHistoryMistakes()` và `retryAllWrongQuestions()` — phải cùng giá trị, lệch nhau sẽ mâu thuẫn giữa hiển thị và hành động
 - Dòng "Đề yếu nhất" có nút 🎯 `startPractice(setId)` — `weakTopics` map từ `computeSetStats()` phải giữ `setId`, không chỉ lấy tên
-- `computeSetStats(history)` (js/history.js) là **nguồn tính duy nhất** cho thống kê theo set (group theo `setId`, không theo tên) — dùng chung bởi Tổng quan/Tiến bộ/Lỗi sai/export report, sửa số liệu thì sửa Ở ĐÂY
-- `exportPersonalizationData()` (js/library.js) xuất **.txt** (không JSON) — `_buildExportJson()` tính số liệu → `_buildReportTxt()` format text. Thêm field thống kê thì sửa cả 2 hàm
+- `computeSetStats(history)` (src/features/history/history.js) là **nguồn tính duy nhất** cho thống kê theo set (group theo `setId`, không theo tên) — dùng chung bởi Tổng quan/Tiến bộ/Lỗi sai/export report, sửa số liệu thì sửa Ở ĐÂY
+- `exportPersonalizationData()` (src/features/library/library.js) xuất **.txt** (không JSON) — `_buildExportJson()` tính số liệu → `_buildReportTxt()` format text. Thêm field thống kê thì sửa cả 2 hàm
 - `startPractice()` thoát giữa chừng (`exitQuiz()`) tự lưu tiến trình nếu đã trả lời ≥1 câu, không hỏi xác nhận. Chế độ Thi vẫn confirm + không lưu — khác biệt có chủ đích
-- `startActivityTracking()` (js/core/activity-tracker.js) đo active time (loại trừ idle >120s hoặc tab ẩn), dùng chung cho cả 2 mode qua `_quiz.activityTracker`. Idle 60s → `onIdleWarning` (cảnh báo sắp dừng đếm), idle 120s → ngừng cộng `activeMs` (`PAUSE_THRESHOLD_MS`), quay lại sau idle ≥120s → `onResumeNudge`. `handle.getActiveSec()` đọc active time hiện tại không cần stop. `handle.stop()` **idempotent** (bị gọi 2 lần khi thoát giữa chừng practice) — mọi điểm kết thúc quiz đều phải gọi `stop()` tránh leak listener/interval
+- `startActivityTracking()` (src/core/activity-tracker.js) đo active time (loại trừ idle >120s hoặc tab ẩn), dùng chung cho cả 2 mode qua `_quiz.activityTracker`. Idle 60s → `onIdleWarning` (cảnh báo sắp dừng đếm), idle 120s → ngừng cộng `activeMs` (`PAUSE_THRESHOLD_MS`), quay lại sau idle ≥120s → `onResumeNudge`. `handle.getActiveSec()` đọc active time hiện tại không cần stop. `handle.stop()` **idempotent** (bị gọi 2 lần khi thoát giữa chừng practice) — mọi điểm kết thúc quiz đều phải gọi `stop()` tránh leak listener/interval
 - Practice mode hiện bộ đếm thời gian học count-up (`#quiz-timer`/`#quiz-timer-text` — dùng chung element với countdown thi) qua `_quiz.activeDisplayInterval` (interval riêng đọc `activityTracker.getActiveSec()` mỗi giây). Phải `clearInterval(_quiz.activeDisplayInterval)` ở mọi điểm dừng practice (`_savePracticeResults()`, `exitQuiz()` goBack), giống `timerInterval` của exam. `renderQuiz()` chỉ ẩn `#quiz-timer` khi không phải exam countdown VÀ không phải practice (`!q.pQueue`)
 
-**AI (js/ai.js):**
+**AI (src/features/ai/ai.js):**
 - API key OpenAI lưu **plain text** trong `quiz_ai_config`, gửi trực tiếp từ browser tới OpenAI (không backend) — rủi ro đã chấp nhận cho use case cá nhân, KHÔNG thêm sync/export config ra ngoài
 - `OPENAI_PRICING` là giá hardcode tại thời điểm code — OpenAI đổi giá phải sửa tay. Tỷ giá VND tự fetch qua `refreshFxRate()`
 - `applyAIQuestions()` là điểm áp dụng câu hỏi AI DUY NHẤT (paste-tay + gọi API) — thêm field mới sửa Ở ĐÂY. Mỗi câu parse trong `try/catch` riêng (1 câu lỗi không crash cả batch), `correct` phải trong [0,3]
 - `generateDirectly()` dùng `_estimateMaxTokens(request)` chặn `max_tokens` theo số câu xin (clamp 5-60, ~220 token/câu, trần 16000) — tránh chi phí không kiểm soát. Gọi với `stream:true` + `stream_options.include_usage` để đếm `"skillTags"` xuất hiện trong stream → hiện tiến độ thật "X/~Y câu". Có fallback `res.json()` nếu không hỗ trợ streaming
 - `quiz_last_set` vốn pin "set đang chơi" lên đầu Luyện đề — `applyAIQuestions()` cũng set key này nên set vừa tạo/thêm câu tự lên đầu. Set card hiện `📅 fmtDateShort(set.createdAt)` (fallback `—`)
-- `modal-ai-create` (FAB "+" duy nhất ở Library, đã gộp FAB dán-văn-bản cũ vào đây) có 2 tab `.aqc-tabs`: "Bằng AI" (nội dung cũ) / "Dán văn bản" (`goToImportTextFromAiCreate()` → `openImportText(_appendToSetId)`, giữ đúng context tạo mới hay thêm vào set). `showAICreate()` luôn reset về tab 'ai' khi mở. `.aqc-tabs`/`.aqc-tab`/`.aqc-page` định nghĩa ở css/pages/editor.css nhưng dùng chung global (không scoped theo screen)
+- `modal-ai-create` (FAB "+" duy nhất ở Library, đã gộp FAB dán-văn-bản cũ vào đây) có 2 tab `.aqc-tabs`: "Bằng AI" (nội dung cũ) / "Dán văn bản" (`goToImportTextFromAiCreate()` → `openImportText(_appendToSetId)`, giữ đúng context tạo mới hay thêm vào set). `showAICreate()` luôn reset về tab 'ai' khi mở. `.aqc-tabs`/`.aqc-tab`/`.aqc-page` định nghĩa ở src/features/editor/editor.css nhưng dùng chung global (không scoped theo screen)
 - `analyzeStudyReport()` tái dùng `_buildExportJson()`+`_buildReportTxt()` làm input AI (không gửi raw history), `max_tokens:550`. Log ở `quiz_ai_analysis_log` (xem lại được) — mở modal không tự gọi lại API, chỉ gọi khi "Phân tích lại"
 - `buildPromptText()` rule ngôn ngữ: `name`/`explanation` luôn tiếng Việt, `text`/`options` tiếng Anh chỉ khi chủ đề cần (TOEIC...)
 - `explanation` AI sinh PHẢI theo format cố định: `✅ Đáp án` → `🔍 Nhìn cấu trúc` (+ `➡` lý do) → `✔ <đáp án> (phân loại)` → `📖 Ghi nhớ`. Không giải thích đáp án sai. Trong source, `\n` dạy AI escape JSON phải viết `\\n` (double-escape, vì đang trong template literal JS). CSS hiển thị đã có `white-space: pre-wrap`
 - `analyzeStudyReport()` parse dòng `HANH_DONG: REDO:<set>` / `CREATE:<chủ đề>` cuối response (`_parseAiAction()`) để sinh nút hành động — không tốn thêm API call, match tên gần đúng
 
-**Import text (js/import-text.js):**
+**Import text (src/features/import-text/import-text.js):**
 - `parseAzotaText()` tách block theo dòng đầu `Câu N:`/`N.`, nhận diện đáp án A-D bằng chữ cái HOẶC đối chiếu full-text nếu AI/người dùng ghi "Đáp án: <nội dung>" thay vì chữ cái
 - Mỗi câu parse ra đều có `_error` (null nếu hợp lệ) — set tự validate lại mỗi lần user sửa trực tiếp trong preview card (`updateImportQuestion`/`updateImportOption`), không cần parse lại từ đầu
 - Dùng chung `_appendToSetId` (global khai báo ở `ai.js`) và `applyAIQuestions()` để tạo/thêm set — KHÔNG viết lại logic tạo set riêng
-- Preview card tái dùng `.question-card`/`.option-row` từ `css/pages/editor.css`, chỉ thêm class `.has-error` (viền đỏ) — style mới nằm ở `css/pages/import.css`
+- Preview card tái dùng `.question-card`/`.option-row` từ `src/features/editor/editor.css`, chỉ thêm class `.has-error` (viền đỏ) — style mới nằm ở `src/features/import-text/import.css`
 - `_ICON_PREFIX_RE` lọc icon/emoji đầu dòng (✅💡📘...) CHỈ dùng để test nhãn (`_ANS_RE`/`_EXP_RE`/`_ANS_TEXT_RE`) — nội dung lưu lại (`explanation`/`text`) luôn dùng `rawLine` gốc còn icon, giữ định dạng AI-style (📘 Công thức/📝 Ví dụ/🎯 Ghi nhớ) không bị khô khan
 - `suggestImportSetName()` — nút ✨ cạnh `#import-set-name` (chỉ hiện ở bước preview), gửi tối đa 15 câu hỏi đã nhận diện cho AI, parse JSON 3 tên gợi ý → render `.ai-chip` ở `#import-name-suggestions`, bấm chip điền vào input. Log usage `type:'naming'` (thêm field mới ngoài `'generate'|'analysis'`, `renderAiUsage()` đã xử lý hiển thị riêng)
 
