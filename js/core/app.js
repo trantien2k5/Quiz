@@ -1,4 +1,4 @@
-const APP_V = 118;
+const APP_V = 119;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -70,35 +70,12 @@ function renderSettings() {
   if (soundToggle) soundToggle.checked = getSoundEnabled();
 }
 
-/* ===== SAMPLE SETS (data/) ===== */
-async function seedSampleSets() {
-  // Tự thêm bộ đề mẫu trong data/ vào quiz_sets (1 lần / mỗi id) — không tự thêm lại nếu user đã xoá
-  let seededIds;
-  try { seededIds = JSON.parse(localStorage.getItem('quiz_seeded_sample_ids') || '[]'); } catch { seededIds = []; }
-  try {
-    const idx = await (await fetch('data/index.json')).json();
-    let added = false;
-    for (const path of idx.sets || []) {
-      const set = await (await fetch('data/' + path)).json();
-      if (seededIds.includes(set.id)) continue;
-      saveSet(set);
-      seededIds.push(set.id);
-      added = true;
-    }
-    if (added) {
-      localStorage.setItem('quiz_seeded_sample_ids', JSON.stringify(seededIds));
-      renderLibrary();
-      renderHome();
-    }
-  } catch (_) {} // không có mạng / không deploy data/ — bỏ qua, không chặn app
-}
-
 function seedDefaultChapters() {
   // Lộ trình TOEIC B1 mặc định — seed 1 lần duy nhất, không tự thêm lại nếu user đã xoá
   if (localStorage.getItem('quiz_chapters_seeded_v1')) return;
   localStorage.setItem('quiz_chapters_seeded_v1', '1');
   const defaults = [
-    { id: 'toeic-b1-stage-1', name: 'Giai đoạn 1 – Xây nền Part 5', icon: '📝', setIds: ['sample-word-form-toeic-1'] },
+    { id: 'toeic-b1-stage-1', name: 'Giai đoạn 1 – Xây nền Part 5', icon: '📝', setIds: [] },
     { id: 'toeic-b1-stage-2', name: 'Giai đoạn 2 – Ngữ pháp trọng tâm', icon: '🧩', setIds: [] },
     { id: 'toeic-b1-stage-3', name: 'Giai đoạn 3 – Từ vựng TOEIC', icon: '📚', setIds: [] },
     { id: 'toeic-b1-stage-4', name: 'Giai đoạn 4 – Listening', icon: '🎧', setIds: [] },
@@ -124,7 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
   renderLibrary();
   startUpdateCheck();
   seedDefaultChapters();
-  seedSampleSets();
 
   document.getElementById('import-file-input').addEventListener('change', handleImportFile);
 

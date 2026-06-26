@@ -39,7 +39,7 @@
 **Quiz App** — SPA trắc nghiệm chạy trên browser, không cần server.
 - Vanilla HTML + CSS + JS, không framework, không build tool
 - Lưu trữ: `localStorage` (`quiz_sets`, `quiz_history`)
-- Deploy: Cloudflare Pages — version hiện tại: **v118**
+- Deploy: Cloudflare Pages — version hiện tại: **v119**
 
 ---
 
@@ -108,15 +108,9 @@ assets/
 
 scripts/
   bump.js               ← dev: node scripts/bump.js → bump version tất cả file
-
-data/
-  index.json            ← { "sets": [ "sets/xxx.json", ... ] } — danh sách bộ đề mẫu đóng gói cùng app
-  sets/*.json            ← từng file 1 Set (đúng format DATA MODEL quiz_sets)
 ```
 
 **Global scope** — không có module system, tất cả function là global. Đặt tên cẩn thận, tránh trùng.
-
-**Bộ đề mẫu (`data/`)**: `seedSampleSets()` (js/core/app.js, gọi 1 lần ở `DOMContentLoaded`) fetch `data/index.json` + từng file trong `data/sets/`, tự `saveSet()` vào `quiz_sets` cho set nào CHƯA từng seed (track qua `quiz_seeded_sample_ids` trong localStorage — seed 1 lần/id, user xoá đi sẽ KHÔNG tự thêm lại). Thêm bộ đề mẫu mới: tạo file JSON trong `data/sets/`, thêm path vào `data/index.json` — tự xuất hiện ở Luyện đề cho mọi user (cũ và mới) ở lần load app kế tiếp, không cần sửa code.
 
 ---
 
@@ -144,7 +138,7 @@ Các screen overlay (ẩn bottom nav khi hiện):
 
 **Game hóa nhẹ (animation)**: `js/quiz.js` (`submitQuiz()`/`_savePracticeResults()`) so `getXpLevelInfo(history).level` TRƯỚC và SAU `addHistoryEntry()` — tăng level thì gọi `showLevelUpCelebration(xpInfo)` (js/history.js) mở `#level-up-overlay` (tự ẩn sau 3s hoặc click, CSS ở `css/components/level-up.css`). Đáp án đúng ở practice mode (`.option-btn.correct-ans`) có animation `option-pop` (đã định nghĩa sẵn trong `animations.css`, trước đây chưa dùng tới) — thêm hiệu ứng mới thì ưu tiên tái dùng keyframe có sẵn trước khi tạo keyframe mới. Combo streak (`_quiz.combo`, tăng khi đúng liên tiếp trong practice, reset về 0 khi sai) hiện badge "🔥 Combo xN" khi ≥2 — set/reset trong `selectAnswer()` nhánh practice. `playSound(type)` (js/core/utils.js, Web Audio API thuần — không cần file asset) phát tiếng `correct`/`wrong`/`levelup`, tắt/mở qua `getSoundEnabled()`/toggle ở Cài đặt > Trải nghiệm (mặc định bật). `triggerConfetti()` (utils.js, CSS thuần) gọi khi `renderResult()` (js/results.js) thấy điểm thi 100% — KHÔNG áp dụng cho practice (mastered/skipped khác khái niệm % so với exam).
 
-**Hành trình học (Chapter)** — nhóm bộ đề user tự gán theo thứ tự, bản thân tính năng KHÔNG gắn cứng theo TOEIC/môn học cụ thể (đã hỏi user, chọn generic). Data: `quiz_chapters` (storage.js `getChapters()`/`saveChapters()`) — mỗi Chapter `{id,name,icon,setIds}`. CRUD + modal quản lý (`showChapterManager()`, `addChapter()`/`editChapter()`/`deleteChapter()`/`moveChapter()`, modal `#modal-chapter-manager`/`#modal-chapter-edit`) đều ở `js/library.js` — entry point ở Cài đặt > "Quản lý Chapter". `getChapterProgress(chapter)` (library.js) = % bộ đề trong Chapter có `getBestScore() >= 80`, `mastered` khi đạt 100% bộ đề (Chapter rỗng `setIds` luôn `mastered:false` → khoá vĩnh viễn Chapter sau, đúng ý "chưa có nội dung thì chưa qua được"). Hiển thị ở Dashboard qua `renderJourneyMapHtml()` (js/history.js) — Chapter sau chỉ hiện khoá `🔒` (CSS `.journey-chapter.locked`, chỉ mang tính trực quan/động viên, KHÔNG chặn thật việc vào làm bộ đề ở Library) nếu Chapter ngay trước chưa `mastered`. `seedDefaultChapters()` (js/core/app.js, gọi 1 lần ở `DOMContentLoaded`, track qua `quiz_chapters_seeded_v1`) seed sẵn lộ trình "TOEIC B1" 5 Chapter theo yêu cầu user (Giai đoạn 1 Xây nền Part 5 → ... → Giai đoạn 5 Reading) — chỉ Giai đoạn 1 có set thật (`sample-word-form-toeic-1`), 4 giai đoạn sau để trống `setIds`, thêm bộ đề mới cho từng giai đoạn thì sửa trực tiếp Chapter qua UI (Cài đặt > Quản lý Chapter) hoặc thêm setId vào đúng Chapter trong code seed.
+**Hành trình học (Chapter)** — nhóm bộ đề user tự gán theo thứ tự, bản thân tính năng KHÔNG gắn cứng theo TOEIC/môn học cụ thể (đã hỏi user, chọn generic). Data: `quiz_chapters` (storage.js `getChapters()`/`saveChapters()`) — mỗi Chapter `{id,name,icon,setIds}`. CRUD + modal quản lý (`showChapterManager()`, `addChapter()`/`editChapter()`/`deleteChapter()`/`moveChapter()`, modal `#modal-chapter-manager`/`#modal-chapter-edit`) đều ở `js/library.js` — entry point ở Cài đặt > "Quản lý Chapter". `getChapterProgress(chapter)` (library.js) = % bộ đề trong Chapter có `getBestScore() >= 80`, `mastered` khi đạt 100% bộ đề (Chapter rỗng `setIds` luôn `mastered:false` → khoá vĩnh viễn Chapter sau, đúng ý "chưa có nội dung thì chưa qua được"). Hiển thị ở Dashboard qua `renderJourneyMapHtml()` (js/history.js) — Chapter sau chỉ hiện khoá `🔒` (CSS `.journey-chapter.locked`, chỉ mang tính trực quan/động viên, KHÔNG chặn thật việc vào làm bộ đề ở Library) nếu Chapter ngay trước chưa `mastered`. `seedDefaultChapters()` (js/core/app.js, gọi 1 lần ở `DOMContentLoaded`, track qua `quiz_chapters_seeded_v1`) seed sẵn lộ trình "TOEIC B1" 5 Chapter theo yêu cầu user (Giai đoạn 1 Xây nền Part 5 → ... → Giai đoạn 5 Reading), tất cả để trống `setIds` — thêm bộ đề cho từng giai đoạn thì sửa trực tiếp Chapter qua UI (Cài đặt > Quản lý Chapter) hoặc thêm setId vào đúng Chapter trong code seed.
 
 **Nhiệm vụ hàng ngày (Daily Quest)**: `getDailyQuestProgress(history)` (js/history.js) tính thẳng từ `quiz_history` lọc theo ngày hôm nay (KHÔNG lưu state riêng) — mục tiêu cố định `DAILY_QUEST_TARGET=20` câu/ngày. Toast chúc mừng chỉ hiện 1 lần/ngày qua `sessionStorage` key `quiz_quest_celebrated` (không phải localStorage — reset mỗi session là chủ ý, tránh phải thêm field mới vào data model).
 
