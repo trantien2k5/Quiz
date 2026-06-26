@@ -1,12 +1,23 @@
 /* ===== IMPORT TỪ VĂN BẢN THÔ (định dạng Azota: Câu N / A-D / Đáp án / Giải thích) ===== */
 let _importQuestions = [];
 let _importTargetEditor = false; // true = thêm trực tiếp vào _editingQuestions (screen-editor), không lưu localStorage
+let _importPasteMode = 'input'; // 'input' (dán gộp) | 'split' (dán tách 3 ô) — nhớ để "← Dán lại" quay đúng chỗ
+
+function _resetImportSplitInputs() {
+  document.getElementById('import-split-questions').value = '';
+  document.getElementById('import-split-answers').value = '';
+  document.getElementById('import-split-explanations').value = '';
+  document.getElementById('import-append-raw').value = '';
+  document.getElementById('import-append-box').classList.add('hidden');
+}
 
 function openImportText(appendSetId) {
   _appendToSetId = appendSetId || null;
   _importTargetEditor = false;
   _importQuestions = [];
+  _importPasteMode = 'input';
   document.getElementById('import-text-raw').value = '';
+  _resetImportSplitInputs();
   document.getElementById('import-set-name').value = '';
   document.getElementById('import-set-name').style.display = '';
   document.getElementById('import-commit-label').textContent = 'Tạo đề';
@@ -26,13 +37,21 @@ function openImportTextForEditor() {
   _appendToSetId = null;
   _importTargetEditor = true;
   _importQuestions = [];
+  _importPasteMode = 'input';
   document.getElementById('import-text-raw').value = '';
+  _resetImportSplitInputs();
   document.getElementById('import-set-name').value = '';
   document.getElementById('import-set-name').style.display = 'none';
   document.getElementById('import-commit-label').textContent = 'Thêm vào bộ đề';
   document.getElementById('import-text-title').textContent = '📋 Dán câu hỏi vào bộ đề';
   _showImportStep('input');
   showScreen('screen-import-text');
+}
+
+/* Chuyển qua lại "Dán gộp" (1 ô, mỗi câu đủ câu hỏi+đáp án+giải thích) / "Dán tách" (3 ô riêng — hữu ích khi câu hỏi, đáp án, giải thích lấy từ 3 nguồn khác nhau) */
+function switchImportPasteMode(mode) {
+  _importPasteMode = mode;
+  _showImportStep(mode);
 }
 
 function closeImportText() {
@@ -42,7 +61,7 @@ function closeImportText() {
 }
 
 function backToImportInput() {
-  _showImportStep('input');
+  _showImportStep(_importPasteMode);
 }
 
 /* Copy mẫu định dạng để user paste làm khung tham khảo (vd nhờ ChatGPT điền theo) */
@@ -72,6 +91,7 @@ function _fallbackCopyText(text, ok, fail) {
 
 function _showImportStep(step) {
   document.getElementById('import-text-input-step').classList.toggle('hidden', step !== 'input');
+  document.getElementById('import-text-split-step').classList.toggle('hidden', step !== 'split');
   document.getElementById('import-text-preview-step').classList.toggle('hidden', step !== 'preview');
   document.getElementById('import-text-save-bar').classList.toggle('hidden', step !== 'preview');
 }
@@ -84,6 +104,52 @@ function parseImportText() {
     toast('Không nhận diện được câu hỏi nào — kiểm tra lại định dạng (Câu 1: ... A. ... Đáp án: B)', 'error');
     return;
   }
+  renderImportPreview();
+  _showImportStep('preview');
+}
+
+/* "Dán tách" — câu hỏi/đáp án/giải thích lấy từ 3 nguồn khác nhau, ghép lại theo thứ tự (index) */
+const _SPLIT_ANS_LINE_RE = /^\s*(\d+)\s*[.):\-]?\s*([A-Da-d])\b/;
+function _parseSplitAnswers(raw) {
+  const map = {};
+  raw.replace(/\r\n/g, '\n').split('\n').forEach(line => {
+    const m = line.match(_SPLIT_ANS_LINE_RE);
+    if (m) map[parseInt(m[1], 10) - 1] = m[2].toUpperCase().charCodeAt(0) - 65;
+  });
+  const indexes = Object.keys(map).map(Number);
+  const max = indexes.length ? Math.max(...indexes) : -1;
+  const arr = [];
+  for (let i = 0; i <= max; i++) arr.push(map[i] !== undefined ? map[i] : null);
+  return arr;
+}
+
+const _SPLIT_EXP_PREFIX_RE = /^\s*\d+\s*[.):\-]\s*/;
+function _parseSplitExplanations(raw) {
+  const text = raw.replace(/\r\n/g, '\n').trim();
+  if (!text) return [];
+  return text.split(/\n\s*\n/).map(block => block.trim().replace(_SPLIT_EXP_PREFIX_RE, ''));
+}
+
+function parseImportTextSplit() {
+  const rawQ = document.getElementById('import-split-questions').value;
+  const rawA = document.getElementById('import-split-answers').value;
+  const rawE = document.getElementById('import-split-explanations').value;
+  if (!rawQ.trim()) { toast('Vui lòng dán câu hỏi vào ô 1', 'error'); return; }
+
+  const questions = parseAzotaText(rawQ);
+  if (!questions.length) {
+    toast('Không nhận diện được câu hỏi nào ở ô 1 — kiểm tra lại định dạng (Câu 1: ... A. ...)', 'error');
+    return;
+  }
+  const answers = _parseSplitAnswers(rawA);
+  const explanations = _parseSplitExplanations(rawE);
+
+  _importQuestions = questions.map((q, i) => {
+    q.correct = answers[i] !== undefined ? answers[i] : null;
+    q.explanation = explanations[i] || '';
+    return validateImportQuestion(q);
+  });
+
   renderImportPreview();
   _showImportStep('preview');
 }
@@ -234,6 +300,26 @@ function buildImportPreviewCard(q, i) {
         </div>
       </div>
     </div>`;
+}
+
+/* Nạp thêm câu nối tiếp ngay ở màn preview — không phải huỷ danh sách đang sửa để dán lại từ đầu */
+function toggleImportAppendBox() {
+  const box = document.getElementById('import-append-box');
+  box.classList.toggle('hidden');
+  if (!box.classList.contains('hidden')) document.getElementById('import-append-raw').focus();
+}
+
+function appendMoreImportQuestions() {
+  const el = document.getElementById('import-append-raw');
+  const raw = el.value;
+  if (!raw.trim()) { toast('Vui lòng dán thêm câu hỏi vào ô trên', 'error'); return; }
+  const added = parseAzotaText(raw);
+  if (!added.length) { toast('Không nhận diện được câu hỏi nào trong đoạn vừa dán', 'error'); return; }
+  _importQuestions = _importQuestions.concat(added);
+  el.value = '';
+  document.getElementById('import-append-box').classList.add('hidden');
+  renderImportPreview();
+  toast(`✅ Đã thêm ${added.length} câu vào danh sách`, 'success');
 }
 
 function _findImportQ(id) {

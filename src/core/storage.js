@@ -24,7 +24,7 @@ function trackQuestionResult(questionId, isCorrect, selectedIdx, correctIdx, rtM
   const stats = getQuestionStats();
   if (!stats[questionId]) stats[questionId] = {
     firstSeen: new Date().toISOString().slice(0, 10),
-    reviewCount: 0, correct: 0, wrong: 0, optionPattern: {}, pL: 0.3
+    reviewCount: 0, correct: 0, wrong: 0, optionPattern: {}, pL: 0.3, lastReviewed: null
   };
   const s = stats[questionId];
   s.reviewCount++;
@@ -35,6 +35,7 @@ function trackQuestionResult(questionId, isCorrect, selectedIdx, correctIdx, rtM
     s.optionPattern[key] = (s.optionPattern[key] || 0) + 1;
   }
   s.pL = _bktUpdate(s.pL ?? 0.3, isCorrect, rtMs ?? null);
+  s.lastReviewed = new Date().toISOString().slice(0, 10); // dùng cho forgetting-curve (getQuestionRetentionInfo ở history.js)
   saveQuestionStats(stats);
 }
 

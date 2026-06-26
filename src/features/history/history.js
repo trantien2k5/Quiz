@@ -273,6 +273,42 @@ function generateImprovementItems(history) {
   return out.slice(0, 3);
 }
 
+/* Quyết định 1 hành động ưu tiên nhất "nên làm ngay bây giờ" — gộp tín hiệu từ forgetting curve (quên),
+   câu sai chưa sửa được (lỗi), chủ đề yếu (accuracy), nhiệm vụ ngày (thói quen), thay vì chỉ liệt kê
+   số liệu rời rạc như generateInsights()/generateImprovementItems(). Thứ tự ưu tiên cố ý: quên mất kiến
+   thức đã học > còn lỗi sai chưa khắc phục > chủ đề đang yếu > chưa đạt nhiệm vụ ngày — vì để quên là
+   mất công học lại từ đầu, nên xếp khẩn cấp nhất. */
+function getTodayRecommendation(history) {
+  const fc = getMemoryForgettingStats();
+  if (fc.due.length >= 3) {
+    return { icon: '🧠', text: `Có ${fc.due.length} câu sắp quên — ôn ngay trước khi phải học lại từ đầu.`, actionLabel: 'Ôn ngay', action: 'reviewQuestionsDueToday()' };
+  }
+
+  const unresolved = getFixStatus(history).unresolved.length;
+  if (unresolved > 0) {
+    return { icon: '🔁', text: `Có ${unresolved} câu đã sai mà chưa làm đúng lại lần nào.`, actionLabel: 'Luyện lại câu sai', action: 'retryAllWrongQuestions()' };
+  }
+
+  const topics = computeSetStats(history).filter(s => s.total >= 5);
+  if (topics.length) {
+    const worst = [...topics].sort((a, b) => a.accuracy - b.accuracy)[0];
+    if (worst.accuracy < 70) {
+      return { icon: '⚠️', text: `"${esc(worst.name)}" đang ở mức ${worst.accuracy}% — nên luyện lại.`, actionLabel: 'Luyện ngay', action: `startPractice('${worst.setId}')` };
+    }
+  }
+
+  const quest = getDailyQuestProgress(history);
+  if (!quest.done) {
+    return { icon: '🎯', text: `Còn thiếu ${quest.target - quest.current} câu để hoàn thành nhiệm vụ hôm nay.`, actionLabel: 'Vào Luyện đề', action: "navTo('library')" };
+  }
+
+  if (fc.due.length > 0) {
+    return { icon: '🧠', text: `Có ${fc.due.length} câu cần ôn lại.`, actionLabel: 'Ôn ngay', action: 'reviewQuestionsDueToday()' };
+  }
+
+  return { icon: '🎉', text: 'Bạn đang theo kịp mọi thứ — tiếp tục duy trì nhé!', actionLabel: null, action: null };
+}
+
 function getLongestStreakEver(history) {
   const days = [...new Set(history.map(h => new Date(h.date).toDateString()))]
     .map(d => new Date(d).getTime()).sort((a, b) => a - b);
@@ -556,6 +592,13 @@ function renderHistoryOverview() {
     ? improvements.map(i => `<div class="hst-dev-row" style="border-color:var(--color-danger-light)"><span>⚠ ${i.text}</span><span style="color:var(--color-danger);font-weight:700">${esc(i.value)}</span></div>`).join('')
     : `<p style="text-align:center;padding:8px;color:var(--color-text-muted);font-size:13px">Không có điểm cần cải thiện nổi bật 🎉</p>`;
 
+  const todayRec = getTodayRecommendation(history);
+  const todayRecHtml = `
+    <div class="hst-quest-row" style="flex-wrap:wrap;gap:10px">
+      <span><span style="font-size:18px;margin-right:4px">${todayRec.icon}</span>${todayRec.text}</span>
+      ${todayRec.actionLabel ? `<button class="btn btn-primary btn-sm" onclick="${todayRec.action}">${esc(todayRec.actionLabel)}</button>` : ''}
+    </div>`;
+
   const badgesHtml = badges.map(b => `
     <div class="hst-badge${b.unlocked ? ' hst-badge-unlocked' : ''}" onclick="showBadgeCondition('${esc(b.name)}','${esc(b.cond)}')">
       <div class="hst-badge-icon">${b.unlocked ? b.icon : '🔒'}</div>
@@ -572,6 +615,9 @@ function renderHistoryOverview() {
         <div class="hst-level-sub">Đã làm ${history.reduce((s, h) => s + h.total, 0).toLocaleString('vi-VN')} câu</div>
       </div>
     </div>
+
+    <div class="hst-section-header"><div class="section-label">Gợi ý hôm nay</div></div>
+    <div class="hst-chart-card">${todayRecHtml}</div>
 
     <div class="hst-section-header"><div class="section-label">Hành trình học</div></div>
     <div class="hst-chart-card">${renderJourneyMapHtml()}</div>
@@ -1036,6 +1082,51 @@ function getMemoryBuckets() {
   };
 }
 
+/* ===== FORGETTING CURVE (lịch ôn tập giữa các ngày, dựa trên pL của BKT + số ngày từ lần ôn gần nhất) =====
+   Ebbinghaus: retention(t) = pL * e^(-t/S) — S (stability, đơn vị ngày) càng lớn thì quên càng chậm.
+   pL cao (đã thuộc chắc) VÀ ôn nhiều lần → S lớn hơn. Câu chưa từng review (reviewCount=0) không tính
+   vào "cần ôn" vì đó là câu MỚI, chưa học, không phải câu đang quên dần. */
+const MEMORY_REVIEW_THRESHOLD = 0.7; // retention rơi xuống dưới ngưỡng này → coi là cần ôn lại
+
+function getMemoryStabilityDays(pL, reviewCount) {
+  const base = 1 + pL * 9; // pL thấp (~0.3) → quên trong ~1-4 ngày; pL cao (~1) → nhớ được ~10 ngày
+  const reviewBoost = 1 + Math.log2(1 + (reviewCount || 0)) * 0.3; // ôn nhiều lần ở cùng mức pL thì nhớ lâu hơn (bão hoà dần)
+  return base * reviewBoost;
+}
+
+function getQuestionRetentionInfo(s) {
+  const pL = s.pL ?? 0.3;
+  const lastReviewed = s.lastReviewed || s.firstSeen; // data cũ chưa có lastReviewed → tạm dùng firstSeen
+  const daysSince = lastReviewed ? Math.max(0, (Date.now() - new Date(lastReviewed).getTime()) / 86400000) : 0;
+  const stability = getMemoryStabilityDays(pL, s.reviewCount);
+  const retention = pL * Math.exp(-daysSince / stability);
+  return { pL, retention, stability, daysSince, dueNow: retention <= MEMORY_REVIEW_THRESHOLD };
+}
+
+function _buildQuestionIndex() {
+  const map = {};
+  getSets().forEach(set => (set.questions || []).forEach(q => { map[q.id] = { q, setId: set.id, setName: set.name }; }));
+  return map;
+}
+
+/* Nguồn tính duy nhất cho tab Ghi nhớ + nút "Ôn câu cần ôn hôm nay" — tránh lặp logic forgetting curve ở 2 nơi */
+function getMemoryForgettingStats() {
+  const stats = getQuestionStats();
+  const qIndex = _buildQuestionIndex();
+  const infos = Object.entries(stats)
+    .filter(([id, s]) => s.reviewCount > 0 && qIndex[id]) // bỏ câu mới chưa học hoặc câu đã bị xoá khỏi bộ đề
+    .map(([id, s]) => ({ id, ...qIndex[id], ...getQuestionRetentionInfo(s) }));
+  const due = infos.filter(i => i.dueNow).sort((a, b) => a.retention - b.retention);
+  const avgStability = infos.length ? Math.round(infos.reduce((sum, i) => sum + i.stability, 0) / infos.length * 10) / 10 : 0;
+  return { due, avgStability, totalReviewed: infos.length };
+}
+
+function reviewQuestionsDueToday() {
+  const due = getMemoryForgettingStats().due;
+  if (!due.length) { toast('Không có câu cần ôn lúc này', ''); return; }
+  startPractice({ id: 'review-due', name: 'Ôn câu cần ôn hôm nay', questions: due.slice(0, 20).map(d => d.q) });
+}
+
 function countDistinctQuestionsReviewed(history, sinceTs) {
   const seen = new Set();
   history.filter(h => h.date >= sinceTs).forEach(h => {
@@ -1111,6 +1202,7 @@ function renderHistoryMemory() {
   const weekStart = Date.now() - 6 * 86400000;
   const reviewedToday = countDistinctQuestionsReviewed(history, todayStart.getTime());
   const reviewedWeek = countDistinctQuestionsReviewed(history, weekStart);
+  const fc = getMemoryForgettingStats();
 
   el.innerHTML = `
     <div class="hst-stats-grid">
@@ -1124,12 +1216,16 @@ function renderHistoryMemory() {
       <div class="hst-stat-card hst-stat-green"><div class="hst-stat-val">${b.mastered}</div><div class="hst-stat-lbl">Mastered Words</div></div>
     </div>
     <div class="hst-chart-card">
-      ${devRow('Forgetting Curve')}
-      ${devRow('Stability')}
-      ${devRow('Đã quên')}
+      <div class="hst-chart-title">🧠 Đường cong quên (Forgetting Curve)</div>
+      <div class="hst-metric-row">
+        <div class="hst-metric-card"><div class="hst-metric-title">Stability trung bình</div><div class="hst-metric-val">${fc.avgStability} ngày</div></div>
+        <div class="hst-metric-card"><div class="hst-metric-title">Cần ôn hôm nay</div><div class="hst-metric-val">${fc.due.length} câu</div></div>
+      </div>
+      <p class="form-hint" style="margin:8px 0 0">Tính từ mức đã thuộc (pL) + số ngày từ lần ôn gần nhất — câu pL thấp hoặc để quá lâu chưa ôn sẽ rơi xuống dưới ngưỡng ghi nhớ (${Math.round(MEMORY_REVIEW_THRESHOLD * 100)}%) và được xếp vào "cần ôn".</p>
       ${devRow('AI dự đoán sẽ quên')}
     </div>
-    ${b.atRisk > 0 ? `<div style="padding:0 var(--space-4) var(--space-4)"><button class="btn btn-outline btn-full" onclick="retryAllWrongQuestions()">🔁 Ôn câu sắp quên</button></div>` : ''}`;
+    ${fc.due.length ? `<div style="padding:0 var(--space-4) var(--space-4)"><button class="btn btn-primary btn-full" onclick="reviewQuestionsDueToday()">🔁 Ôn ${fc.due.length} câu cần ôn hôm nay</button></div>` : ''}
+    ${b.atRisk > 0 ? `<div style="padding:0 var(--space-4) var(--space-4)"><button class="btn btn-outline btn-full" onclick="retryAllWrongQuestions()">🔁 Ôn câu sai gần đây</button></div>` : ''}`;
 }
 
 /* --- Level 2: Hiệu suất --- */

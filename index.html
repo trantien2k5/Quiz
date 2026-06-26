@@ -15,37 +15,37 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- base -->
-  <link rel="stylesheet" href="src/shared/styles/base/tokens.css?v=122">
-  <link rel="stylesheet" href="src/shared/styles/base/reset.css?v=122">
+  <link rel="stylesheet" href="src/shared/styles/base/tokens.css?v=123">
+  <link rel="stylesheet" href="src/shared/styles/base/reset.css?v=123">
   <!-- layout -->
-  <link rel="stylesheet" href="src/shared/styles/layout/shell.css?v=122">
-  <link rel="stylesheet" href="src/shared/styles/layout/nav.css?v=122">
+  <link rel="stylesheet" href="src/shared/styles/layout/shell.css?v=123">
+  <link rel="stylesheet" href="src/shared/styles/layout/nav.css?v=123">
   <!-- components -->
-  <link rel="stylesheet" href="src/shared/styles/components/button.css?v=122">
-  <link rel="stylesheet" href="src/shared/styles/components/form.css?v=122">
-  <link rel="stylesheet" href="src/shared/styles/components/toggle.css?v=122">
-  <link rel="stylesheet" href="src/shared/styles/components/badge.css?v=122">
-  <link rel="stylesheet" href="src/shared/styles/components/modal.css?v=122">
-  <link rel="stylesheet" href="src/shared/styles/components/toast.css?v=122">
-  <link rel="stylesheet" href="src/shared/styles/components/update-banner.css?v=122">
-  <link rel="stylesheet" href="src/shared/styles/components/fab.css?v=122">
-  <link rel="stylesheet" href="src/shared/styles/components/level-up.css?v=122">
-  <link rel="stylesheet" href="src/shared/styles/components/confetti.css?v=122">
-  <link rel="stylesheet" href="src/shared/styles/components/card.css?v=122">
-  <link rel="stylesheet" href="src/shared/styles/components/section-label.css?v=122">
-  <link rel="stylesheet" href="src/shared/styles/components/drop-zone.css?v=122">
-  <link rel="stylesheet" href="src/shared/styles/components/settings-row.css?v=122">
+  <link rel="stylesheet" href="src/shared/styles/components/button.css?v=123">
+  <link rel="stylesheet" href="src/shared/styles/components/form.css?v=123">
+  <link rel="stylesheet" href="src/shared/styles/components/toggle.css?v=123">
+  <link rel="stylesheet" href="src/shared/styles/components/badge.css?v=123">
+  <link rel="stylesheet" href="src/shared/styles/components/modal.css?v=123">
+  <link rel="stylesheet" href="src/shared/styles/components/toast.css?v=123">
+  <link rel="stylesheet" href="src/shared/styles/components/update-banner.css?v=123">
+  <link rel="stylesheet" href="src/shared/styles/components/fab.css?v=123">
+  <link rel="stylesheet" href="src/shared/styles/components/level-up.css?v=123">
+  <link rel="stylesheet" href="src/shared/styles/components/confetti.css?v=123">
+  <link rel="stylesheet" href="src/shared/styles/components/card.css?v=123">
+  <link rel="stylesheet" href="src/shared/styles/components/section-label.css?v=123">
+  <link rel="stylesheet" href="src/shared/styles/components/drop-zone.css?v=123">
+  <link rel="stylesheet" href="src/shared/styles/components/settings-row.css?v=123">
   <!-- pages -->
-  <link rel="stylesheet" href="src/features/home/home.css?v=122">
-  <link rel="stylesheet" href="src/features/editor/editor.css?v=122">
-  <link rel="stylesheet" href="src/features/quiz/quiz.css?v=122">
-  <link rel="stylesheet" href="src/features/results/results.css?v=122">
-  <link rel="stylesheet" href="src/features/history/history.css?v=122">
-  <link rel="stylesheet" href="src/features/ai/ai.css?v=122">
-  <link rel="stylesheet" href="src/features/import-text/import.css?v=122">
+  <link rel="stylesheet" href="src/features/home/home.css?v=123">
+  <link rel="stylesheet" href="src/features/editor/editor.css?v=123">
+  <link rel="stylesheet" href="src/features/quiz/quiz.css?v=123">
+  <link rel="stylesheet" href="src/features/results/results.css?v=123">
+  <link rel="stylesheet" href="src/features/history/history.css?v=123">
+  <link rel="stylesheet" href="src/features/ai/ai.css?v=123">
+  <link rel="stylesheet" href="src/features/import-text/import.css?v=123">
   <!-- utilities -->
-  <link rel="stylesheet" href="src/shared/styles/utilities/utilities.css?v=122">
-  <link rel="stylesheet" href="src/shared/styles/utilities/animations.css?v=122">
+  <link rel="stylesheet" href="src/shared/styles/utilities/utilities.css?v=123">
+  <link rel="stylesheet" href="src/shared/styles/utilities/animations.css?v=123">
 </head>
 <body>
 <div id="update-banner">
@@ -93,7 +93,7 @@
       <div class="section-label">Lịch sử gần đây</div>
       <div id="home-recent-history"></div>
     </div>
-    <button class="fab" onclick="showAICreate()" title="Tạo đề mới">
+    <button class="fab" onclick="openImportText()" title="Tạo đề mới">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
   </section>
@@ -179,7 +179,7 @@
     <div class="scroll-content">
       <div id="library-set-list" class="set-list"></div>
     </div>
-    <button class="fab" onclick="showAICreate()" title="Tạo đề mới">
+    <button class="fab" onclick="openImportText()" title="Tạo đề mới">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
     <textarea id="ai-prompt-text" style="position:absolute;left:-9999px;top:-9999px" readonly></textarea>
@@ -195,8 +195,8 @@
     </div>
     <div class="scroll-content">
       <div id="import-text-input-step">
-        <div class="import-format-hint">
-          <div class="import-hint-title">📌 Cách dùng</div>
+        <details class="import-format-hint">
+          <summary class="import-hint-title">📌 Cách dùng & định dạng mẫu</summary>
           <ol class="import-hint-steps">
             <li>Dán văn bản câu hỏi theo mẫu bên dưới (dán từ ChatGPT/Word đều được)</li>
             <li>Bấm <b>Nhận diện câu hỏi</b> → xem trước, sửa lại câu nào báo lỗi</li>
@@ -213,9 +213,12 @@ C. Đáp án C
 D. Đáp án D
 Đáp án: B
 Giải thích: ...</pre>
-        </div>
+        </details>
         <div class="form-group">
-          <label>Dán văn bản đề vào đây</label>
+          <div class="section-row" style="margin-bottom:0.5rem">
+            <label style="margin:0">Dán văn bản đề vào đây</label>
+            <button class="link-btn" onclick="switchImportPasteMode('split')">🔀 Dán tách 3 phần</button>
+          </div>
           <textarea id="import-text-raw" class="form-control" rows="12"
             placeholder="Câu 1: ...&#10;A. ...&#10;B. ...&#10;C. ...&#10;D. ...&#10;Đáp án: B&#10;Giải thích: ..."
             style="resize:vertical;font-size:13px;line-height:1.6"></textarea>
@@ -226,12 +229,50 @@ Giải thích: ...</pre>
         </button>
       </div>
 
+      <div id="import-text-split-step" class="hidden">
+        <div class="section-row" style="margin-bottom:0.5rem">
+          <label style="margin:0">Dán từng phần riêng biệt</label>
+          <button class="link-btn" onclick="switchImportPasteMode('input')">↩ Dán gộp</button>
+        </div>
+        <div class="form-group">
+          <label>1. Câu hỏi + 4 lựa chọn <span>(mỗi câu cách nhau 1 dòng trống)</span></label>
+          <textarea id="import-split-questions" class="form-control" rows="8"
+            placeholder="Câu 1: ...&#10;A. ...&#10;B. ...&#10;C. ...&#10;D. ..."
+            style="resize:vertical;font-size:13px;line-height:1.6"></textarea>
+        </div>
+        <div class="form-group">
+          <label>2. Đáp án đúng <span>(mỗi dòng: số thứ tự + chữ cái)</span></label>
+          <textarea id="import-split-answers" class="form-control" rows="4"
+            placeholder="1. B&#10;2. A&#10;3. C"
+            style="resize:vertical;font-size:13px;line-height:1.6"></textarea>
+        </div>
+        <div class="form-group">
+          <label>3. Giải thích <span>(mỗi câu cách nhau 1 dòng trống, theo đúng thứ tự)</span></label>
+          <textarea id="import-split-explanations" class="form-control" rows="6"
+            placeholder="Giải thích câu 1...&#10;&#10;Giải thích câu 2..."
+            style="resize:vertical;font-size:13px;line-height:1.6"></textarea>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="parseImportTextSplit()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          Nhận diện câu hỏi
+        </button>
+      </div>
+
       <div id="import-text-preview-step" class="hidden">
         <div class="section-row">
           <div class="section-label" style="margin-bottom:0">
             <span id="import-preview-count">0</span> câu nhận diện được · <span id="import-preview-error-count">0</span> lỗi
           </div>
-          <button class="link-btn" onclick="backToImportInput()">← Dán lại</button>
+          <div style="display:flex;gap:10px">
+            <button class="link-btn" onclick="toggleImportAppendBox()">➕ Nạp thêm câu</button>
+            <button class="link-btn" onclick="backToImportInput()">← Dán lại</button>
+          </div>
+        </div>
+        <div id="import-append-box" class="hidden" style="margin-bottom:12px">
+          <textarea id="import-append-raw" class="form-control" rows="6"
+            placeholder="Dán thêm câu hỏi theo cùng định dạng (Câu 1: ... A. ... Đáp án: B)..."
+            style="resize:vertical;font-size:13px;line-height:1.6;margin-bottom:8px"></textarea>
+          <button class="btn btn-outline btn-full" onclick="appendMoreImportQuestions()">Nhận diện &amp; thêm vào danh sách</button>
         </div>
         <div id="import-preview-list"></div>
       </div>
@@ -930,21 +971,21 @@ Giải thích: ...</pre>
   <div id="toast-container" class="toast-container"></div>
 
 </div>
-<script src="src/core/storage.js?v=122" defer></script>
-<script src="src/core/utils.js?v=122" defer></script>
-<script src="src/core/activity-tracker.js?v=122" defer></script>
-<script src="src/features/home/home.js?v=122" defer></script>
-<script src="src/features/editor/editor.js?v=122" defer></script>
-<script src="src/features/quiz/quiz.js?v=122" defer></script>
-<script src="src/features/quiz/gamification.js?v=122" defer></script>
-<script src="src/features/results/results.js?v=122" defer></script>
-<script src="src/features/library/library.js?v=122" defer></script>
-<script src="src/features/history/history.js?v=122" defer></script>
-<script src="src/features/history/history-progress.js?v=122" defer></script>
-<script src="src/features/history/history-analysis.js?v=122" defer></script>
-<script src="src/features/ai/ai.js?v=122" defer></script>
-<script src="src/features/import-text/import-text.js?v=122" defer></script>
-<script src="src/core/app.js?v=122" defer></script>
+<script src="src/core/storage.js?v=123" defer></script>
+<script src="src/core/utils.js?v=123" defer></script>
+<script src="src/core/activity-tracker.js?v=123" defer></script>
+<script src="src/features/home/home.js?v=123" defer></script>
+<script src="src/features/editor/editor.js?v=123" defer></script>
+<script src="src/features/quiz/quiz.js?v=123" defer></script>
+<script src="src/features/quiz/gamification.js?v=123" defer></script>
+<script src="src/features/results/results.js?v=123" defer></script>
+<script src="src/features/library/library.js?v=123" defer></script>
+<script src="src/features/history/history.js?v=123" defer></script>
+<script src="src/features/history/history-progress.js?v=123" defer></script>
+<script src="src/features/history/history-analysis.js?v=123" defer></script>
+<script src="src/features/ai/ai.js?v=123" defer></script>
+<script src="src/features/import-text/import-text.js?v=123" defer></script>
+<script src="src/core/app.js?v=123" defer></script>
 <script>
   if ('serviceWorker' in navigator) {
     const isLocalDev = ['localhost', '127.0.0.1'].includes(location.hostname);
