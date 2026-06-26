@@ -54,6 +54,95 @@ function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
+// "**bold**" / "*italic*" trên text ĐÃ esc() — esc() không đụng tới ký tự *, an toàn thay
+// thế thành tag vì nội dung bên trong cặp ** /* đã được escape từ trước, không chèn HTML
+// thô từ data người dùng.
+function _mdInline(escaped) {
+  return escaped
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>');
+}
+
+/* q.explanation là string tự do — có thể theo cấu trúc AI sinh ra (✅/🔍/📖, xem
+   buildPromptText() ở ai.js) hoặc tự do (dán từ ngoài, nhập tay, không marker gì cả).
+   Heuristic tách theo dòng "số. Tiêu đề" hoặc dòng bắt đầu bằng ✅/🔍/📖/💡/📌 thành các
+   card riêng, dòng "A. từ (loại) ✅/❌" trong block "phân tích đáp án" được tách thêm
+   thành mini-card màu xanh/đỏ. KHÔNG nhận diện được header nào (input quá khác biệt) →
+   fallback hiển thị nguyên văn như trước, không vỡ layout. */
+function renderExplanationHtml(text) {
+  if (!text) return '';
+  const lines = String(text).split('\n').map(l => l.trim()).filter(Boolean);
+  // Character class [✅🔍📖💡📌] KHÔNG dùng được — 📖/💡/📌/🔍 nằm ngoài BMP (surrogate
+  // pair, 2 code unit/ký tự), char class không có flag "u" tách nhầm theo từng nửa code
+  // unit, ra ký tự rác "�". Dùng alternation (?:✅|🔍|📖|💡|📌) thay vì character class.
+  const HEADER_EMOJI = '(?:✅|🔍|📖|💡|📌)';
+  const HEADER_RE = new RegExp(`^(?:\\d+[.)]\\s*|${HEADER_EMOJI}\\s*)\\S`);
+  const STRIP_EMOJI_RE = new RegExp(`^${HEADER_EMOJI}\\s*`);
+  const OPTION_RE = /^([A-D])[.)]\s*(.+)$/;
+
+  const blocks = [];
+  let cur = null;
+  lines.forEach(line => {
+    if (HEADER_RE.test(line) && line.length < 80) {
+      cur = { header: line.replace(/^\d+[.)]\s*/, '').replace(STRIP_EMOJI_RE, ''), body: [] };
+      blocks.push(cur);
+    } else {
+      if (!cur) { cur = { header: null, body: [] }; blocks.push(cur); }
+      cur.body.push(line);
+    }
+  });
+
+  // Không tách được block nào có header (input quá tự do) → giữ hiển thị nguyên văn
+  if (!blocks.some(b => b.header)) {
+    return `<div class="exp-card exp-card-plain">${_mdInline(esc(text)).replace(/\n/g, '<br>')}</div>`;
+  }
+
+  return blocks.map(b => _renderExpBlock(b, OPTION_RE)).join('');
+}
+
+function _renderExpBlock(b, OPTION_RE) {
+  const h = (b.header || '').toLowerCase();
+  let icon = '📖', kind = 'explain';
+  if (/đáp án đúng|^đáp án/.test(h)) { icon = '✅'; kind = 'answer'; }
+  else if (/từng đáp án|phân tích.*đáp án/.test(h)) { icon = '📌'; kind = 'options'; }
+  else if (/ghi nhớ|lưu ý/.test(h)) { icon = '💡'; kind = 'tip'; }
+
+  const titleHtml = b.header ? `<div class="exp-card-title">${icon} ${esc(b.header)}</div>` : '';
+
+  if (kind === 'options') {
+    const items = [];
+    let curItem = null;
+    b.body.forEach(line => {
+      const m = line.match(OPTION_RE);
+      if (m) {
+        curItem = { letter: m[1], rest: m[2], why: [] };
+        items.push(curItem);
+      } else if (curItem) {
+        curItem.why.push(line);
+      }
+    });
+    const itemsHtml = items.map(it => {
+      const isCorrect = /✅/.test(it.rest);
+      const isWrong = /❌/.test(it.rest);
+      const cls = isCorrect ? 'correct' : isWrong ? 'wrong' : '';
+      const restClean = it.rest.replace(/[✅❌]/g, '').trim();
+      const mTag = restClean.match(/^(.*?)\*?\(([^)]*)\)\*?\s*$/);
+      const word = mTag ? mTag[1].trim() : restClean;
+      const tag = mTag ? mTag[2].trim() : '';
+      const mark = isCorrect ? '✅' : isWrong ? '❌' : '';
+      const whyHtml = it.why.length ? `<div class="exp-option-why">${_mdInline(esc(it.why.join(' ')))}</div>` : '';
+      return `<div class="exp-option exp-option-${cls}">
+        <div class="exp-option-head"><strong>${esc(it.letter)}. ${esc(word)}</strong>${tag ? ` <span class="exp-option-tag">${esc(tag)}</span>` : ''} ${mark}</div>
+        ${whyHtml}
+      </div>`;
+    }).join('');
+    return `<div class="exp-card exp-card-${kind}">${titleHtml}${itemsHtml}</div>`;
+  }
+
+  const bodyHtml = b.body.map(l => `<p>${_mdInline(esc(l))}</p>`).join('');
+  return `<div class="exp-card exp-card-${kind}">${titleHtml}${bodyHtml}</div>`;
+}
+
 // Trộn mảng (Fisher-Yates), trả về mảng mới
 function shuffleArray(arr) {
   const a = arr.slice();

@@ -44,7 +44,7 @@ function renderResult(entry, set, activeTimeSec) {
     const isSkipped = userAns === null;
     const statusClass = isSkipped ? 'skipped' : isCorrect ? 'correct' : 'wrong';
     const statusIcon = isSkipped ? '⚪' : isCorrect ? '✅' : '❌';
-    const expHTML = q.explanation ? `<div class="review-explanation">💡 ${esc(q.explanation)}</div>` : '';
+    const expHTML = q.explanation ? `<div class="review-explanation">${renderExplanationHtml(q.explanation)}</div>` : '';
     return `<div class="review-card ${statusClass}" data-result="${statusClass}">
       <div class="review-card-header">
         <span class="review-status-icon">${statusIcon}</span>

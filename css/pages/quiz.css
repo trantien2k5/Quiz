@@ -830,10 +830,9 @@
 }
 
 .practice-feedback-exp {
-  font-size: var(--text-md);
-  line-height: 1.6;
-  color: var(--color-text);
-  white-space: pre-wrap;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 /* Nút "Tiếp theo" — khối riêng hẳn, không còn nằm trong card feedback */

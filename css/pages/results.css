@@ -213,14 +213,90 @@
 /* ===== EXPLANATION ===== */
 .review-explanation {
   margin-top: 0.625rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* renderExplanationHtml() (js/core/utils.js) tách q.explanation thành nhiều "card" nhỏ
+   theo heuristic (xem comment hàm đó) — mỗi card 1 phần (đáp án/giải thích/phân tích/ghi
+   nhớ), thay cho 1 khối text dài duy nhất trước đây. Card "plain" = fallback khi không
+   tách được header nào (input quá tự do), giữ giao diện cũ (nền vàng nhạt). */
+.exp-card {
   padding: 0.625rem 0.75rem;
+  border-radius: var(--radius-xs);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.exp-card p { margin: 0 0 0.375rem; }
+.exp-card p:last-child { margin-bottom: 0; }
+
+.exp-card-title {
+  margin-bottom: 0.375rem;
+  font-weight: var(--fw-bold);
+  color: var(--color-text);
+}
+
+.exp-card-plain,
+.exp-card-explain {
+  border-left: 3px solid var(--color-brand);
+  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+  background: var(--color-brand-light);
+  color: var(--color-text);
+}
+
+.exp-card-answer {
+  border-left: 3px solid var(--color-success);
+  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+  background: var(--color-success-light);
+  color: var(--color-text);
+}
+
+.exp-card-tip {
   border-left: 3px solid var(--color-warning);
   border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
   background: var(--color-warning-light);
-  font-size: var(--text-sm);
-  line-height: 1.5;
   color: #92400E;
-  white-space: pre-wrap;
+  font-weight: var(--fw-semi);
+}
+
+.exp-card-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.exp-option {
+  padding: 0.5rem 0.625rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  background: var(--color-bg);
+}
+
+.exp-option-correct { border-color: var(--color-success); background: var(--color-success-light); }
+.exp-option-wrong   { border-color: var(--color-danger);  background: var(--color-danger-light); }
+
+.exp-option-head {
+  font-size: var(--text-sm);
+  color: var(--color-text);
+}
+
+.exp-option-correct .exp-option-head { color: var(--color-success); }
+.exp-option-wrong   .exp-option-head { color: var(--color-danger); }
+
+.exp-option-tag {
+  font-size: var(--text-xs);
+  font-weight: var(--fw-normal);
+  color: var(--color-text-muted);
+}
+
+.exp-option-why {
+  margin-top: 0.25rem;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
 }
 
 .review-tag {

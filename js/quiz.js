@@ -232,11 +232,11 @@ function buildQuizQuestion(question, i) {
       </div>
       <div class="practice-feedback-body">
         ${selected !== correct ? `<div class="practice-feedback-correct">Đáp án đúng: <strong>${esc(question.options[correct])}</strong></div>` : ''}
-        ${question.explanation ? `<div class="practice-feedback-exp">${esc(question.explanation)}</div>` : ''}
+        ${question.explanation ? `<div class="practice-feedback-exp">${renderExplanationHtml(question.explanation)}</div>` : ''}
       </div>
     </div>
     <div class="practice-inline-nav">
-      <button class="btn btn-primary practice-next-btn" onclick="practiceAdvance()">Tiếp theo →</button>
+      <button id="practice-next-btn" class="btn btn-primary practice-next-btn" onclick="practiceAdvance()" ${selected !== correct ? `disabled` : ''}>${selected !== correct ? `Đợi ${PRACTICE_WRONG_LOCK_SEC}s...` : 'Tiếp theo →'}</button>
     </div>` : '';
 
   // Placeholder cột phải khi chưa trả lời (chỉ hiện ở layout xoay ngang — xem
@@ -403,6 +403,7 @@ function selectAnswer(qIdx, optIdx) {
     }
     renderCurrentQuestion();
     renderQuizNav();
+    if (!isCorrect) _startWrongAnswerLock();
     return;
   }
   // exam mode: cập nhật UI inline — màu do CSS class .selected .opt-letter xử lý (css/pages/quiz.css)
@@ -417,6 +418,28 @@ function selectAnswer(qIdx, optIdx) {
 
 const PRACTICE_MAX_WRONG = 3; // sai 3 lần → tự động bỏ qua
 
+// Khoá nút "Tiếp theo" PRACTICE_WRONG_LOCK_SEC giây khi trả lời sai — tránh spam bấm next
+// liên tục để né đọc giải thích/feedback (đúng thì không khoá, chỉ ép đọc khi sai).
+const PRACTICE_WRONG_LOCK_SEC = 3;
+function _startWrongAnswerLock() {
+  clearInterval(_quiz.wrongLockInterval);
+  let remain = PRACTICE_WRONG_LOCK_SEC;
+  const btn = document.getElementById('practice-next-btn');
+  if (!btn) return;
+  _quiz.wrongLockInterval = setInterval(() => {
+    remain--;
+    const el = document.getElementById('practice-next-btn');
+    if (!el) { clearInterval(_quiz.wrongLockInterval); return; }
+    if (remain <= 0) {
+      clearInterval(_quiz.wrongLockInterval);
+      el.disabled = false;
+      el.textContent = 'Tiếp theo →';
+    } else {
+      el.textContent = `Đợi ${remain}s...`;
+    }
+  }, 1000);
+}
+
 function _practiceIsDone() {
   return _quiz.pMastered.every((m, i) => m || _quiz.pSkipped[i]);
 }
@@ -424,6 +447,7 @@ function _practiceIsDone() {
 const PRACTICE_MASTERED_PL = 0.90; // ngưỡng BKT để coi là thuộc
 
 function practiceAdvance() {
+  clearInterval(_quiz.wrongLockInterval);
   const pos  = _quiz.currentIdx;
   const qIdx = _quiz.pQueue[pos];
   const q    = _quiz.set.questions[qIdx];
@@ -471,6 +495,7 @@ function _savePracticeResults() {
   const oldLevel = getXpLevelInfo(getHistory()).level;
   const timeTaken = Math.round((Date.now() - _quiz.startTime) / 1000);
   clearInterval(_quiz.activeDisplayInterval);
+  clearInterval(_quiz.wrongLockInterval);
   const activeTimeSec = _quiz.activityTracker ? _quiz.activityTracker.stop() : null;
   const total    = _quiz.set.questions.length;
   const mastered = _quiz.pMastered.filter(Boolean).length;
@@ -567,7 +592,7 @@ function renderPracticeResult(mastered, skipped, total, timeTaken, set, activeTi
     const statusClass = isMastered ? 'correct' : isSkipped ? 'skipped' : 'wrong';
     const statusIcon  = isMastered ? '✅' : isSkipped ? '⚪' : '❌';
     const statusLabel = isMastered ? 'Đã thuộc' : isSkipped ? 'Bỏ qua' : 'Chưa thuộc';
-    const expHTML = q.explanation ? `<div class="review-explanation">💡 ${esc(q.explanation)}</div>` : '';
+    const expHTML = q.explanation ? `<div class="review-explanation">${renderExplanationHtml(q.explanation)}</div>` : '';
     return `<div class="review-card ${statusClass}" data-result="${statusClass}">
       <div class="review-card-header">
         <span class="review-status-icon">${statusIcon}</span>
@@ -751,6 +776,7 @@ function exitQuiz() {
   const goBack = () => {
     clearInterval(_quiz && _quiz.timerInterval);
     clearInterval(_quiz && _quiz.activeDisplayInterval);
+    clearInterval(_quiz && _quiz.wrongLockInterval);
     if (_quiz && _quiz.activityTracker) _quiz.activityTracker.stop();
     _quizInProgress = false; _quiz = null; navTo('library');
   };
