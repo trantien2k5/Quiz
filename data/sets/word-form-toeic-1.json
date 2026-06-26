@@ -1,0 +1,79 @@
+{
+  "id": "sample-word-form-toeic-1",
+  "name": "TOEIC Word Form - Bộ 1",
+  "description": "10 câu trắc nghiệm Word Form TOEIC, kèm giải thích chi tiết",
+  "timeLimit": null,
+  "createdAt": "2026-06-26T00:00:00.000Z",
+  "questions": [
+    {
+      "id": "wf1-1",
+      "text": "The company's new policy will ___ improve employee satisfaction.\nA. significant  B. significantly  C. significance  D. signify",
+      "options": ["significant", "significantly", "significance", "signify"],
+      "correct": 1,
+      "explanation": "💡 Giải thích: Cần từ bổ nghĩa cho động từ \"improve\" → dùng trạng từ.\n🔎 Dấu hiệu nhận biết: Trống nằm giữa trợ động từ \"will\" và động từ chính \"improve\".\n📘 Quy tắc: Trạng từ bổ nghĩa động từ, thường đứng trước động từ chính (sau trợ động từ).\n📝 Phân tích đáp án: A (tính từ) bổ nghĩa danh từ, không hợp; C (danh từ) sai chức năng; D (động từ) không thể đứng 2 động từ liên tiếp.\n⚠️ Bẫy TOEIC: Dễ chọn \"significant\" vì nghĩa quen, quên xét vị trí ngữ pháp.\n🎯 Ghi nhớ: will/have/be + adv + V.\n📝 Ví dụ: She will quickly finish the report."
+    },
+    {
+      "id": "wf1-2",
+      "text": "All visitors must register at the front desk before ___ the building.\nA. enter  B. entering  C. entrance  D. entered",
+      "options": ["enter", "entering", "entrance", "entered"],
+      "correct": 1,
+      "explanation": "💡 Giải thích: Sau giới từ \"before\" cần V-ing (gerund) làm tân ngữ của giới từ.\n🔎 Dấu hiệu nhận biết: \"before\" + ___ + danh từ \"the building\".\n📘 Quy tắc: Giới từ + V-ing, không dùng động từ nguyên mẫu hoặc quá khứ sau giới từ.\n📝 Phân tích đáp án: A là V nguyên mẫu (sai sau giới từ); C là danh từ nhưng nghĩa không hợp; D là quá khứ, không đi sau giới từ.\n⚠️ Bẫy TOEIC: Nhầm \"entrance\" (danh từ, lối vào) với động từ \"enter\".\n🎯 Ghi nhớ: preposition + V-ing.\n📝 Ví dụ: He left without saying goodbye."
+    },
+    {
+      "id": "wf1-3",
+      "text": "The manager was very ___ with the team's performance this quarter.\nA. satisfy  B. satisfying  C. satisfied  D. satisfaction",
+      "options": ["satisfy", "satisfying", "satisfied", "satisfaction"],
+      "correct": 2,
+      "explanation": "💡 Giải thích: Sau \"be\" + very cần tính từ mô tả cảm xúc của chủ thể (người) → dùng quá khứ phân từ -ed.\n🔎 Dấu hiệu nhận biết: Chủ ngữ \"the manager\" (người), theo sau bởi \"was very ___\".\n📘 Quy tắc: Tính từ -ed mô tả cảm giác của người chịu tác động; -ing mô tả tính chất gây ra cảm giác đó.\n📝 Phân tích đáp án: B \"satisfying\" dùng cho vật/sự việc gây thoả mãn, không hợp với người; A là động từ; D là danh từ.\n⚠️ Bẫy TOEIC: Lẫn lộn cặp tính từ -ed/-ing (satisfied/satisfying, interested/interesting...).\n🎯 Ghi nhớ: Người → -ed, Vật/sự việc → -ing.\n📝 Ví dụ: The movie was boring, so I was bored."
+    },
+    {
+      "id": "wf1-4",
+      "text": "Please ensure that all reports are submitted with ___ accuracy.\nA. complete  B. completely  C. completion  D. completeness",
+      "options": ["complete", "completely", "completion", "completeness"],
+      "correct": 0,
+      "explanation": "💡 Giải thích: \"accuracy\" là danh từ, cần tính từ đứng trước để bổ nghĩa.\n🔎 Dấu hiệu nhận biết: Cấu trúc \"with + ___ + noun\".\n📘 Quy tắc: Tính từ đứng trước danh từ để mô tả danh từ đó.\n📝 Phân tích đáp án: B là trạng từ (không bổ nghĩa danh từ); C, D là danh từ, không thể đứng trước danh từ khác mà không có liên từ.\n⚠️ Bẫy TOEIC: Thấy \"accuracy\" là danh từ trừu tượng rồi nghĩ cần thêm danh từ khác ghép vào — sai, vẫn cần tính từ.\n🎯 Ghi nhớ: adj + noun.\n📝 Ví dụ: with complete confidence / with complete honesty."
+    },
+    {
+      "id": "wf1-5",
+      "text": "The ___ of the new software has greatly increased productivity.\nA. introduce  B. introduction  C. introductory  D. introduced",
+      "options": ["introduce", "introduction", "introductory", "introduced"],
+      "correct": 1,
+      "explanation": "💡 Giải thích: Trống là chủ ngữ của câu, đứng sau \"The\" → cần danh từ.\n🔎 Dấu hiệu nhận biết: \"The ___ of + noun\" + động từ chia (\"has increased\").\n📘 Quy tắc: The + N + of + N, danh từ làm chủ ngữ chính của câu.\n📝 Phân tích đáp án: A là động từ; C là tính từ (\"introductory course\"); D là quá khứ phân từ, không làm chủ ngữ độc lập.\n⚠️ Bẫy TOEIC: Đề dài dễ quên xác định chức năng ngữ pháp của chỗ trống (ở đây là chủ ngữ).\n🎯 Ghi nhớ: The + Noun + of + Noun = chủ ngữ.\n📝 Ví dụ: The implementation of the plan was successful."
+    },
+    {
+      "id": "wf1-6",
+      "text": "Employees who arrive late will be required to submit a written ___.\nA. explain  B. explanation  C. explanatory  D. explained",
+      "options": ["explain", "explanation", "explanatory", "explained"],
+      "correct": 1,
+      "explanation": "💡 Giải thích: Sau mạo từ \"a\" và tính từ \"written\" cần danh từ.\n🔎 Dấu hiệu nhận biết: \"a written ___\" — mạo từ + tính từ + ___.\n📘 Quy tắc: a/an/the + adj + Noun.\n📝 Phân tích đáp án: A là động từ; C là tính từ, trùng vai trò với \"written\" (dư); D là quá khứ phân từ.\n⚠️ Bẫy TOEIC: \"explanatory\" cũng là tính từ nên dễ nhầm có thể thay \"written\", nhưng câu chỉ có 1 chỗ trống là danh từ trung tâm.\n🎯 Ghi nhớ: article + adj + noun.\n📝 Ví dụ: submit a detailed report."
+    },
+    {
+      "id": "wf1-7",
+      "text": "The board members reviewed the proposal ___ before making a decision.\nA. careful  B. carefully  C. care  D. caring",
+      "options": ["careful", "carefully", "care", "caring"],
+      "correct": 1,
+      "explanation": "💡 Giải thích: Bổ nghĩa cho động từ \"reviewed\" → trạng từ.\n🔎 Dấu hiệu nhận biết: Đứng sau tân ngữ \"the proposal\", bổ nghĩa cách thức hành động \"reviewed\".\n📘 Quy tắc: V + O + adv (trạng từ chỉ cách thức thường đứng cuối câu/sau tân ngữ).\n📝 Phân tích đáp án: A là tính từ, không bổ nghĩa động từ; C là danh từ/động từ; D là tính từ/V-ing.\n⚠️ Bẫy TOEIC: Trạng từ cách thức có thể đứng cuối câu, không chỉ trước động từ — dễ bỏ sót vị trí này.\n🎯 Ghi nhớ: V + O + adv.\n📝 Ví dụ: She answered the question correctly."
+    },
+    {
+      "id": "wf1-8",
+      "text": "Due to the ___ increase in demand, the factory will operate extra shifts.\nA. sudden  B. suddenly  C. suddenness  D. suddenly's",
+      "options": ["sudden", "suddenly", "suddenness", "suddenly's"],
+      "correct": 0,
+      "explanation": "💡 Giải thích: \"increase\" ở đây là danh từ, cần tính từ đứng trước.\n🔎 Dấu hiệu nhận biết: \"the ___ increase\" — mạo từ + ___ + danh từ.\n📘 Quy tắc: the + adj + noun.\n📝 Phân tích đáp án: B là trạng từ, không bổ nghĩa danh từ; C là danh từ, không ghép trực tiếp trước danh từ khác; D không phải dạng từ hợp lệ.\n⚠️ Bẫy TOEIC: \"increase\" vừa là danh từ vừa là động từ — nhầm cần trạng từ vì nghĩ đây là động từ, nhưng ở đây nó là danh từ (do đứng sau \"the ___\").\n🎯 Ghi nhớ: Khi thấy \"the + ___ + N\", chỗ trống luôn là tính từ.\n📝 Ví dụ: a significant increase, a gradual decline."
+    },
+    {
+      "id": "wf1-9",
+      "text": "The new employee orientation program is designed to be both informative and ___.\nA. engage  B. engaging  C. engagement  D. engaged",
+      "options": ["engage", "engaging", "engagement", "engaged"],
+      "correct": 1,
+      "explanation": "💡 Giải thích: \"both A and B\" cần B cùng loại từ với A — \"informative\" là tính từ.\n🔎 Dấu hiệu nhận biết: Cấu trúc song song \"both...and\" nối 2 tính từ.\n📘 Quy tắc: Song hành từ loại trong cấu trúc \"both A and B\".\n📝 Phân tích đáp án: A là động từ; C là danh từ; D là tính từ nhưng nghĩa \"bị thu hút\" (cảm giác của người), không hợp mô tả 1 chương trình (vật/sự việc) → phải dùng -ing.\n⚠️ Bẫy TOEIC: Vừa phải xét song hành từ loại, vừa phải xét -ed/-ing đúng nghĩa cho vật.\n🎯 Ghi nhớ: both + adj + and + adj (cùng dạng).\n📝 Ví dụ: The course is both challenging and rewarding."
+    },
+    {
+      "id": "wf1-10",
+      "text": "Customers were ___ pleased with the quick response from customer service.\nA. extreme  B. extremely  C. extremity  D. extremeness",
+      "options": ["extreme", "extremely", "extremity", "extremeness"],
+      "correct": 1,
+      "explanation": "💡 Giải thích: Bổ nghĩa cho tính từ \"pleased\" → cần trạng từ.\n🔎 Dấu hiệu nhận biết: ___ đứng giữa \"were\" và tính từ \"pleased\".\n📘 Quy tắc: Trạng từ chỉ mức độ bổ nghĩa cho tính từ (be + adv + adj).\n📝 Phân tích đáp án: A là tính từ, không bổ nghĩa tính từ khác; C, D là danh từ.\n⚠️ Bẫy TOEIC: Nhầm vì \"extreme\" nghe thuận miệng trước \"pleased\", nhưng tính từ không thể bổ nghĩa tính từ.\n🎯 Ghi nhớ: be + adv + adj.\n📝 Ví dụ: He was highly motivated."
+    }
+  ]
+}

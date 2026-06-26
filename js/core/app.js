@@ -1,4 +1,4 @@
-const APP_V = 116;
+const APP_V = 117;
 
 /* ===== AUTO UPDATE CHECK ===== */
 let _updateDetected = false;
@@ -70,6 +70,29 @@ function renderSettings() {
   if (soundToggle) soundToggle.checked = getSoundEnabled();
 }
 
+/* ===== SAMPLE SETS (data/) ===== */
+async function seedSampleSets() {
+  // Tự thêm bộ đề mẫu trong data/ vào quiz_sets (1 lần / mỗi id) — không tự thêm lại nếu user đã xoá
+  let seededIds;
+  try { seededIds = JSON.parse(localStorage.getItem('quiz_seeded_sample_ids') || '[]'); } catch { seededIds = []; }
+  try {
+    const idx = await (await fetch('data/index.json')).json();
+    let added = false;
+    for (const path of idx.sets || []) {
+      const set = await (await fetch('data/' + path)).json();
+      if (seededIds.includes(set.id)) continue;
+      saveSet(set);
+      seededIds.push(set.id);
+      added = true;
+    }
+    if (added) {
+      localStorage.setItem('quiz_seeded_sample_ids', JSON.stringify(seededIds));
+      renderLibrary();
+      renderHome();
+    }
+  } catch (_) {} // không có mạng / không deploy data/ — bỏ qua, không chặn app
+}
+
 function confirmClearAllData() {
   confirm('Xoá toàn bộ dữ liệu', 'Tất cả bộ đề, lịch sử và thống kê sẽ bị xoá vĩnh viễn. Không thể khôi phục!', () => {
     ['quiz_sets','quiz_history','quiz_q_stats','quiz_last_set','quiz_ai_usage_log','quiz_ai_analysis_log','quiz_skill_log','quiz_topic_log'].forEach(k => localStorage.removeItem(k));
@@ -84,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderHome();
   renderLibrary();
   startUpdateCheck();
+  seedSampleSets();
 
   document.getElementById('import-file-input').addEventListener('change', handleImportFile);
 

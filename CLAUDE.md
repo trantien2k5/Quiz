@@ -39,7 +39,7 @@
 **Quiz App** — SPA trắc nghiệm chạy trên browser, không cần server.
 - Vanilla HTML + CSS + JS, không framework, không build tool
 - Lưu trữ: `localStorage` (`quiz_sets`, `quiz_history`)
-- Deploy: Cloudflare Pages — version hiện tại: **v116**
+- Deploy: Cloudflare Pages — version hiện tại: **v117**
 
 ---
 
@@ -108,9 +108,15 @@ assets/
 
 scripts/
   bump.js               ← dev: node scripts/bump.js → bump version tất cả file
+
+data/
+  index.json            ← { "sets": [ "sets/xxx.json", ... ] } — danh sách bộ đề mẫu đóng gói cùng app
+  sets/*.json            ← từng file 1 Set (đúng format DATA MODEL quiz_sets)
 ```
 
 **Global scope** — không có module system, tất cả function là global. Đặt tên cẩn thận, tránh trùng.
+
+**Bộ đề mẫu (`data/`)**: `seedSampleSets()` (js/core/app.js, gọi 1 lần ở `DOMContentLoaded`) fetch `data/index.json` + từng file trong `data/sets/`, tự `saveSet()` vào `quiz_sets` cho set nào CHƯA từng seed (track qua `quiz_seeded_sample_ids` trong localStorage — seed 1 lần/id, user xoá đi sẽ KHÔNG tự thêm lại). Thêm bộ đề mẫu mới: tạo file JSON trong `data/sets/`, thêm path vào `data/index.json` — tự xuất hiện ở Luyện đề cho mọi user (cũ và mới) ở lần load app kế tiếp, không cần sửa code.
 
 ---
 

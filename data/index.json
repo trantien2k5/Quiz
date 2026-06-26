@@ -1,5 +1,6 @@
 {
   "sets": [
-    "sets/sample-set.json"
+    "sets/sample-set.json",
+    "sets/word-form-toeic-1.json"
   ]
 }
